@@ -31,9 +31,11 @@ namespace AMSAMSAdaptor
         XmlDocument configDoc = new XmlDocument();
 
         public event Action<FlightModel, string> SendFlightMessageHandler;
+        public event Action<FlightModel, string> SendPostFlightMessageHandler;
 
         private List<IInputMessageHandler> InputHandlers = new List<IInputMessageHandler>();
         private List<IOutputMessageHandler> OutputHandlers = new List<IOutputMessageHandler>();
+        private List<IOutputMessageHandler> PostOutputHandlers = new List<IOutputMessageHandler>();
         public ConcurrentDictionary<string, HandlerDispatcher> Dispatchers = new ConcurrentDictionary<string, HandlerDispatcher>();
         private BasicHttpBinding binding;
         private EndpointAddress address;
@@ -75,7 +77,8 @@ namespace AMSAMSAdaptor
 
             logger.Info($"AMS-AMS Adaptor Service Starting ({Parameters.VERSION})");
 
-
+            BaseDataInit baseDataInit = new BaseDataInit(configDoc);
+            baseDataInit.Sync();
 
             stopProcessing = false;
             startThread = new Thread(new ThreadStart(StartThread));
@@ -251,7 +254,10 @@ namespace AMSAMSAdaptor
         {
             SendFlightMessageHandler?.Invoke(flt, action);
         }
-
+        public void SendPostFlightMessage(FlightModel flt, string action)
+        {
+            SendPostFlightMessageHandler?.Invoke(flt, action);
+        }
 
         private void UpdateFlights()
         {

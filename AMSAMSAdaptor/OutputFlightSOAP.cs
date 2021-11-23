@@ -14,9 +14,14 @@ namespace AMSAMSAdaptor
     {
         private BasicHttpBinding binding;
         private EndpointAddress address;
+        private Supervisor supervisor;
+
+        private static readonly NLog.Logger logger = NLog.LogManager.GetLogger("consoleLogger");
+
 
         public void SetSupervisor(Supervisor supervisor, XmlDocument configDoc)
         {
+            this.supervisor = supervisor;
             supervisor.SendFlightMessageHandler += Sender;
             // Set the binding and address for use by the web services client
             binding = new BasicHttpBinding
@@ -37,18 +42,24 @@ namespace AMSAMSAdaptor
         {
             if (action.Contains("DeleteFlight"))
             {
-                Console.WriteLine(PrintXML(flt.GetDeleteSoapMessage()));
+                //               Console.WriteLine(PrintXML(flt.GetDeleteSoapMessage()));
+                logger.Info($"Delete Flight: {flt.FlightProperties["AirlineIATA"]?.Value} {flt.FlightProperties["FlightNumber"]?.Value}");
                 SendDeleteFlight(flt);
+                supervisor.SendPostFlightMessage(flt,action);
             }
             if (action.Contains("CreateFlight"))
             {
-                Console.WriteLine(PrintXML(flt.GetCreateSoapMessage()));
+                //               Console.WriteLine(PrintXML(flt.GetCreateSoapMessage()));
+                logger.Info($"Create Flight: {flt.FlightProperties["AirlineIATA"]?.Value} {flt.FlightProperties["FlightNumber"]?.Value}");
                 SendCreateFlight(flt);
+                supervisor.SendPostFlightMessage(flt, action);
             }
             if (action.Contains("UpdateFlight"))
             {
-                Console.WriteLine(PrintXML(flt.GetUpdateSoapMessage()));
+                //               Console.WriteLine(PrintXML(flt.GetUpdateSoapMessage()));
+                logger.Info($"Update Flight: {flt.FlightProperties["AirlineIATA"]?.Value} {flt.FlightProperties["FlightNumber"]?.Value}");
                 SendUpdateFlight(flt);
+                supervisor.SendPostFlightMessage(flt, action);
             }
         }
 

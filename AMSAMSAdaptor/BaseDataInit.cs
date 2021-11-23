@@ -13,10 +13,21 @@ namespace AMSAMSAdaptor
         private XmlNode config;
         private BasicHttpBinding binding;
         private EndpointAddress address;
+        private bool initACTypes = false;
+        private bool initAC = false;
+        private bool initAirports = false;
+        private bool initAirlines = false;
+
+        private static readonly NLog.Logger logger = NLog.LogManager.GetLogger("consoleLogger");
+
         public BaseDataInit(XmlNode config)
         {
             this.config = config;
 
+            bool.TryParse(config.SelectSingleNode(".//InitAircraftTypes")?.InnerText, out initACTypes);
+            bool.TryParse(config.SelectSingleNode(".//InitAircraft")?.InnerText, out initAC);
+            bool.TryParse(config.SelectSingleNode(".//InitAirports")?.InnerText, out initAirports);
+            bool.TryParse(config.SelectSingleNode(".//InitAirlines")?.InnerText, out initAirlines);
 
             binding = new BasicHttpBinding
             {
@@ -27,28 +38,39 @@ namespace AMSAMSAdaptor
             address = new EndpointAddress(Parameters.TO_AMS_WEB_SERVICE_URI);
         }
 
-        public string GetAirports()
+        public void Sync()
         {
+            if (initACTypes) InitAircraftTypes();
+            if (initAC) InitAircrafts();
+            if (initAirports) InitAirports();
+            if (initAirlines) InitAirlines();
+        }
+
+        public void InitAirports()
+        {
+            logger.Info("Populating Airports");
             using (AMSIntegrationServiceClient client = new AMSIntegrationServiceClient(binding, address))
             {
 
                 try
                 {
                     XmlElement res = client.GetAirports(Parameters.FROMTOKEN);
-                    return res.OuterXml;
+                   
 
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e.Message);
+                    logger.Error(e.Message);
                 }
             }
+            logger.Info("Populating Airports Complete");
 
-            return null;
         }
 
         public void InitAircrafts()
         {
+            logger.Info("Populating Aircraft");
+
             using (AMSIntegrationServiceClient client = new AMSIntegrationServiceClient(binding, address))
             {
 
@@ -57,48 +79,41 @@ namespace AMSAMSAdaptor
                 {
                     XmlElement res = client.GetAircrafts(Parameters.FROMTOKEN);
 
-                    XmlNamespaceManager nsmgr = new XmlNamespaceManager(res.OwnerDocument.NameTable);
-                    nsmgr.AddNamespace("ams", "http://www.sita.aero/ams6-xml-api-datatypes");
-
-                    XmlNodeList acs = res.SelectNodes("//ams:Flight", nsmgr);
-                    foreach (XmlNode fl in acs)
-                    {
-
-
-                    }
-
-
 
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e.Message);
+                    logger.Error(e.Message);
                 }
             }
+            logger.Info("Populating Aircraft Complete");
+
         }
 
-        public string GetAircraftTypes()
+        public void InitAircraftTypes()
         {
+            logger.Info("Populating Aircraft Types");
+
             using (AMSIntegrationServiceClient client = new AMSIntegrationServiceClient(binding, address))
             {
 
                 try
                 {
                     XmlElement res = client.GetAircraftTypes(Parameters.FROMTOKEN);
-                    return res.OuterXml;
+                    
 
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e.Message);
+                    logger.Error(e.Message);
                 }
             }
-
-            return null;
+            logger.Info("Populating Aircraft Complete");
         }
 
-        public string GetAirlines()
+        public void InitAirlines()
         {
+            logger.Info("Populating Airlines Types");
             using (AMSIntegrationServiceClient client = new AMSIntegrationServiceClient(binding, address))
             {
 
@@ -110,13 +125,10 @@ namespace AMSAMSAdaptor
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e.Message);
+                    logger.Error(e.Message);
                 }
             }
-
-            return null;
+            logger.Info("Populating Airlines Complete");
         }
-
-
     }
 }

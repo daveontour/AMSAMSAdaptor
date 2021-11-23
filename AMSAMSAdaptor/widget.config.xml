@@ -10,7 +10,12 @@
 	<ToAMSWebServiceURL>http://localhost:9191/SITAAMSIntegrationService/v2/SITAAMSIntegrationService/</ToAMSWebServiceURL>
 	<StartFromHours>-1000</StartFromHours>
 	<StartFromHours>24</StartFromHours>
-	
+
+	<InitAircraftTypes>true</InitAircraftTypes>
+	<InitAircraft>true</InitAircraft>
+	<InitAirports>true</InitAirports>
+	<InitAirlines>true</InitAirlines>
+
 	<ProcessMessages>
 		<Message>FlightUpdatedNotification</Message>
 		<Message>FlightCreatedNotification</Message>
@@ -50,4 +55,11 @@
 	<HandlerFlightCreate>
 		<PassFilter>.//ams:FlightId/ams:AirlineDesignator[@codeContext='IATA' and  contains(text(), 'QF')]</PassFilter>
 	</HandlerFlightCreate>
+	
+	<!-- Handler for flight on initial population -->
+	<HandlerFlight>
+		<PassFilter>.//ams:FlightId/ams:AirlineDesignator[@codeContext='IATA' and  contains(text(), 'EK')]</PassFilter>
+		<PassFilter>.//ams:FlightId/ams:AirlineDesignator[@codeContext='IATA' and  contains(text(), 'QF')]</PassFilter>
+		<NoPassFilter>.//ams:FlightId/ams:AirlineDesignator[@codeContext='IATA' and  contains(text(), 'QR')]</NoPassFilter>
+	</HandlerFlight>
 </config>
