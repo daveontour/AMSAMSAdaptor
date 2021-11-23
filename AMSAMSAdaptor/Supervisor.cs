@@ -9,6 +9,7 @@ using System.Threading;
 using System.IO;
 using System.Xml;
 using System.Collections.Concurrent;
+using WorkBridge.Modules.AMS.AMSIntegrationWebAPI.Srv;
 
 namespace AMSAMSAdaptor
 {
@@ -18,7 +19,7 @@ namespace AMSAMSAdaptor
 
         private static MessageQueue recvQueue;  // Queue to recieve update notifications on
         private bool startListenLoop = true;    // Flag controlling the execution of the update notificaiton listener
- 
+
 
         private readonly static Random random = new Random();
         public bool stopProcessing = false;
@@ -26,14 +27,16 @@ namespace AMSAMSAdaptor
         private Thread receiveThread;           // Thread the notification listener runs in 
         private List<string> managedMessages = new List<string>();
 
-       
+
         XmlDocument configDoc = new XmlDocument();
 
-        public event Action<string, string> SendSoapMessageHandler;
+        public event Action<FlightModel, string> SendFlightMessageHandler;
 
         private List<IInputMessageHandler> InputHandlers = new List<IInputMessageHandler>();
-        public ConcurrentDictionary<string, HandlerDispatcher> Dispatchers = new ConcurrentDictionary<string,HandlerDispatcher>();
-
+        private List<IOutputMessageHandler> OutputHandlers = new List<IOutputMessageHandler>();
+        public ConcurrentDictionary<string, HandlerDispatcher> Dispatchers = new ConcurrentDictionary<string, HandlerDispatcher>();
+        private BasicHttpBinding binding;
+        private EndpointAddress address;
         // One place to hold all the dispatchers for each trigger
         public HandlerDispatcher AddDispatcher(string messageType)
         {
@@ -51,18 +54,28 @@ namespace AMSAMSAdaptor
 
         public bool Start()
         {
-            
+
             configDoc.Load("widget.config.xml");
 
-            foreach(XmlNode node in configDoc.SelectNodes("//ProcessMessages/Message"))
+            foreach (XmlNode node in configDoc.SelectNodes("//ProcessMessages/Message"))
             {
                 managedMessages.Add(node.InnerText);
                 AddDispatcher(node.InnerText);
                 logger.Info($"Managing Message Type: {node.InnerText}");
             }
 
+            // Set the binding and address for use by the web services client
+            binding = new BasicHttpBinding
+            {
+                MaxReceivedMessageSize = 20000000,
+                MaxBufferSize = 20000000,
+                MaxBufferPoolSize = 20000000
+            };
+            address = new EndpointAddress(Parameters.AMS_WEB_SERVICE_URI);
 
             logger.Info($"AMS-AMS Adaptor Service Starting ({Parameters.VERSION})");
+
+
 
             stopProcessing = false;
             startThread = new Thread(new ThreadStart(StartThread));
@@ -75,28 +88,53 @@ namespace AMSAMSAdaptor
                 .Where(p => type.IsAssignableFrom(p));
 
             // Set up the trggers to manage the different types
-            foreach(var handler in types)
+            foreach (var handler in types)
             {
                 try
                 {
-                   
+
                     IInputMessageHandler obj = (IInputMessageHandler)Activator.CreateInstance(handler);
                     obj.SetSupervisor(this, configDoc);
-                    if (this.managedMessages.Contains(obj.GetMessageName())){
-                        InputHandlers.Add(obj);
-                        logger.Info($"Implemented Handler for {obj.GetMessageName()}");
-                    } else
+                    if (this.managedMessages.Contains(obj.GetMessageName()))
                     {
-                        logger.Warn($"Found Handler for {obj.GetMessageName()} but the messages type is not configured to be handled");
+                        InputHandlers.Add(obj);
+                        logger.Info($"Implemented Message Handler for {obj.GetMessageName()}");
                     }
-                } catch (Exception)
+                    else
+                    {
+                        logger.Warn($"Found Message Handler for {obj.GetMessageName()} but the messages type is not configured to be handled");
+                    }
+                }
+                catch (Exception)
                 {
                     //logger.Error(ex.Message);
                 }
             }
 
-            //Set Up Sender for testing
-            SendSoapMessageHandler += TestSender;
+            var outtype = typeof(IOutputMessageHandler);
+            var outtypes = AppDomain.CurrentDomain.GetAssemblies()
+                .SelectMany(s => s.GetTypes())
+                .Where(p => outtype.IsAssignableFrom(p));
+
+            // Set up the trggers to manage the different types
+            foreach (var handler in outtypes)
+            {
+                try
+                {
+
+                    IOutputMessageHandler obj = (IOutputMessageHandler)Activator.CreateInstance(handler);
+                    obj.SetSupervisor(this, configDoc);
+                    logger.Info($"Implemented Output Handler: {obj.GetDescription()}");
+                    OutputHandlers.Add(obj);
+                }
+                catch (Exception)
+                {
+                    //logger.Error(ex.Message);
+                }
+            }
+
+
+            UpdateFlights();    
 
 
             logger.Info($"AMS-AMS Adaptor Started");
@@ -155,7 +193,7 @@ namespace AMSAMSAdaptor
                 //Put it in a Try/Catch so on bad message or reading problem dont stop the system
                 try
                 {
-                   using (Message msg = recvQueue.Receive(new TimeSpan(0, 0, Parameters.READ_MESSAGE_LOOP_INTERVAL)))
+                    using (Message msg = recvQueue.Receive(new TimeSpan(0, 0, Parameters.READ_MESSAGE_LOOP_INTERVAL)))
                     {
                         string xml;
                         using (StreamReader reader = new StreamReader(msg.BodyStream))
@@ -187,18 +225,20 @@ namespace AMSAMSAdaptor
 
             XmlNamespaceManager nsmgr = new XmlNamespaceManager(doc.NameTable);
             nsmgr.AddNamespace("ams", "http://www.sita.aero/ams6-xml-api-messages");
+            nsmgr.AddNamespace("amsdata", "http://www.sita.aero/ams6-xml-api-datatypes");
 
             foreach (string messageType in managedMessages)
             {
                 try
                 {
-                    if (newNode.SelectSingleNode($"//ams:{messageType}", nsmgr) != null)
+                    if (newNode.SelectSingleNode($"//ams:{messageType}", nsmgr) != null || newNode.SelectSingleNode($"//amsdata:{messageType}", nsmgr) != null)
                     {
                         logger.Debug("Received Managed Message Type");
                         Dispatchers[messageType].Fire(newNode);
                         return;
                     }
-                } catch (Exception e)
+                }
+                catch (Exception e)
                 {
                     logger.Error($"Error firing dispatcher for {messageType}. Error: {e.Message}");
                     return;
@@ -207,58 +247,54 @@ namespace AMSAMSAdaptor
             logger.Debug("Received Unmanaged Message Type");
         }
 
-        public void SendSoapMessage(string message, string soapAction)
+        public void SendFlightMessage(FlightModel flt, string action)
         {
-            SendSoapMessageHandler?.Invoke(message, soapAction);
-        }
-
-        private void TestSender(string arg1, string arg2)
-        {
-            Console.WriteLine(PrintXML(arg1));
+            SendFlightMessageHandler?.Invoke(flt, action);
         }
 
 
-        public static string PrintXML(string xml)
+        private void UpdateFlights()
         {
-            string result = "";
-
-            MemoryStream mStream = new MemoryStream();
-            XmlTextWriter writer = new XmlTextWriter(mStream, Encoding.Unicode);
-            XmlDocument document = new XmlDocument();
-
             try
             {
-                // Load the XmlDocument with the XML.
-                document.LoadXml(xml);
+                using (AMSIntegrationServiceClient client = new AMSIntegrationServiceClient(binding, address))
+                {
 
-                writer.Formatting = Formatting.Indented;
+                    try
+                    {
+                        XmlElement flightsElement = client.GetFlights(Parameters.TOKEN, DateTime.Now.AddDays(-1.0), DateTime.Now, Parameters.APT_CODE, AirportIdentifierType.IATACode);
 
-                // Write the XML into a formatting XmlTextWriter
-                document.WriteContentTo(writer);
-                writer.Flush();
-                mStream.Flush();
+                        XmlNamespaceManager nsmgr = new XmlNamespaceManager(flightsElement.OwnerDocument.NameTable);
+                        nsmgr.AddNamespace("ams", "http://www.sita.aero/ams6-xml-api-datatypes");
 
-                // Have to rewind the MemoryStream in order to read
-                // its contents.
-                mStream.Position = 0;
+                        XmlNodeList fls = flightsElement.SelectNodes("//ams:Flight", nsmgr);
+                        foreach (XmlNode fl in fls)
+                        {
+                            if (stopProcessing)
+                            {
+                                logger.Trace("Stop requested while still processing flights");
+                                break;
+                            }
 
-                // Read MemoryStream contents into a StreamReader.
-                StreamReader sReader = new StreamReader(mStream);
+                            logger.Warn("Startup Flight Update");
+                            ProcessMessage(fl.OuterXml);
 
-                // Extract the text from the StreamReader.
-                string formattedXml = sReader.ReadToEnd();
+                        }
 
-                result = formattedXml;
+                    }
+                    catch (Exception e)
+                    {
+                        logger.Error(e.Message);
+                        logger.Error(e);
+                    }
+                }
             }
-            catch (XmlException)
+            catch (Exception e)
             {
-                // Handle the exception
+                logger.Error(e.Message);
+                logger.Error(e);
             }
 
-            mStream.Close();
-            writer.Close();
-
-            return result;
         }
     }
 }

@@ -11,7 +11,7 @@ namespace AMSAMSAdaptor
 {
     internal class TransformerFlightReMapper : ITransformer
     {
-        private XmlNode config;
+        private static readonly NLog.Logger logger = NLog.LogManager.GetLogger("consoleLogger");
         private List<ReMapper> _remppers = new List<ReMapper>();
         public void SetConfig(XmlNode configNode)
         {
@@ -20,7 +20,10 @@ namespace AMSAMSAdaptor
                 ReMapper reMapper = new ReMapper()
                 {
                     PropertyName = property.Attributes["propertyName"]?.Value,
+                    PropertyFixedValue = property.Attributes["value"]?.Value,
+                    DatetimeFormat = property.Attributes["dateTimeFormat"]?.Value,
                     AltrernatePropertyName = property.Attributes["alternatePropertyName"]?.Value,
+                    Type = property.Attributes["type"]?.Value,
                 };
                 _remppers.Add(reMapper);
             }
@@ -32,9 +35,31 @@ namespace AMSAMSAdaptor
             Dictionary<string, PropertyValue> newProperties = DeepClone(fl.FlightProperties);
             foreach (ReMapper mapper in _remppers)
             {
-                newProperties[mapper.PropertyName].Value = fl.FlightProperties[mapper.AltrernatePropertyName].Value;
-                newProperties[mapper.PropertyName].PropertyCodeContext = fl.FlightProperties[mapper.AltrernatePropertyName].PropertyCodeContext;
-                newProperties[mapper.PropertyName].PropertyCodeContextSpecified = fl.FlightProperties[mapper.AltrernatePropertyName].PropertyCodeContextSpecified;
+                try
+                {
+                    if (mapper.IsAlternateProperty)
+                    {
+                        newProperties[mapper.PropertyName].Value = fl.FlightProperties[mapper.AltrernatePropertyName].Value;
+                        newProperties[mapper.PropertyName].PropertyCodeContext = fl.FlightProperties[mapper.AltrernatePropertyName].PropertyCodeContext;
+                        newProperties[mapper.PropertyName].PropertyCodeContextSpecified = fl.FlightProperties[mapper.AltrernatePropertyName].PropertyCodeContextSpecified;
+                    }
+                    if (mapper.IsFixedValue)
+                    {
+                        newProperties[mapper.PropertyName].Value = mapper.PropertyFixedValue;
+                    }
+                    if (mapper.IsDatetime)
+                    {
+                        newProperties[mapper.PropertyName].Value = DateTime.Now.ToString(mapper.DatetimeFormat);
+                    }
+                }
+                catch (KeyNotFoundException)
+                {
+                    logger.Warn($"Error in TransformerReMapper. Property Not Found in incoming message. Key was {mapper.PropertyName}");
+                }
+                catch (Exception ex)
+                {
+                    logger.Error($"Error in TransformerReMapper. {ex.Message}. Key was {mapper.PropertyName}");
+                }
             }
 
             fl.FlightProperties = newProperties;

@@ -14,10 +14,12 @@ namespace AMSAMSAdaptor
         {
             foreach (XmlNode property in configNode.SelectNodes(".//Property"))
             {
-                ReMapper reMapper = new ReMapper() {
+                ReMapper reMapper = new ReMapper()
+                {
                     PropertyName = property.Attributes["propertyName"]?.Value,
                     PropertyFixedValue = property.Attributes["value"]?.Value,
                     DatetimeFormat = property.Attributes["dateTimeFormat"]?.Value,
+                    AltrernatePropertyName = property.Attributes["alternatePropertyName"]?.Value,
                     Type = property.Attributes["type"]?.Value,
                 };
                 _remppers.Add(reMapper);
@@ -38,6 +40,10 @@ namespace AMSAMSAdaptor
                 {
                     value = DateTime.Now.ToString(mapper.DatetimeFormat);
                 }
+                if (mapper.IsAlternateProperty)
+                {
+                    value = fl.FlightProperties[mapper.AltrernatePropertyName].Value;
+                }
 
                 PropertyValue pv = new PropertyValue() {
                     PropertyName = mapper.PropertyName,
@@ -47,17 +53,5 @@ namespace AMSAMSAdaptor
             }
             return fl;
         }
-    }
-
-    public class ReMapper
-    {
-        public string Type { get; set;}
-        public string PropertyName { get; set; }
-        public bool IsFixedValue { get { return (Type == "fixed") ; }  }
-        public bool IsDatetime { get { return (Type == "dateTime"); } }
-        public bool IsAlternateProperty { get { return (Type == "alternateProperty"); } }
-        public string AltrernatePropertyName { get; set; }
-        public string DatetimeFormat { get; set; }
-        public string PropertyFixedValue { get; set; }
     }
 }

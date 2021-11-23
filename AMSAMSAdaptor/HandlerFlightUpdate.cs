@@ -7,11 +7,6 @@ namespace AMSAMSAdaptor
     {
         public override string MessageName { get; } = "FlightUpdatedNotification";
         public override string HandlerName { get; } = "HandlerFlightUpdate";
-        public override void SetSupervisor(Supervisor supervisor, XmlDocument configDoc)
-        {
-            base.SetSupervisor(supervisor, configDoc);
-            
-        }
 
         public override void HandleMessage(XmlNode node)
         {
@@ -32,7 +27,7 @@ namespace AMSAMSAdaptor
 
             if (flt != null)
             {
-                supervisor.SendSoapMessage(flt.GetUpdateSoapMessage(), "http://www.sita.aero/ams6-xml-api-webservice/IAMSIntegrationService/UpdateFlight");
+                supervisor.SendFlightMessage(flt, "http://www.sita.aero/ams6-xml-api-webservice/IAMSIntegrationService/UpdateFlight");
             } else
             {
                 logger.Warn("Flight Update Message was null after passing through message transformers");

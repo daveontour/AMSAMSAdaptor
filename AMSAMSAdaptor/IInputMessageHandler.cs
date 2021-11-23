@@ -12,4 +12,10 @@ namespace AMSAMSAdaptor
         void SetSupervisor(Supervisor supervisor, XmlDocument configDoc);
         string GetMessageName();
     }
+
+    public interface IOutputMessageHandler
+    {
+        void SetSupervisor(Supervisor supervisor, XmlDocument configDoc);
+        string GetDescription();
+    }
 }

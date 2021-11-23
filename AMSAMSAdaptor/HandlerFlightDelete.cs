@@ -32,7 +32,7 @@ namespace AMSAMSAdaptor
 
             if (flt != null)
             {
-                supervisor.SendSoapMessage(flt.GetDeleteSoapMessage(), "http://www.sita.aero/ams6-xml-api-webservice/IAMSIntegrationService/UpdateFlight");
+                supervisor.SendFlightMessage(flt, "http://www.sita.aero/ams6-xml-api-webservice/IAMSIntegrationService/UpdateFlight");
             } else
             {
                 logger.Warn("Flight Delete Message was null after passing through message transformers");

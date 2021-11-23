@@ -2,10 +2,14 @@
 <config>
 	<FromAMSQueue>.\private$\fromamstoadani</FromAMSQueue>
 	<ReadMessageLoopInterval>10</ReadMessageLoopInterval>
+	<Token>32b8ef7a-0a16-4b4a-9e01-799960c91e0e</Token>
 	<ProcessMessages>
 		<Message>FlightUpdatedNotification</Message>
 		<Message>FlightCreatedNotification</Message>
 		<Message>FlightDeletedNotification</Message>
+		
+		<!-- Not a message type, but we need a handler for "Flight" when an initial sync is done-->
+		<Message>Flight</Message>
 	</ProcessMessages>
 	<HandlerFlightUpdate>
 		<PassFilter>.//ams:FlightId/ams:AirlineDesignator[@codeContext='IATA' and  contains(text(), 'EK')]</PassFilter>
@@ -21,14 +25,17 @@
 		<Transformer>
 			<TransformerClass>TransformerFlightAddProperties</TransformerClass>
 			<TransformerConfig>
-				<Property propertyName="Dave" type="fixed" value="Was Here" />
-				<Property propertyName="When" type="dateTime" dateTimeFormat="HH:mm:ss" />
+				<Property propertyName="OriginalFlightNature" type="alternateProperty" alternatePropertyName="Nature" />
+				<Property propertyName="TimeMessageReceived" type="dateTime" dateTimeFormat="HH:mm:ss" />
+				<Property propertyName="TargetAirport" type="fixed" value="HEL" />
 			</TransformerConfig>
 		</Transformer>
-		<Transformer>
+        <Transformer>
 			<TransformerClass>TransformerFlightReMapper</TransformerClass>
 			<TransformerConfig>
-				<Property propertyName="Dave" alternatePropertyName="When" />
+				<Property propertyName="S---_LastArrivalSource" type="alternateProperty" alternatePropertyName="S---_LastArrivalSource_AltSource" />
+				<Property propertyName="Nature" type="fixed" value="Arrival" />
+				<Property propertyName="AirportIATA" type="fixed" value="DJB" />
 			</TransformerConfig>
 		</Transformer>		
 	</HandlerFlightUpdate>

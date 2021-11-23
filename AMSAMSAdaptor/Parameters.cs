@@ -45,6 +45,9 @@ namespace AMSAMSAdaptor
                 doc.Load("widget.config.xml");
                 TOKEN = doc.SelectSingleNode(".//Token")?.InnerText;
                 RECVQ = doc.SelectSingleNode(".//FromAMSQueue")?.InnerText;
+                AMS_WEB_SERVICE_URI = "http://localhost:9191/SITAAMSIntegrationService/v2/SITAAMSIntegrationService/";
+                APT_CODE = "IXE";
+
                 if (!int.TryParse(doc.SelectSingleNode(".//ReadMessageLoopInterval")?.InnerText, out READ_MESSAGE_LOOP_INTERVAL))
                 {
                     READ_MESSAGE_LOOP_INTERVAL = 5;
