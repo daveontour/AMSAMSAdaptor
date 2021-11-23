@@ -7,6 +7,7 @@ using System.Xml;
 
 namespace AMSAMSAdaptor
 {
+    [Serializable]
     public class PropertyValue
     {
         public bool CoreProperty { get; set; } = false;
@@ -54,8 +55,10 @@ namespace AMSAMSAdaptor
         }
     }
 
+    [Serializable]
     public class FlightModel
     {
+  //      [NonSerialized]
         public XmlNamespaceManager nsmgr;
         private XmlNode node;
 
@@ -64,6 +67,13 @@ namespace AMSAMSAdaptor
 
         public Dictionary<string, PropertyValue> FlightProperties { get; set; } = new Dictionary<string, PropertyValue>();
         public List<string> Routes { get; set; } = new List<string>();
+
+        //[System.Runtime.Serialization.OnDeserialized]
+        //private void OnDeserialized()
+        //{
+        //    nsmgr = new XmlNamespaceManager(node.OwnerDocument.NameTable);
+        //    nsmgr.AddNamespace("ams", "http://www.sita.aero/ams6-xml-api-datatypes");
+        //}
         public FlightModel(XmlNode node)
         {
             this.node = node;
@@ -162,7 +172,7 @@ namespace AMSAMSAdaptor
                </wor:LookupCode>
             </wor:airportCodeField>
             <wor:flightKindField>@@nature@@</wor:flightKindField>
-            <wor:flightNumberField>@@fltnum@@</wor:flightNumberField>
+            <wor:flightNumberField>@@fltNum@@</wor:flightNumberField>
             <wor:scheduledDateField>@@schedDate@@</wor:scheduledDateField>
          </ams6:flightIdentifier>";
 
@@ -178,7 +188,7 @@ namespace AMSAMSAdaptor
         public string GetUpdateSoapMessage()
         {
             StringBuilder sb = new StringBuilder();
-            sb.AppendLine(@"< soapenv:Envelope xmlns:soapenv = ""http://schemas.xmlsoap.org/soap/envelope/"" xmlns:ams6 = ""http://www.sita.aero/ams6-xml-api-webservice"" xmlns:wor = ""http://schemas.datacontract.org/2004/07/WorkBridge.Modules.AMS.AMSIntegrationAPI.Mod.Intf.DataTypes"" >
+            sb.AppendLine(@"<soapenv:Envelope xmlns:soapenv = ""http://schemas.xmlsoap.org/soap/envelope/"" xmlns:ams6 = ""http://www.sita.aero/ams6-xml-api-webservice"" xmlns:wor = ""http://schemas.datacontract.org/2004/07/WorkBridge.Modules.AMS.AMSIntegrationAPI.Mod.Intf.DataTypes"" >
     <soapenv:Header/>
     <soapenv:Body>
         <ams6:UpdateFlight>
@@ -195,7 +205,7 @@ namespace AMSAMSAdaptor
         public string GetCreateSoapMessage()
         {
             StringBuilder sb = new StringBuilder();
-            sb.AppendLine(@"< soapenv:Envelope xmlns:soapenv = ""http://schemas.xmlsoap.org/soap/envelope/"" xmlns:ams6 = ""http://www.sita.aero/ams6-xml-api-webservice"" xmlns:wor = ""http://schemas.datacontract.org/2004/07/WorkBridge.Modules.AMS.AMSIntegrationAPI.Mod.Intf.DataTypes"" >
+            sb.AppendLine(@"<soapenv:Envelope xmlns:soapenv = ""http://schemas.xmlsoap.org/soap/envelope/"" xmlns:ams6 = ""http://www.sita.aero/ams6-xml-api-webservice"" xmlns:wor = ""http://schemas.datacontract.org/2004/07/WorkBridge.Modules.AMS.AMSIntegrationAPI.Mod.Intf.DataTypes"" >
     <soapenv:Header/>
     <soapenv:Body>
         <ams6:CreateFlight>
@@ -213,7 +223,7 @@ namespace AMSAMSAdaptor
         public string GetDeleteSoapMessage()
         {
             StringBuilder sb = new StringBuilder();
-            sb.AppendLine(@"< soapenv:Envelope xmlns:soapenv = ""http://schemas.xmlsoap.org/soap/envelope/"" xmlns:ams6 = ""http://www.sita.aero/ams6-xml-api-webservice"" xmlns:wor = ""http://schemas.datacontract.org/2004/07/WorkBridge.Modules.AMS.AMSIntegrationAPI.Mod.Intf.DataTypes"" >
+            sb.AppendLine(@"<soapenv:Envelope xmlns:soapenv = ""http://schemas.xmlsoap.org/soap/envelope/"" xmlns:ams6 = ""http://www.sita.aero/ams6-xml-api-webservice"" xmlns:wor = ""http://schemas.datacontract.org/2004/07/WorkBridge.Modules.AMS.AMSIntegrationAPI.Mod.Intf.DataTypes"" >
     <soapenv:Header/>
     <soapenv:Body>
         <ams6:DeleteFlight>

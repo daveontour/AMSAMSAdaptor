@@ -20,8 +20,12 @@ namespace AMSAMSAdaptor
         protected List<ITransformer> transformers = new List<ITransformer>();
 
         public virtual string MessageName { get; }
+        public virtual string HandlerName { get; }
 
-        public abstract void Dispose();
+        public virtual void Dispose()
+        {
+            supervisor.Dispatchers[MessageName].TriggerFire -= HandleMessage;
+        }
 
         public virtual string GetMessageName()
         {
@@ -33,19 +37,26 @@ namespace AMSAMSAdaptor
             this.supervisor = supervisor;
             this.configDoc = configDoc;
 
-            foreach (XmlNode node in configDoc.SelectNodes($"//{MessageName}/PassFilter"))
+            foreach (XmlNode node in configDoc.SelectNodes($"//{HandlerName}/PassFilter"))
             {
                 passFilters.Add(node.InnerText);
             }
-            foreach (XmlNode node in configDoc.SelectNodes($"//{MessageName}/NoPassFilter"))
+            foreach (XmlNode node in configDoc.SelectNodes($"//{HandlerName}/NoPassFilter"))
             {
                 noPassFilters.Add(node.InnerText);
             }
-            foreach (XmlNode node in configDoc.SelectNodes($"//{MessageName}/TransformClass"))
+            foreach (XmlNode node in configDoc.SelectNodes($"//{HandlerName}/Transformer"))
             {
-                Type t = Type.GetType($"AMSAMSAdaptor.{node.InnerText}");
-                transformers.Add((ITransformer)Activator.CreateInstance(t));
+                string className = node.SelectSingleNode(".//TransformerClass")?.InnerText;
+                XmlNode configNode = node.SelectSingleNode(".//TransformerConfig");
+                Type t = Type.GetType($"AMSAMSAdaptor.{className}");
+
+                ITransformer transformer = (ITransformer)Activator.CreateInstance(t);
+                transformer.SetConfig(configNode);
+                transformers.Add(transformer);
             }
+
+            supervisor.Dispatchers[MessageName].TriggerFire += HandleMessage;
         }
         public virtual void HandleMessage(XmlNode node)
         {
@@ -80,6 +91,5 @@ namespace AMSAMSAdaptor
             }
             return true;
         }
-
     }
 }

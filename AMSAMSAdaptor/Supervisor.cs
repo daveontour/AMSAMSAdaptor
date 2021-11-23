@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using System.IO;
 using System.Xml;
+using System.Collections.Concurrent;
 
 namespace AMSAMSAdaptor
 {
@@ -23,20 +24,30 @@ namespace AMSAMSAdaptor
         public bool stopProcessing = false;
         private Thread startThread;
         private Thread receiveThread;           // Thread the notification listener runs in 
-        private BasicHttpBinding binding;
-        private EndpointAddress address;
         private List<string> managedMessages = new List<string>();
 
        
         XmlDocument configDoc = new XmlDocument();
 
-        public event Action<XmlNode> FlightCreatedTrigger;
-        public event Action<XmlNode> FlightUpdatedTrigger;
-        public event Action<XmlNode> FlightDeletedTrigger;
-
         public event Action<string, string> SendSoapMessageHandler;
 
         private List<IInputMessageHandler> InputHandlers = new List<IInputMessageHandler>();
+        public ConcurrentDictionary<string, HandlerDispatcher> Dispatchers = new ConcurrentDictionary<string,HandlerDispatcher>();
+
+        // One place to hold all the dispatchers for each trigger
+        public HandlerDispatcher AddDispatcher(string messageType)
+        {
+            if (Dispatchers.ContainsKey(messageType))
+            {
+                return Dispatchers[messageType];
+            }
+            else
+            {
+                HandlerDispatcher dispatcher = new HandlerDispatcher();
+                Dispatchers.TryAdd(messageType, dispatcher);
+                return dispatcher;
+            }
+        }
 
         public bool Start()
         {
@@ -46,20 +57,13 @@ namespace AMSAMSAdaptor
             foreach(XmlNode node in configDoc.SelectNodes("//ProcessMessages/Message"))
             {
                 managedMessages.Add(node.InnerText);
+                AddDispatcher(node.InnerText);
                 logger.Info($"Managing Message Type: {node.InnerText}");
             }
 
 
             logger.Info($"AMS-AMS Adaptor Service Starting ({Parameters.VERSION})");
 
-            // Set the binding and address for use by the web services client
-            binding = new BasicHttpBinding
-            {
-                MaxReceivedMessageSize = 20000000,
-                MaxBufferSize = 20000000,
-                MaxBufferPoolSize = 20000000
-            };
-            //address = new EndpointAddress(Parameters.AMS_WEB_SERVICE_URI);
             stopProcessing = false;
             startThread = new Thread(new ThreadStart(StartThread));
             startThread.Start();
@@ -78,18 +82,30 @@ namespace AMSAMSAdaptor
                    
                     IInputMessageHandler obj = (IInputMessageHandler)Activator.CreateInstance(handler);
                     obj.SetSupervisor(this, configDoc);
-                    InputHandlers.Add(obj);
-                    logger.Info($"Implemented Handler for {obj.GetMessageName()}");
+                    if (this.managedMessages.Contains(obj.GetMessageName())){
+                        InputHandlers.Add(obj);
+                        logger.Info($"Implemented Handler for {obj.GetMessageName()}");
+                    } else
+                    {
+                        logger.Warn($"Found Handler for {obj.GetMessageName()} but the messages type is not configured to be handled");
+                    }
                 } catch (Exception)
                 {
                     //logger.Error(ex.Message);
                 }
             }
 
+            //Set Up Sender for testing
+            SendSoapMessageHandler += TestSender;
+
+
             logger.Info($"AMS-AMS Adaptor Started");
 
             return true;
         }
+
+
+
         public void StartThread()
         {
 
@@ -97,9 +113,6 @@ namespace AMSAMSAdaptor
             recvQueue = new MessageQueue(Parameters.RECVQ);
             StartMQListener();
             logger.Info($"Started Notification Queue Listener on queue: {Parameters.RECVQ}");
-
-            
-
 
             // Optionally process flights 
             if (Parameters.STARTUP_FLIGHT_PROCESSING)
@@ -149,15 +162,7 @@ namespace AMSAMSAdaptor
                         {
                             xml = reader.ReadToEnd();
                         }
-                        if (CheckManagedMessage(xml))
-                        {
-                            logger.Debug("Received Managed Message Type");
-                            logger.Trace(xml);
-                            ProcessMessage(xml);
-                        } else
-                        {
-                            logger.Debug("Received Unmanaged Message Type");
-                        }
+                        ProcessMessage(xml);
                     }
                 }
                 catch (MessageQueueException)
@@ -167,24 +172,13 @@ namespace AMSAMSAdaptor
                 catch (Exception e)
                 {
                     logger.Error("Error in Reciveving and Processing Notification Message");
-                    logger.Error(e.Message);
-                    Thread.Sleep(Parameters.RESTSERVER_RETRY_INTERVAL);
                 }
             }
             logger.Info("Queue Listener Stopped");
             receiveThread.Abort();
         }
 
-        private bool CheckManagedMessage(string xml)
-        {
-            foreach(string messageType in managedMessages)
-            {
-                if (xml.Contains(messageType)){
-                    return true;
-                }
-            }
-            return false;
-        }
+
         public void ProcessMessage(string xml)
         {
             XmlDocument doc = new XmlDocument();
@@ -192,26 +186,79 @@ namespace AMSAMSAdaptor
             XmlNode newNode = doc.DocumentElement;
 
             XmlNamespaceManager nsmgr = new XmlNamespaceManager(doc.NameTable);
-            nsmgr.AddNamespace("ams", "http://www.sita.aero/ams6-xml-api-datatypes");
+            nsmgr.AddNamespace("ams", "http://www.sita.aero/ams6-xml-api-messages");
 
-
-            if (newNode.SelectSingleNode("//ams:FlightCreatedNotification", nsmgr) != null)
+            foreach (string messageType in managedMessages)
             {
-                FlightCreatedTrigger?.Invoke(newNode);
+                try
+                {
+                    if (newNode.SelectSingleNode($"//ams:{messageType}", nsmgr) != null)
+                    {
+                        logger.Debug("Received Managed Message Type");
+                        Dispatchers[messageType].Fire(newNode);
+                        return;
+                    }
+                } catch (Exception e)
+                {
+                    logger.Error($"Error firing dispatcher for {messageType}. Error: {e.Message}");
+                    return;
+                }
             }
-            if (newNode.SelectSingleNode("//ams:FlightUpdatedNotification", nsmgr) != null)
-            {
-                FlightUpdatedTrigger?.Invoke(newNode);
-            }
-            if (newNode.SelectSingleNode("//ams:FlightDeletedNotification", nsmgr) != null)
-            {
-                FlightDeletedTrigger?.Invoke(newNode);
-            }
+            logger.Debug("Received Unmanaged Message Type");
         }
 
         public void SendSoapMessage(string message, string soapAction)
         {
             SendSoapMessageHandler?.Invoke(message, soapAction);
+        }
+
+        private void TestSender(string arg1, string arg2)
+        {
+            Console.WriteLine(PrintXML(arg1));
+        }
+
+
+        public static string PrintXML(string xml)
+        {
+            string result = "";
+
+            MemoryStream mStream = new MemoryStream();
+            XmlTextWriter writer = new XmlTextWriter(mStream, Encoding.Unicode);
+            XmlDocument document = new XmlDocument();
+
+            try
+            {
+                // Load the XmlDocument with the XML.
+                document.LoadXml(xml);
+
+                writer.Formatting = Formatting.Indented;
+
+                // Write the XML into a formatting XmlTextWriter
+                document.WriteContentTo(writer);
+                writer.Flush();
+                mStream.Flush();
+
+                // Have to rewind the MemoryStream in order to read
+                // its contents.
+                mStream.Position = 0;
+
+                // Read MemoryStream contents into a StreamReader.
+                StreamReader sReader = new StreamReader(mStream);
+
+                // Extract the text from the StreamReader.
+                string formattedXml = sReader.ReadToEnd();
+
+                result = formattedXml;
+            }
+            catch (XmlException)
+            {
+                // Handle the exception
+            }
+
+            mStream.Close();
+            writer.Close();
+
+            return result;
         }
     }
 }

@@ -1,22 +1,38 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <config>
-	<FromAMSQueue>.\private$\fromams</FromAMSQueue>
+	<FromAMSQueue>.\private$\fromamstoadani</FromAMSQueue>
 	<ReadMessageLoopInterval>10</ReadMessageLoopInterval>
 	<ProcessMessages>
 		<Message>FlightUpdatedNotification</Message>
 		<Message>FlightCreatedNotification</Message>
 		<Message>FlightDeletedNotification</Message>
 	</ProcessMessages>
-	<FlightCreatedNotification>
-		<PassFilter></PassFilter>
-		<NoPassFilter></NoPassFilter>
-		<TransformClass></TransformClass>
-	</FlightCreatedNotification>
-	<FlightUpdatedNotification>
+	<HandlerFlightUpdate>
 		<PassFilter>.//ams:FlightId/ams:AirlineDesignator[@codeContext='IATA' and  contains(text(), 'EK')]</PassFilter>
 		<PassFilter>.//ams:FlightId/ams:AirlineDesignator[@codeContext='IATA' and  contains(text(), 'QF')]</PassFilter>
 		<NoPassFilter>.//ams:FlightId/ams:AirlineDesignator[@codeContext='IATA' and  contains(text(), 'QR')]</NoPassFilter>
-		<TransformClass>TransformerFlightUpdate</TransformClass>
-		<TransformClass>TransformerFlightUpdate2</TransformClass>
-	</FlightUpdatedNotification>
+		<Transformer>
+			<TransformerClass>TransformerFlightRemoveProperties</TransformerClass>
+			<TransformerConfig>
+				<Property propertyName="S---_AlternateRemark2"/>
+				<Property propertyName="S---_AlternateRemark1"/>
+			</TransformerConfig>
+		</Transformer>
+		<Transformer>
+			<TransformerClass>TransformerFlightAddProperties</TransformerClass>
+			<TransformerConfig>
+				<Property propertyName="Dave" type="fixed" value="Was Here" />
+				<Property propertyName="When" type="dateTime" dateTimeFormat="HH:mm:ss" />
+			</TransformerConfig>
+		</Transformer>
+		<Transformer>
+			<TransformerClass>TransformerFlightReMapper</TransformerClass>
+			<TransformerConfig>
+				<Property propertyName="Dave" alternatePropertyName="When" />
+			</TransformerConfig>
+		</Transformer>		
+	</HandlerFlightUpdate>
+	<HandlerFlightCreate>
+		<PassFilter>.//ams:FlightId/ams:AirlineDesignator[@codeContext='IATA' and  contains(text(), 'QF')]</PassFilter>
+	</HandlerFlightCreate>
 </config>

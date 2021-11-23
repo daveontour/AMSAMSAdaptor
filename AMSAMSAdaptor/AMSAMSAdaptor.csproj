@@ -63,8 +63,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="FlightModel.cs" />
-    <Compile Include="TransformerFlightUpdate2.cs" />
-    <Compile Include="TransformerFlightUpdate.cs" />
+    <Compile Include="HandlerDispatcher.cs" />
+    <Compile Include="HandlerFlightDelete.cs" />
+    <Compile Include="TransformerFlightAddProperties.cs" />
+    <Compile Include="TransformerFlightRemoveProperties.cs" />
+    <Compile Include="TransformerFlightReMapper.cs" />
     <Compile Include="HandlerAbstract.cs" />
     <Compile Include="IInputMessageHandler.cs" />
     <Compile Include="ITransformer.cs" />
@@ -72,7 +75,8 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Supervisor.cs" />
-    <Compile Include="UpdateFlightHandler.cs" />
+    <Compile Include="HandlerFlightCreate.cs" />
+    <Compile Include="HandlerFlightUpdate.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

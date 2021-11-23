@@ -3,17 +3,14 @@ using System.Xml;
 
 namespace AMSAMSAdaptor
 {
-    internal class UpdateFlightHandler : HandlerAbstract, IDisposable
+    internal class HandlerFlightDelete : HandlerAbstract
     {
-        public override string MessageName { get; } = "FlightUpdatedNotification";
+        public override string MessageName { get; } = "FlightDeletedNotification";
+        public override string HandlerName { get; } = "HandlerFlightDelete";
         public override void SetSupervisor(Supervisor supervisor, XmlDocument configDoc)
         {
             base.SetSupervisor(supervisor, configDoc);
-            supervisor.FlightUpdatedTrigger += HandleMessage;
-        }
-        public override void Dispose()
-        {
-            supervisor.FlightUpdatedTrigger -= HandleMessage;
+            
         }
 
         public override void HandleMessage(XmlNode node)
@@ -35,10 +32,10 @@ namespace AMSAMSAdaptor
 
             if (flt != null)
             {
-                supervisor.SendSoapMessage(flt.GetUpdateSoapMessage(), "http://www.sita.aero/ams6-xml-api-webservice/IAMSIntegrationService/UpdateFlight");
+                supervisor.SendSoapMessage(flt.GetDeleteSoapMessage(), "http://www.sita.aero/ams6-xml-api-webservice/IAMSIntegrationService/UpdateFlight");
             } else
             {
-                logger.Warn("Flight Update Message was null after passing through message transformers");
+                logger.Warn("Flight Delete Message was null after passing through message transformers");
             }
         }
     }
