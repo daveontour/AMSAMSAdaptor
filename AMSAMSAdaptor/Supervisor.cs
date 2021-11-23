@@ -71,7 +71,7 @@ namespace AMSAMSAdaptor
                 MaxBufferSize = 20000000,
                 MaxBufferPoolSize = 20000000
             };
-            address = new EndpointAddress(Parameters.AMS_WEB_SERVICE_URI);
+            address = new EndpointAddress(Parameters.FROM_AMS_WEB_SERVICE_URI);
 
             logger.Info($"AMS-AMS Adaptor Service Starting ({Parameters.VERSION})");
 
@@ -262,7 +262,7 @@ namespace AMSAMSAdaptor
 
                     try
                     {
-                        XmlElement flightsElement = client.GetFlights(Parameters.TOKEN, DateTime.Now.AddDays(-1.0), DateTime.Now, Parameters.APT_CODE, AirportIdentifierType.IATACode);
+                        XmlElement flightsElement = client.GetFlights(Parameters.FROMTOKEN, DateTime.Now.AddHours(Parameters.START_FROM_HOURS), DateTime.Now.AddHours(Parameters.START_TO_HOURS), Parameters.APT_CODE, AirportIdentifierType.IATACode);
 
                         XmlNamespaceManager nsmgr = new XmlNamespaceManager(flightsElement.OwnerDocument.NameTable);
                         nsmgr.AddNamespace("ams", "http://www.sita.aero/ams6-xml-api-datatypes");

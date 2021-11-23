@@ -13,11 +13,14 @@ namespace AMSAMSAdaptor
 
         static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
 
-        public static string TOKEN;
+        public static string FROMTOKEN;
+        public static string TOTOKEN;
         public static string AMS_REST_SERVICE_URI;
-        public static string AMS_WEB_SERVICE_URI;
+        public static string FROM_AMS_WEB_SERVICE_URI;
+        public static string TO_AMS_WEB_SERVICE_URI;
         public static string APT_CODE;
         public static string RECVQ;
+        public static string TOAMSREQQ;
         public static string FLIGHTALERTFIELD;
         public static string APT_CODE_ICAO;
         public static int REFRESH_INTERVAL;
@@ -27,7 +30,7 @@ namespace AMSAMSAdaptor
         public static int RESTSERVER_RETRY_INTERVAL;
         public static bool STARTUP_FLIGHT_PROCESSING;
         public static bool STARTUP_STAND_PROCESSING;
-        public static string VERSION = "Version 4.0.1, 20200707";
+        public static string VERSION = "Version 1.0.0, 20211123";
         public static bool DEEPTRACE;
         public static bool ALERT_FLIGHT;
         public static bool ALERT_STAND;
@@ -37,20 +40,34 @@ namespace AMSAMSAdaptor
         public static int LOADCHUNKHOURS;
         public static int READ_MESSAGE_LOOP_INTERVAL;
 
+        public static int START_FROM_HOURS;
+        public static int START_TO_HOURS;
+
         static Parameters()
         {
             try
             {
                 XmlDocument doc = new XmlDocument();
                 doc.Load("widget.config.xml");
-                TOKEN = doc.SelectSingleNode(".//Token")?.InnerText;
+                FROMTOKEN = doc.SelectSingleNode(".//FromToken")?.InnerText;
+                TOTOKEN = doc.SelectSingleNode(".//ToToken")?.InnerText;
                 RECVQ = doc.SelectSingleNode(".//FromAMSQueue")?.InnerText;
-                AMS_WEB_SERVICE_URI = "http://localhost:9191/SITAAMSIntegrationService/v2/SITAAMSIntegrationService/";
-                APT_CODE = "IXE";
+                TOAMSREQQ = doc.SelectSingleNode(".//ToAMSRequestQueue")?.InnerText;
+                FROM_AMS_WEB_SERVICE_URI = doc.SelectSingleNode(".//FromAMSWebServiceURL")?.InnerText;
+                TO_AMS_WEB_SERVICE_URI = doc.SelectSingleNode(".//ToAMSWebServiceURL")?.InnerText;
+                APT_CODE = doc.SelectSingleNode(".//AirportCode")?.InnerText;
 
                 if (!int.TryParse(doc.SelectSingleNode(".//ReadMessageLoopInterval")?.InnerText, out READ_MESSAGE_LOOP_INTERVAL))
                 {
                     READ_MESSAGE_LOOP_INTERVAL = 5;
+                }
+                if (!int.TryParse(doc.SelectSingleNode(".//StartFromHours")?.InnerText, out START_FROM_HOURS))
+                {
+                    START_FROM_HOURS = -24;
+                }
+                if (!int.TryParse(doc.SelectSingleNode(".//StartToHours")?.InnerText, out START_TO_HOURS))
+                {
+                    START_TO_HOURS = 25;
                 }
 
                 //APT_CODE = (string)ConfigurationManager.AppSettings["IATAAirportCode"];

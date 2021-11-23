@@ -11,6 +11,8 @@ namespace AMSAMSAdaptor
     public class PropertyValue
     {
         public bool CoreProperty { get; set; } = false;
+
+        public bool FlightIdProp { get; set; } = false;    
         public string Value { get; set; }
         public string PropertyName { get; set; }
 
@@ -80,22 +82,22 @@ namespace AMSAMSAdaptor
             nsmgr = new XmlNamespaceManager(node.OwnerDocument.NameTable);
             nsmgr.AddNamespace("ams", "http://www.sita.aero/ams6-xml-api-datatypes");
 
-            SetCoreValue("Nature", ".//ams:FlightId/ams:FlightKind");
-            SetCoreValue("AirlineIATA", ".//ams:AirlineDesignator[@codeContext = 'IATA']");
-            SetCoreValue("AirlineICAO", ".//ams:AirlineDesignator[@codeContext='ICAO']");
-            SetCoreValue("FlightNumber", ".//ams:FlightId/ams:FlightNumber");
-            SetCoreValue("ScheduledDate", ".//ams:FlightId/ams:ScheduledDate");
-            SetCoreValue("AirportIATA", ".//ams:FlightId/ams:AirportCode[@codeContext='IATA']");
-            SetCoreValue("AirportICAO", ".//ams:FlightId/ams:AirportCode[@codeContext='ICAO']");
+            SetCoreValue("Nature", ".//ams:FlightId/ams:FlightKind", true);
+            SetCoreValue("AirlineIATA", ".//ams:AirlineDesignator[@codeContext = 'IATA']", true);
+            SetCoreValue("AirlineICAO", ".//ams:AirlineDesignator[@codeContext='ICAO']", true);
+            SetCoreValue("FlightNumber", ".//ams:FlightId/ams:FlightNumber", true);
+            SetCoreValue("ScheduledDate", ".//ams:FlightId/ams:ScheduledDate", true);
+            SetCoreValue("AirportIATA", ".//ams:FlightId/ams:AirportCode[@codeContext='IATA']", true);
+            SetCoreValue("AirportICAO", ".//ams:FlightId/ams:AirportCode[@codeContext='ICAO']", true);
 
 
-            SetCoreValue("LinkedNature", ".//ams:LinkedFlight/ams:FlightId/ams:FlightKind");
-            SetCoreValue("LinkedAirlineIATA", ".//ams:LinkedFlight/ams:AirlineDesignator[@codeContext = 'IATA']");
-            SetCoreValue("LinkedAirlineICAO", ".//ams:LinkedFlight/ams:AirlineDesignator[@codeContext='ICAO']");
-            SetCoreValue("LinkedFlightNumber", ".//ams:LinkedFlight/ams:FlightId/ams:FlightNumber");
-            SetCoreValue("LinkedScheduledDate", ".//ams:LinkedFlight/ams:FlightId/ams:ScheduledDate");
-            SetCoreValue("LinkedAirportIATA", ".//ams:LinkedFlight/ams:FlightId/ams:AirportCode[@codeContext='IATA']");
-            SetCoreValue("LinkedAirportICAO", ".//ams:LinkedFlight/ams:FlightId/ams:AirportCode[@codeContext='ICAO']");
+            SetCoreValue("LinkedNature", ".//ams:LinkedFlight/ams:FlightId/ams:FlightKind", true);
+            SetCoreValue("LinkedAirlineIATA", ".//ams:LinkedFlight/ams:AirlineDesignator[@codeContext = 'IATA']", true);
+            SetCoreValue("LinkedAirlineICAO", ".//ams:LinkedFlight/ams:AirlineDesignator[@codeContext='ICAO']", true);
+            SetCoreValue("LinkedFlightNumber", ".//ams:LinkedFlight/ams:FlightId/ams:FlightNumber", true); ;
+            SetCoreValue("LinkedScheduledDate", ".//ams:LinkedFlight/ams:FlightId/ams:ScheduledDate", true);
+            SetCoreValue("LinkedAirportIATA", ".//ams:LinkedFlight/ams:FlightId/ams:AirportCode[@codeContext='IATA']", true);
+            SetCoreValue("LinkedAirportICAO", ".//ams:LinkedFlight/ams:FlightId/ams:AirportCode[@codeContext='ICAO']", true);
 
             SetCoreValue("ScheduledTime", ".//ams:FlightState/ams:ScheduledTime");
 
@@ -115,7 +117,7 @@ namespace AMSAMSAdaptor
             }
         }
 
-        private void SetCoreValue(string name, string xpath)
+        private void SetCoreValue(string name, string xpath, bool flightIDProp = false)
         {
             string value = node.SelectSingleNode(xpath, nsmgr)?.InnerText;
             if (value != null)
@@ -124,7 +126,8 @@ namespace AMSAMSAdaptor
                 {
                     Value = value,
                     PropertyName = name,
-                    CoreProperty = true
+                    CoreProperty = true,
+                    FlightIdProp = flightIDProp
                 };
                 FlightProperties.Add(pv.PropertyName, pv);
             }

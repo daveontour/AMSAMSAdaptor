@@ -63,6 +63,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AMS.cs" />
+    <Compile Include="BaseDataInit.cs" />
     <Compile Include="FlightModel.cs" />
     <Compile Include="HandlerDispatcher.cs" />
     <Compile Include="HandlerFlightDelete.cs" />
