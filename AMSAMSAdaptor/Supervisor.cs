@@ -20,7 +20,6 @@ namespace AMSAMSAdaptor
         private static MessageQueue recvQueue;  // Queue to recieve update notifications on
         private bool startListenLoop = true;    // Flag controlling the execution of the update notificaiton listener
 
-
         private readonly static Random random = new Random();
         public bool stopProcessing = false;
         private Thread startThread;
@@ -35,7 +34,8 @@ namespace AMSAMSAdaptor
 
         private List<IInputMessageHandler> InputHandlers = new List<IInputMessageHandler>();
         private List<IOutputMessageHandler> OutputHandlers = new List<IOutputMessageHandler>();
-        private List<IOutputMessageHandler> PostOutputHandlers = new List<IOutputMessageHandler>();
+        private List<IPostOutputMessageHandler> PostOutputHandlers = new List<IPostOutputMessageHandler>();
+
         public ConcurrentDictionary<string, HandlerDispatcher> Dispatchers = new ConcurrentDictionary<string, HandlerDispatcher>();
         private BasicHttpBinding binding;
         private EndpointAddress address;
@@ -129,6 +129,30 @@ namespace AMSAMSAdaptor
                     obj.SetSupervisor(this, configDoc);
                     logger.Info($"Implemented Output Handler: {obj.GetDescription()}");
                     OutputHandlers.Add(obj);
+                }
+                catch (Exception)
+                {
+                    //logger.Error(ex.Message);
+                }
+            }
+
+
+            // Post out put handlers are for when the CRUD has been completed. Could be used for handling linking
+            var postouttype = typeof(IPostOutputMessageHandler);
+            var postouttypes = AppDomain.CurrentDomain.GetAssemblies()
+                .SelectMany(s => s.GetTypes())
+                .Where(p => postouttype.IsAssignableFrom(p));
+
+            // Set up the trggers to manage the different types
+            foreach (var handler in outtypes)
+            {
+                try
+                {
+
+                    IPostOutputMessageHandler obj = (IPostOutputMessageHandler)Activator.CreateInstance(handler);
+                    obj.SetSupervisor(this, configDoc);
+                    logger.Info($"Implemented Post Output Handler: {obj.GetDescription()}");
+                    PostOutputHandlers.Add(obj);
                 }
                 catch (Exception)
                 {
@@ -300,7 +324,6 @@ namespace AMSAMSAdaptor
                 logger.Error(e.Message);
                 logger.Error(e);
             }
-
         }
     }
 }
