@@ -31,6 +31,7 @@ namespace AMSAMSAdaptor
 
         public event Action<ModelFlight, string> SendFlightMessageHandler;
         public event Action<ModelFlight, string> SendPostFlightMessageHandler;
+        public event Action<ModelBase, string> SendBaseDataMessageHandler;
 
         private List<IInputMessageHandler> InputHandlers = new List<IInputMessageHandler>();
         private List<IOutputMessageHandler> OutputHandlers = new List<IOutputMessageHandler>();
@@ -163,7 +164,6 @@ namespace AMSAMSAdaptor
 
             UpdateFlights();    
 
-
             logger.Info($"AMS-AMS Adaptor Started");
 
             return true;
@@ -278,6 +278,10 @@ namespace AMSAMSAdaptor
         {
             SendFlightMessageHandler?.Invoke(flt, action);
         }
+        public void SendBaseDataMessage(ModelBase basedata, string action)
+        {
+            SendBaseDataMessageHandler?.Invoke(basedata, action);
+        }
         public void SendPostFlightMessage(ModelFlight flt, string action)
         {
             SendPostFlightMessageHandler?.Invoke(flt, action);
@@ -285,6 +289,16 @@ namespace AMSAMSAdaptor
 
         private void UpdateFlights()
         {
+            bool initFlights = false;
+            bool.TryParse(configDoc.SelectSingleNode(".//InitFlights")?.InnerText, out initFlights);
+            if (!initFlights)
+            {
+                logger.Info("Flight initialisation is NOT configured");
+                return;
+            }
+
+            logger.Info("Flight initialisation commencing");
+
             try
             {
                 using (AMSIntegrationServiceClient client = new AMSIntegrationServiceClient(binding, address))

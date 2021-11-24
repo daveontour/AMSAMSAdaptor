@@ -62,7 +62,8 @@ namespace AMSAMSAdaptor
         {
             this.node = node;
             nsmgr = new XmlNamespaceManager(node.OwnerDocument.NameTable);
-            nsmgr.AddNamespace("ams", "http://www.sita.aero/ams6-xml-api-datatypes");
+            nsmgr.AddNamespace("amsx-messages", "http://www.sita.aero/ams6-xml-api-messages");
+            nsmgr.AddNamespace("amsx-datatypes", "http://www.sita.aero/ams6-xml-api-datatypes");
         }
 
         public bool CheckHandleMessage()

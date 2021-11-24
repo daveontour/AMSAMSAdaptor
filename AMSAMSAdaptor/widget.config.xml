@@ -1,27 +1,33 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <config>
-	<FromAMSQueue>.\private$\fromamstoadani</FromAMSQueue>
+	<FromAMSQueue>.\private$\fromams</FromAMSQueue>
 	<ToAMSRequestQueue>.\private$\fromamstoadani</ToAMSRequestQueue>
 	<ReadMessageLoopInterval>10</ReadMessageLoopInterval>
-	<FromToken>32b8ef7a-0a16-4b4a-9e01-799960c91e0e</FromToken>
-	<ToToken>32b8ef7a-0a16-4b4a-9e01-799960c91e0e</ToToken>
+	<FromToken>d3e7eb26-194b-4552-bf09-0b6b5dd4be19</FromToken>
+	<ToToken>d3e7eb26-194b-4552-bf09-0b6b5dd4be19</ToToken>
 	<AirportCode>IXE</AirportCode>
 	<FromAMSWebServiceURL>http://localhost:9191/SITAAMSIntegrationService/v2/SITAAMSIntegrationService/</FromAMSWebServiceURL>
 	<ToAMSWebServiceURL>http://localhost:9191/SITAAMSIntegrationService/v2/SITAAMSIntegrationService/</ToAMSWebServiceURL>
+
+
+	<InitAircraftTypes>false</InitAircraftTypes>
+	<InitAircraft>false</InitAircraft>
+	<InitAirports>false</InitAirports>
+	<InitAirlines>false</InitAirlines>
+	<InitFlights>false</InitFlights>
 	<StartFromHours>-1000</StartFromHours>
 	<StartFromHours>24</StartFromHours>
-
-	<InitAircraftTypes>true</InitAircraftTypes>
-	<InitAircraft>true</InitAircraft>
-	<InitAirports>true</InitAirports>
-	<InitAirlines>true</InitAirlines>
-
+	
 	<ProcessMessages>
-		<Message>FlightUpdatedNotification</Message>
+<!--		<Message>FlightUpdatedNotification</Message>
 		<Message>FlightCreatedNotification</Message>
-		<Message>FlightDeletedNotification</Message>	
+		<Message>FlightDeletedNotification</Message>  -->
+		<Message>AirportCreatedNotification</Message>
+		<Message>AirportUpdatedNotification</Message>
+		<Message>AirportDeletedNotification</Message>
+
 		<!-- Not a message type, but we need a handler for "Flight" when an initial load is done on startup-->
-		<Message>Flight</Message>
+<!--		<Message>Flight</Message> -->
 	</ProcessMessages>
 	
 	<HandlerFlightUpdate>
