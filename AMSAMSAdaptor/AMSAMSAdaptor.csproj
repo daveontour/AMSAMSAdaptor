@@ -67,7 +67,7 @@
     <Compile Include="HandlerDispatcher.cs" />
     <Compile Include="HandlerFlightDelete.cs" />
     <Compile Include="HandlerFlight.cs" />
-    <Compile Include="ModelACType.cs" />
+    <Compile Include="ModelBaseDataTypes.cs" />
     <Compile Include="ModelFlight.cs" />
     <Compile Include="OutputFlightSOAP.cs" />
     <Compile Include="ReMapper.cs" />
