@@ -58,9 +58,9 @@ namespace AMSAMSAdaptor
     }
 
     [Serializable]
-    public class FlightModel
+    public class ModelFlight
     {
-  //      [NonSerialized]
+
         public XmlNamespaceManager nsmgr;
         private XmlNode node;
 
@@ -70,13 +70,8 @@ namespace AMSAMSAdaptor
         public Dictionary<string, PropertyValue> FlightProperties { get; set; } = new Dictionary<string, PropertyValue>();
         public List<string> Routes { get; set; } = new List<string>();
 
-        //[System.Runtime.Serialization.OnDeserialized]
-        //private void OnDeserialized()
-        //{
-        //    nsmgr = new XmlNamespaceManager(node.OwnerDocument.NameTable);
-        //    nsmgr.AddNamespace("ams", "http://www.sita.aero/ams6-xml-api-datatypes");
-        //}
-        public FlightModel(XmlNode node)
+
+        public ModelFlight(XmlNode node)
         {
             this.node = node;
             nsmgr = new XmlNamespaceManager(node.OwnerDocument.NameTable);

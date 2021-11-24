@@ -38,7 +38,7 @@ namespace AMSAMSAdaptor
             return "Send Flight Messages via Web Services SOAP Interface";
         }
 
-        private void Sender(FlightModel flt, string action)
+        private void Sender(ModelFlight flt, string action)
         {
             if (action.Contains("DeleteFlight"))
             {
@@ -63,7 +63,7 @@ namespace AMSAMSAdaptor
             }
         }
 
-        private void SendDeleteFlight(FlightModel flt)
+        private void SendDeleteFlight(ModelFlight flt)
         {
             using (AMSIntegrationServiceClient client = new AMSIntegrationServiceClient(binding, address))
             {
@@ -78,7 +78,7 @@ namespace AMSAMSAdaptor
                 }
             }
         }
-        private void SendCreateFlight(FlightModel flt)
+        private void SendCreateFlight(ModelFlight flt)
         {
             using (AMSIntegrationServiceClient client = new AMSIntegrationServiceClient(binding, address))
             {
@@ -94,7 +94,7 @@ namespace AMSAMSAdaptor
                 }
             }
         }
-        private void SendUpdateFlight(FlightModel flt)
+        private void SendUpdateFlight(ModelFlight flt)
         {
             using (AMSIntegrationServiceClient client = new AMSIntegrationServiceClient(binding, address))
             {
@@ -113,7 +113,7 @@ namespace AMSAMSAdaptor
         }
 
 
-        private FlightId GetFlightId(FlightModel flt)
+        private FlightId GetFlightId(ModelFlight flt)
         {
             LookupCode apCode = new LookupCode();
             apCode.codeContextField = CodeContext.ICAO;

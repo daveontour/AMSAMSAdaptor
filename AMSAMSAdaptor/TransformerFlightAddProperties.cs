@@ -28,7 +28,7 @@ namespace AMSAMSAdaptor
 
         public object Transform(object input)
         {
-            FlightModel fl = (FlightModel)input;
+            ModelFlight fl = (ModelFlight)input;
             foreach(ReMapper mapper in _remppers)
             {
                 string value = null;

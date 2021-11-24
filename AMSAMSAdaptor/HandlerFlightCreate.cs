@@ -24,10 +24,10 @@ namespace AMSAMSAdaptor
             }
 
             // Pass the message through all the transformers
-            FlightModel flt = new FlightModel(node);
+            ModelFlight flt = new ModelFlight(node);
             foreach (ITransformer transformer in transformers)
             {
-                flt = (FlightModel)transformer.Transform(flt);
+                flt = (ModelFlight)transformer.Transform(flt);
             }
 
             if (flt != null)

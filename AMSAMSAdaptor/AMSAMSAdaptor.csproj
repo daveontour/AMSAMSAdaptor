@@ -64,10 +64,11 @@
   <ItemGroup>
     <Compile Include="AMS.cs" />
     <Compile Include="BaseDataInit.cs" />
-    <Compile Include="FlightModel.cs" />
     <Compile Include="HandlerDispatcher.cs" />
     <Compile Include="HandlerFlightDelete.cs" />
     <Compile Include="HandlerFlight.cs" />
+    <Compile Include="ModelACType.cs" />
+    <Compile Include="ModelFlight.cs" />
     <Compile Include="OutputFlightSOAP.cs" />
     <Compile Include="ReMapper.cs" />
     <Compile Include="TransformerFlightAddProperties.cs" />

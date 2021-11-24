@@ -29,8 +29,8 @@ namespace AMSAMSAdaptor
 
         XmlDocument configDoc = new XmlDocument();
 
-        public event Action<FlightModel, string> SendFlightMessageHandler;
-        public event Action<FlightModel, string> SendPostFlightMessageHandler;
+        public event Action<ModelFlight, string> SendFlightMessageHandler;
+        public event Action<ModelFlight, string> SendPostFlightMessageHandler;
 
         private List<IInputMessageHandler> InputHandlers = new List<IInputMessageHandler>();
         private List<IOutputMessageHandler> OutputHandlers = new List<IOutputMessageHandler>();
@@ -274,11 +274,11 @@ namespace AMSAMSAdaptor
             logger.Debug("Received Unmanaged Message Type");
         }
 
-        public void SendFlightMessage(FlightModel flt, string action)
+        public void SendFlightMessage(ModelFlight flt, string action)
         {
             SendFlightMessageHandler?.Invoke(flt, action);
         }
-        public void SendPostFlightMessage(FlightModel flt, string action)
+        public void SendPostFlightMessage(ModelFlight flt, string action)
         {
             SendPostFlightMessageHandler?.Invoke(flt, action);
         }
