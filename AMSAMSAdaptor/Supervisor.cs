@@ -78,8 +78,7 @@ namespace AMSAMSAdaptor
 
             logger.Info($"AMS-AMS Adaptor Service Starting ({Parameters.VERSION})");
 
-            BaseDataInit baseDataInit = new BaseDataInit(configDoc);
-            baseDataInit.Sync();
+
 
             stopProcessing = false;
             startThread = new Thread(new ThreadStart(StartThread));
@@ -98,9 +97,9 @@ namespace AMSAMSAdaptor
                 {
 
                     IInputMessageHandler obj = (IInputMessageHandler)Activator.CreateInstance(handler);
-                    obj.SetSupervisor(this, configDoc);
                     if (this.managedMessages.Contains(obj.GetMessageName()))
-                    {
+                    {      
+                        obj.SetSupervisor(this, configDoc);
                         InputHandlers.Add(obj);
                         logger.Info($"Implemented Message Handler for {obj.GetMessageName()}");
                     }
@@ -162,6 +161,8 @@ namespace AMSAMSAdaptor
             }
 
 
+            BaseDataInit baseDataInit = new BaseDataInit(configDoc, this);
+            baseDataInit.Sync();
             UpdateFlights();    
 
             logger.Info($"AMS-AMS Adaptor Started");

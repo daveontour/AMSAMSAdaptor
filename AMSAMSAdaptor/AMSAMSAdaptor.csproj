@@ -64,27 +64,30 @@
   <ItemGroup>
     <Compile Include="AMS.cs" />
     <Compile Include="BaseDataInit.cs" />
-    <Compile Include="HandlerDispatcher.cs" />
-    <Compile Include="HandlerFlightDelete.cs" />
-    <Compile Include="HandlerFlight.cs" />
-    <Compile Include="HandlerAirportMessages.cs" />
-    <Compile Include="ModelBaseDataTypes.cs" />
-    <Compile Include="ModelFlight.cs" />
-    <Compile Include="OutputBaseData.cs" />
-    <Compile Include="OutputFlightSOAP.cs" />
+    <Compile Include="InputHandlers\HandlerAircraftTypeMessages.cs" />
+    <Compile Include="InputHandlers\HandlerAircraftMessages.cs" />
+    <Compile Include="InputHandlers\HandlerAirlineMessages.cs" />
+    <Compile Include="InputHandlers\HandlerDispatcher.cs" />
+    <Compile Include="InputHandlers\HandlerFlightDelete.cs" />
+    <Compile Include="InputHandlers\HandlerFlight.cs" />
+    <Compile Include="InputHandlers\HandlerAirportMessages.cs" />
+    <Compile Include="Models\ModelBaseDataTypes.cs" />
+    <Compile Include="Models\ModelFlight.cs" />
+    <Compile Include="OutputHandlers\OutputBaseData.cs" />
+    <Compile Include="OutputHandlers\OutputFlightSOAP.cs" />
     <Compile Include="ReMapper.cs" />
-    <Compile Include="TransformerFlightAddProperties.cs" />
-    <Compile Include="TransformerFlightRemoveProperties.cs" />
-    <Compile Include="TransformerFlightReMapper.cs" />
-    <Compile Include="HandlerAbstract.cs" />
-    <Compile Include="IInputMessageHandler.cs" />
+    <Compile Include="Transformers\TransformerFlightAddProperties.cs" />
+    <Compile Include="Transformers\TransformerFlightRemoveProperties.cs" />
+    <Compile Include="Transformers\TransformerFlightReMapper.cs" />
+    <Compile Include="InputHandlers\HandlerAbstract.cs" />
+    <Compile Include="InputHandlers\IInputMessageHandler.cs" />
     <Compile Include="ITransformer.cs" />
     <Compile Include="Parameters.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Supervisor.cs" />
-    <Compile Include="HandlerFlightCreate.cs" />
-    <Compile Include="HandlerFlightUpdate.cs" />
+    <Compile Include="InputHandlers\HandlerFlightCreate.cs" />
+    <Compile Include="InputHandlers\HandlerFlightUpdate.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

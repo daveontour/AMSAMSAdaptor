@@ -1,39 +1,68 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <config>
-	<FromAMSQueue>.\private$\fromams</FromAMSQueue>
-	<ToAMSRequestQueue>.\private$\fromamstoadani</ToAMSRequestQueue>
+	<FromAMSQueue>.\private$\fromamstoadani</FromAMSQueue>
+	<ToAMSRequestQueue>.\private$\fromli</ToAMSRequestQueue>
 	<ReadMessageLoopInterval>10</ReadMessageLoopInterval>
-	<FromToken>d3e7eb26-194b-4552-bf09-0b6b5dd4be19</FromToken>
-	<ToToken>d3e7eb26-194b-4552-bf09-0b6b5dd4be19</ToToken>
+	<FromToken>32b8ef7a-0a16-4b4a-9e01-799960c91e0e</FromToken>
+	<ToToken>32b8ef7a-0a16-4b4a-9e01-799960c91e0e</ToToken>
 	<AirportCode>IXE</AirportCode>
 	<FromAMSWebServiceURL>http://localhost:9191/SITAAMSIntegrationService/v2/SITAAMSIntegrationService/</FromAMSWebServiceURL>
 	<ToAMSWebServiceURL>http://localhost:9191/SITAAMSIntegrationService/v2/SITAAMSIntegrationService/</ToAMSWebServiceURL>
 
 
-	<InitAircraftTypes>false</InitAircraftTypes>
+	<InitAircraftTypes>true</InitAircraftTypes>
 	<InitAircraft>false</InitAircraft>
 	<InitAirports>false</InitAirports>
 	<InitAirlines>false</InitAirlines>
+	
 	<InitFlights>false</InitFlights>
 	<StartFromHours>-1000</StartFromHours>
 	<StartFromHours>24</StartFromHours>
 	
 	<ProcessMessages>
-<!--		<Message>FlightUpdatedNotification</Message>
+		<!-- Defines the AMSx Messages to manage, if a handler is available for the type -->
+		<!-- To not handles a particular type, just delete it from the list below -->
+		
+		<!-- Flight Messages -->
+		<Message>FlightUpdatedNotification</Message>
 		<Message>FlightCreatedNotification</Message>
-		<Message>FlightDeletedNotification</Message>  -->
+		<Message>FlightDeletedNotification</Message> 
+		
+		<!-- Base Data Messages -->
+		<!-- Delete any types you don't want to manage -->
 		<Message>AirportCreatedNotification</Message>
 		<Message>AirportUpdatedNotification</Message>
 		<Message>AirportDeletedNotification</Message>
-
-		<!-- Not a message type, but we need a handler for "Flight" when an initial load is done on startup-->
-<!--		<Message>Flight</Message> -->
+		<Message>AirlineCreatedNotification</Message>
+		<Message>AirlineUpdatedNotification</Message>
+		<Message>AirlineDeletedNotification</Message>
+		<Message>AircraftCreatedNotification</Message>
+		<Message>AircraftUpdatedNotification</Message>
+		<Message>AircraftDeletedNotification</Message>
+		<Message>AircraftTypeCreatedNotification</Message>
+		<Message>AircraftTypeUpdatedNotification</Message>
+		<Message>AircraftTypeDeletedNotification</Message>
+		
+		<!-- Not messages type, but we need a handler for the different types for an initial load on startup-->
+		<Message>Flight</Message> 
+		<Message>Airport</Message>
+		<Message>Airline</Message>
+		<Message>AircraftType</Message>
+		<Message>Aircraft</Message>
 	</ProcessMessages>
 	
+	<!-- Configuration for handlers that need specific configuration.-->
+	<!-- The top elment, eg, "HandlerFlightUpdate" is the class name of the specific handler for the configuration -->
+	
 	<HandlerFlightUpdate>
+		
+		<!-- Pass/NoPass filter work with any message type -->
+		<!-- Uses XPATH of the message to detemine wheter it meets the filer -->
 		<PassFilter>.//ams:FlightId/ams:AirlineDesignator[@codeContext='IATA' and  contains(text(), 'EK')]</PassFilter>
 		<PassFilter>.//ams:FlightId/ams:AirlineDesignator[@codeContext='IATA' and  contains(text(), 'QF')]</PassFilter>
 		<NoPassFilter>.//ams:FlightId/ams:AirlineDesignator[@codeContext='IATA' and  contains(text(), 'QR')]</NoPassFilter>
+		
+		<!-- Transformers are type specific, For Flight messages, there are three type of built in transformaers -->
 		<Transformer>
 			<TransformerClass>TransformerFlightRemoveProperties</TransformerClass>
 			<TransformerConfig>
@@ -58,6 +87,8 @@
 			</TransformerConfig>
 		</Transformer>		
 	</HandlerFlightUpdate>
+	
+	
 	<HandlerFlightCreate>
 		<PassFilter>.//ams:FlightId/ams:AirlineDesignator[@codeContext='IATA' and  contains(text(), 'QF')]</PassFilter>
 	</HandlerFlightCreate>
@@ -68,4 +99,10 @@
 		<PassFilter>.//ams:FlightId/ams:AirlineDesignator[@codeContext='IATA' and  contains(text(), 'QF')]</PassFilter>
 		<NoPassFilter>.//ams:FlightId/ams:AirlineDesignator[@codeContext='IATA' and  contains(text(), 'QR')]</NoPassFilter>
 	</HandlerFlight>
+
+	<!-- There are built in handlers for each type. The built in handlers can effectively be 
+	disabled using filters, see below. This allows some other custom handler to handle the message -->
+	<HandlerAircraftType>
+		<NoPassFilter>.//*</NoPassFilter>
+	</HandlerAircraftType>
 </config>

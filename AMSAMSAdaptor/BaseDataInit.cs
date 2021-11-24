@@ -11,6 +11,7 @@ namespace AMSAMSAdaptor
     internal class BaseDataInit
     {
         private XmlNode config;
+        private Supervisor supervisor;
         private BasicHttpBinding binding;
         private EndpointAddress address;
         private bool initACTypes = false;
@@ -20,9 +21,10 @@ namespace AMSAMSAdaptor
 
         private static readonly NLog.Logger logger = NLog.LogManager.GetLogger("consoleLogger");
 
-        public BaseDataInit(XmlNode config)
+        public BaseDataInit(XmlNode config, Supervisor supervisor)
         {
             this.config = config;
+            this.supervisor = supervisor;
 
             bool.TryParse(config.SelectSingleNode(".//InitAircraftTypes")?.InnerText, out initACTypes);
             bool.TryParse(config.SelectSingleNode(".//InitAircraft")?.InnerText, out initAC);
@@ -55,7 +57,17 @@ namespace AMSAMSAdaptor
                 try
                 {
                     XmlElement res = client.GetAirports(Parameters.FROMTOKEN);
-                   
+                    XmlNamespaceManager nsmgr = new XmlNamespaceManager(res.OwnerDocument.NameTable);
+                    nsmgr = new XmlNamespaceManager(res.OwnerDocument.NameTable);
+                    nsmgr.AddNamespace("amsx-messages", "http://www.sita.aero/ams6-xml-api-messages");
+                    nsmgr.AddNamespace("amsx-datatypes", "http://www.sita.aero/ams6-xml-api-datatypes");
+
+                    XmlNodeList fls = res.SelectNodes("//amsx-datatypes:Airport", nsmgr);
+                    foreach (XmlNode fl in fls)
+                    {
+                        logger.Warn("Startup Airport Update");
+                        supervisor.ProcessMessage(fl.OuterXml);
+                    }
 
                 }
                 catch (Exception e)
@@ -73,12 +85,20 @@ namespace AMSAMSAdaptor
 
             using (AMSIntegrationServiceClient client = new AMSIntegrationServiceClient(binding, address))
             {
-
-
                 try
                 {
                     XmlElement res = client.GetAircrafts(Parameters.FROMTOKEN);
+                    XmlNamespaceManager nsmgr = new XmlNamespaceManager(res.OwnerDocument.NameTable);
+                    nsmgr = new XmlNamespaceManager(res.OwnerDocument.NameTable);
+                    nsmgr.AddNamespace("amsx-messages", "http://www.sita.aero/ams6-xml-api-messages");
+                    nsmgr.AddNamespace("amsx-datatypes", "http://www.sita.aero/ams6-xml-api-datatypes");
 
+                    XmlNodeList fls = res.SelectNodes("//amsx-datatypes:Aircraft", nsmgr);
+                    foreach (XmlNode fl in fls)
+                    {
+                        logger.Warn("Startup Aircraft Update");
+                        supervisor.ProcessMessage(fl.OuterXml);
+                    }
 
                 }
                 catch (Exception e)
@@ -100,7 +120,17 @@ namespace AMSAMSAdaptor
                 try
                 {
                     XmlElement res = client.GetAircraftTypes(Parameters.FROMTOKEN);
-                    
+                    XmlNamespaceManager nsmgr = new XmlNamespaceManager(res.OwnerDocument.NameTable);
+                    nsmgr = new XmlNamespaceManager(res.OwnerDocument.NameTable);
+                    nsmgr.AddNamespace("amsx-messages", "http://www.sita.aero/ams6-xml-api-messages");
+                    nsmgr.AddNamespace("amsx-datatypes", "http://www.sita.aero/ams6-xml-api-datatypes");
+
+                    XmlNodeList fls = res.SelectNodes("//amsx-datatypes:AircraftType", nsmgr);
+                    foreach (XmlNode fl in fls)
+                    {
+                        logger.Warn("Startup AircraftType Update");
+                        supervisor.ProcessMessage(fl.OuterXml);
+                    }
 
                 }
                 catch (Exception e)
@@ -108,7 +138,7 @@ namespace AMSAMSAdaptor
                     logger.Error(e.Message);
                 }
             }
-            logger.Info("Populating Aircraft Complete");
+            logger.Info("Populating AircraftType Complete");
         }
 
         public void InitAirlines()
@@ -120,7 +150,17 @@ namespace AMSAMSAdaptor
                 try
                 {
                     XmlElement res = client.GetAirlines(Parameters.FROMTOKEN);
+                    XmlNamespaceManager nsmgr = new XmlNamespaceManager(res.OwnerDocument.NameTable);
+                    nsmgr = new XmlNamespaceManager(res.OwnerDocument.NameTable);
+                    nsmgr.AddNamespace("amsx-messages", "http://www.sita.aero/ams6-xml-api-messages");
+                    nsmgr.AddNamespace("amsx-datatypes", "http://www.sita.aero/ams6-xml-api-datatypes");
 
+                    XmlNodeList fls = res.SelectNodes("//amsx-datatypes:Airline", nsmgr);
+                    foreach (XmlNode fl in fls)
+                    {
+                        logger.Warn("Startup Airline Update");
+                        supervisor.ProcessMessage(fl.OuterXml);
+                    }
 
                 }
                 catch (Exception e)

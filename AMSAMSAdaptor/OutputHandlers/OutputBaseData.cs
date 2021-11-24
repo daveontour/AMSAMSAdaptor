@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Messaging;
 using System.ServiceModel;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,6 +15,7 @@ namespace AMSAMSAdaptor
     {
         private Supervisor supervisor;
         private string token;
+        private string toqueue;
 
         private static readonly NLog.Logger logger = NLog.LogManager.GetLogger("consoleLogger");
 
@@ -24,6 +26,7 @@ namespace AMSAMSAdaptor
             supervisor.SendBaseDataMessageHandler += Sender;
 
             token = configDoc.SelectSingleNode(".//ToToken").InnerText;
+            toqueue = configDoc.SelectSingleNode(".//ToAMSRequestQueue").InnerText;
         }
 
         public string GetDescription()
@@ -41,6 +44,26 @@ namespace AMSAMSAdaptor
              
             xml = xml.Replace("TOKEN", token);
             Console.WriteLine(xml);
+            Send(xml);
+        }
+
+        private void Send(string xml)
+        {
+            using (MessageQueue msgQueue = new MessageQueue(toqueue))
+            {
+                try
+                {
+                    var body = Encoding.ASCII.GetBytes(xml);
+                    Message myMessage = new Message(body, new ActiveXMessageFormatter());
+                    msgQueue.Send(myMessage);
+                }
+                catch (Exception ex)
+                {
+                    logger.Error(ex.Message);
+                    logger.Error(ex.StackTrace);
+                    return;
+                }
+            }
         }
     }
 }
