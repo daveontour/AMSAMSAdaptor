@@ -141,7 +141,7 @@ namespace AMSAMSAdaptor
             return flightID;
         }
 
-        private WorkBridge.Modules.AMS.AMSIntegrationAPI.Mod.Intf.DataTypes.PropertyValue[] GetPropertValues(FlightModel flt)
+        private WorkBridge.Modules.AMS.AMSIntegrationAPI.Mod.Intf.DataTypes.PropertyValue[] GetPropertValues(ModelFlight flt)
         {
 
             WorkBridge.Modules.AMS.AMSIntegrationAPI.Mod.Intf.DataTypes.PropertyValue[] val = { };
