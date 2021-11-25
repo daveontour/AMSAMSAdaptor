@@ -1,10 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <config>
-	<FromAMSQueue>.\private$\fromamstoadani</FromAMSQueue>
+	<FromAMSQueue>.\private$\fromams</FromAMSQueue>
 	<ToAMSRequestQueue>.\private$\fromli</ToAMSRequestQueue>
 	<ReadMessageLoopInterval>10</ReadMessageLoopInterval>
-	<FromToken>32b8ef7a-0a16-4b4a-9e01-799960c91e0e</FromToken>
-	<ToToken>32b8ef7a-0a16-4b4a-9e01-799960c91e0e</ToToken>
+	<FromToken>937695b8-47e3-4b63-96b6-d2c053015554</FromToken>
+	<ToToken>937695b8-47e3-4b63-96b6-d2c053015554</ToToken>
 	<AirportCode>IXE</AirportCode>
 	<FromAMSWebServiceURL>http://localhost:9191/SITAAMSIntegrationService/v2/SITAAMSIntegrationService/</FromAMSWebServiceURL>
 	<ToAMSWebServiceURL>http://localhost:9191/SITAAMSIntegrationService/v2/SITAAMSIntegrationService/</ToAMSWebServiceURL>
@@ -24,10 +24,10 @@
 		<!-- To not handles a particular type, just delete it from the list below -->
 		
 		<!-- Flight Messages -->
-		<Message>FlightUpdatedNotification</Message>
+	<!--	<Message>FlightUpdatedNotification</Message>
 		<Message>FlightCreatedNotification</Message>
 		<Message>FlightDeletedNotification</Message> 
-		
+		-->
 		<!-- Base Data Messages -->
 		<!-- Delete any types you don't want to manage -->
 		<Message>AirportCreatedNotification</Message>

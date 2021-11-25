@@ -68,8 +68,7 @@
     <Compile Include="InputHandlers\HandlerAircraftMessages.cs" />
     <Compile Include="InputHandlers\HandlerAirlineMessages.cs" />
     <Compile Include="InputHandlers\HandlerDispatcher.cs" />
-    <Compile Include="InputHandlers\HandlerFlightDelete.cs" />
-    <Compile Include="InputHandlers\HandlerFlight.cs" />
+    <Compile Include="InputHandlers\HandlerFlightMessages.cs" />
     <Compile Include="InputHandlers\HandlerAirportMessages.cs" />
     <Compile Include="Models\ModelBaseDataTypes.cs" />
     <Compile Include="Models\ModelFlight.cs" />
@@ -86,8 +85,6 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Supervisor.cs" />
-    <Compile Include="InputHandlers\HandlerFlightCreate.cs" />
-    <Compile Include="InputHandlers\HandlerFlightUpdate.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

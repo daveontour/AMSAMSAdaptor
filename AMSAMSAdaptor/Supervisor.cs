@@ -98,10 +98,10 @@ namespace AMSAMSAdaptor
 
                     IInputMessageHandler obj = (IInputMessageHandler)Activator.CreateInstance(handler);
                     if (this.managedMessages.Contains(obj.GetMessageName()))
-                    {      
+                    {
                         obj.SetSupervisor(this, configDoc);
                         InputHandlers.Add(obj);
-                        logger.Info($"Implemented Message Handler for {obj.GetMessageName()}");
+                        logger.Info($"Implemented Message Handler for {obj.GetMessageName()}, Handler: {obj.HandlerName}");
                     }
                     else
                     {
@@ -163,7 +163,7 @@ namespace AMSAMSAdaptor
 
             BaseDataInit baseDataInit = new BaseDataInit(configDoc, this);
             baseDataInit.Sync();
-            UpdateFlights();    
+            UpdateFlights();
 
             logger.Info($"AMS-AMS Adaptor Started");
 
@@ -237,7 +237,7 @@ namespace AMSAMSAdaptor
                 }
                 catch (Exception e)
                 {
-                    logger.Error("Error in Reciveving and Processing Notification Message");
+                    logger.Error($"Error in Reciveving and Processing Notification Message. {e.Message}");
                 }
             }
             logger.Info("Queue Listener Stopped");
@@ -252,18 +252,22 @@ namespace AMSAMSAdaptor
             XmlNode newNode = doc.DocumentElement;
 
             XmlNamespaceManager nsmgr = new XmlNamespaceManager(doc.NameTable);
-            nsmgr.AddNamespace("ams", "http://www.sita.aero/ams6-xml-api-messages");
-            nsmgr.AddNamespace("amsdata", "http://www.sita.aero/ams6-xml-api-datatypes");
+            nsmgr.AddNamespace("amsx-messages", "http://www.sita.aero/ams6-xml-api-messages");
+            nsmgr.AddNamespace("amsx-datatypes", "http://www.sita.aero/ams6-xml-api-datatypes");
 
             foreach (string messageType in managedMessages)
             {
                 try
                 {
-                    if (newNode.SelectSingleNode($"//ams:{messageType}", nsmgr) != null || newNode.SelectSingleNode($"//amsdata:{messageType}", nsmgr) != null)
+                    if (newNode.SelectSingleNode($"//amsx-messages:{messageType}", nsmgr) != null || newNode.SelectSingleNode($"//amsx-datatypes:{messageType}", nsmgr) != null)
                     {
-                        logger.Debug("Received Managed Message Type");
+                        logger.Debug($"Received Managed Message Type: {messageType}");
                         Dispatchers[messageType].Fire(newNode);
                         return;
+                    }
+                    else
+                    {
+                        logger.Debug($"Received Unmanaged Message Type {messageType}");
                     }
                 }
                 catch (Exception e)
@@ -272,7 +276,7 @@ namespace AMSAMSAdaptor
                     return;
                 }
             }
-            logger.Debug("Received Unmanaged Message Type");
+
         }
 
         public void SendFlightMessage(ModelFlight flt, string action)

@@ -6,6 +6,8 @@ namespace AMSAMSAdaptor
     {
         void SetSupervisor(Supervisor supervisor, XmlDocument configDoc);
         string GetMessageName();
+        string HandlerName { get; }
+        string HandlerAction { get; }
     }
 
     public interface IOutputMessageHandler
