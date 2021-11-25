@@ -70,9 +70,9 @@ apiVersion=""2.8"">
 
                 result = formattedXml;
             }
-            catch (XmlException)
+            catch (Exception e)
             {
-                // Handle the exception
+                Console.WriteLine(e.Message);
             }
 
             mStream.Close();
@@ -193,7 +193,12 @@ apiVersion=""2.8"">
             sb.AppendLine("</amsx-messages:AircraftId>");
             sb.AppendLine("<amsx-messages:AircraftUpdates>");
 
+            if (ModelAircraftType != null) { 
             sb.AppendLine($"<amsx-messages:Update propertyName=\"AircraftTypeId\">{ModelAircraftType.ModelAircraftTypeId.AircraftTypeCodeIATA}</amsx-messages:Update>");
+        } else
+            {
+                Console.WriteLine($"Aircraft with no type. Rego {AircraftRegistration}");
+            }
             foreach (KeyValuePair<string, string> n in State)
             {
                 sb.AppendLine($"<amsx-messages:Update propertyName=\"{n.Key}\">{n.Value}</amsx-messages:Update>");
@@ -201,7 +206,7 @@ apiVersion=""2.8"">
             sb.AppendLine("</amsx-messages:AircraftUpdates>");
             sb.AppendLine("</amsx-messages:AircraftCreateRequest>");
             sb.AppendLine(AMSXMessageBottom);
-            return PrintXML(sb.ToString());
+            return PrintXML(sb.ToString().Replace("&", "&amp;" ));
         }
         public override string UpdateRequest()
         {
@@ -222,7 +227,7 @@ apiVersion=""2.8"">
             sb.AppendLine("</amsx-messages:AircraftUpdates>");
             sb.AppendLine("</amsx-messages:AircraftUpdateRequest>");
             sb.AppendLine(AMSXMessageBottom);
-            return PrintXML(sb.ToString());
+            return PrintXML(sb.ToString().Replace("&", "&amp;"));
         }
         public override string DeleteRequest()
         {
@@ -288,7 +293,7 @@ apiVersion=""2.8"">
             sb.AppendLine("</amsx-messages:AirlineUpdates>");
             sb.AppendLine("</amsx-messages:AirlineCreateRequest>");
             sb.AppendLine(AMSXMessageBottom);
-            return PrintXML(sb.ToString());
+            return PrintXML(sb.ToString().Replace("&", "&amp;"));
         }
         public override string UpdateRequest()
         {
@@ -305,7 +310,7 @@ apiVersion=""2.8"">
             sb.AppendLine("</amsx-messages:AirlineUpdates>");
             sb.AppendLine("</amsx-messages:AirlineUpdateRequest>");
             sb.AppendLine(AMSXMessageBottom);
-            return PrintXML(sb.ToString());
+            return PrintXML(sb.ToString().Replace("&", "&amp;"));
         }
         public override string DeleteRequest()
         {
@@ -369,7 +374,7 @@ apiVersion=""2.8"">
             sb.AppendLine("</amsx-messages:AirportUpdates>");
             sb.AppendLine("</amsx-messages:AirportCreateRequest>");
             sb.AppendLine(AMSXMessageBottom);
-            return PrintXML(sb.ToString());
+            return PrintXML(sb.ToString().Replace("&", "&amp;"));
         }
         public override string UpdateRequest()
         {
@@ -386,7 +391,7 @@ apiVersion=""2.8"">
             sb.AppendLine("</amsx-messages:AirportUpdates>");
             sb.AppendLine("</amsx-messages:AirportUpdateRequest>");
             sb.AppendLine(AMSXMessageBottom);
-            return PrintXML(sb.ToString());
+            return PrintXML(sb.ToString().Replace("&", "&amp;"));
         }
         public override string DeleteRequest()
         {
@@ -440,7 +445,15 @@ apiVersion=""2.8"">
             sb.AppendLine("</amsx-messages:AreaUpdates>");
             sb.AppendLine("</amsx-messages:AreaCreateRequest>");
             sb.AppendLine(AMSXMessageBottom);
-            return PrintXML(sb.ToString());
+            try
+            {
+                return PrintXML(sb.ToString().Replace("&", "&amp;"));
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(sb.ToString());
+                return null;
+            }
         }
         public override string UpdateRequest()
         {
@@ -462,7 +475,14 @@ apiVersion=""2.8"">
             sb.AppendLine("</amsx-messages:AreaUpdates>");
             sb.AppendLine("</amsx-messages:AreaUpdateRequest>");
             sb.AppendLine(AMSXMessageBottom);
-            return PrintXML(sb.ToString());
+            try
+            {
+                return PrintXML(sb.ToString().Replace("&", "&amp;"));
+            } catch (Exception ex)
+            {
+                Console.WriteLine(sb.ToString());
+                return null;
+            }
         }
         public override string DeleteRequest()
         {

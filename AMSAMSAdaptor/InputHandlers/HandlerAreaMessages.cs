@@ -23,7 +23,7 @@ namespace AMSAMSAdaptor
     internal class HandlerArea : HandlerAbstract
     {
         public override string MessageName { get; } = "Area";
-        public override string HandlerAction { get; } = "UpdateArea";
+        public override string HandlerAction { get; } = "UpdateArea,CreateArea";
         public override string HandlerModel => "AMSAMSAdaptor.ModelArea";
     }
 }

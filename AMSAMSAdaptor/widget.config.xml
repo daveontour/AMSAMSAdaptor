@@ -11,9 +11,9 @@
 
 
 	<InitAircraftTypes>false</InitAircraftTypes>
-	<InitAircraft>false</InitAircraft>
-	<InitAirports>false</InitAirports>
-	<InitAirlines>false</InitAirlines>
+	<InitAircraft>true</InitAircraft>
+	<InitAirports>true</InitAirports>
+	<InitAirlines>true</InitAirlines>
 	<InitAreas>true</InitAreas>
 	
 	<InitFlights>false</InitFlights>
@@ -43,6 +43,12 @@
 		<Message>AircraftTypeCreatedNotification</Message>
 		<Message>AircraftTypeUpdatedNotification</Message>
 		<Message>AircraftTypeDeletedNotification</Message>
+		<Message>AreaCreatedNotification</Message>
+		<Message>AreaUpdatedNotification</Message>
+		<Message>AreaDeletedNotification</Message>
+		<Message>CheckInCreatedNotification</Message>
+		<Message>CheckInUpdatedNotification</Message>
+		<Message>CheckInDeletedNotification</Message>
 		
 		<!-- Not messages type, but we need a handler for the different types for an initial load on startup-->
 		<!--<Message>Flight</Message>--> 
@@ -50,6 +56,7 @@
 		<Message>Airline</Message>
 		<Message>AircraftType</Message>
 		<Message>Aircraft</Message>
+		<Message>Area</Message>
 	</ProcessMessages>
 	
 	<!-- Configuration for handlers that need specific configuration.-->
