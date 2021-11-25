@@ -21,12 +21,13 @@ xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance""
 apiVersion=""2.8"">
 <amsx-messages:Content>";
         public string AMSXMessageBottom = @"</amsx-messages:Content></amsx-messages:Envelope>";
-
+        public XmlNode node;
         public Dictionary<string, string> State { get; set; } = new Dictionary<string, string>();
         public ModelBase(XmlNode node)
         {
             if (node != null)
             {
+                this.node = node;   
                 nsmgr = new XmlNamespaceManager(node.OwnerDocument.NameTable);
                 nsmgr.AddNamespace("amsx-messages", "http://www.sita.aero/ams6-xml-api-messages");
                 nsmgr.AddNamespace("amsx-datatypes", "http://www.sita.aero/ams6-xml-api-datatypes");
@@ -36,7 +37,6 @@ apiVersion=""2.8"">
         public virtual string CreateRequest() { return null; }
         public virtual string UpdateRequest() { return null; }
         public virtual string DeleteRequest() { return null; }
-
         public static string PrintXML(string xml)
         {
 
@@ -85,10 +85,10 @@ apiVersion=""2.8"">
 
     public class ModelAircraftTypeId : ModelBase
     {
-        private string AircraftTypeCodeIATA { get; set; }
-        private string AircraftTypeCodeICAO { get; set; }
+        public string AircraftTypeCodeIATA { get; set; }
+        public string AircraftTypeCodeICAO { get; set; }
 
-        public ModelAircraftTypeId(XmlNode node):base(node)
+        public ModelAircraftTypeId(XmlNode node) : base(node)
         {
             AircraftTypeCodeIATA = node.SelectSingleNode(".//amsx-datatypes:AircraftTypeCode[@codeContext = 'IATA']", nsmgr)?.InnerText;
             AircraftTypeCodeICAO = node.SelectSingleNode(".//amsx-datatypes:AircraftTypeCode[@codeContext = 'ICAO']", nsmgr)?.InnerText;
@@ -107,14 +107,16 @@ apiVersion=""2.8"">
 
     public class ModelAircraftType : ModelBase
     {
-        ModelAircraftTypeId ModelAircraftTypeId { get; set; }
+        public ModelAircraftTypeId ModelAircraftTypeId { get; set; }
 
         public ModelAircraftType(XmlNode node) : base(node)
         {
             ModelAircraftTypeId = new ModelAircraftTypeId(node);
-            foreach (XmlNode n in node.SelectNodes(".//amsx-datatypes:Value",nsmgr))
+            foreach (XmlNode n in node.SelectNodes(".//amsx-datatypes:Value", nsmgr))
             {
-                State.Add(n.Attributes["propertyName"]?.Value, n.InnerText);
+                {
+                    State.Add(n.Attributes["propertyName"]?.Value, n.InnerText);
+                }
             }
         }
 
@@ -149,7 +151,7 @@ apiVersion=""2.8"">
             }
             sb.AppendLine("</amsx-messages:AircraftTypeUpdates>");
             sb.AppendLine("</amsx-messages:AircraftTypeUpdateRequest>");
-            sb.AppendLine(AMSXMessageBottom); 
+            sb.AppendLine(AMSXMessageBottom);
             return PrintXML(sb.ToString());
         }
         public override string DeleteRequest()
@@ -171,8 +173,8 @@ apiVersion=""2.8"">
         string AircraftRegistration { get; set; }
         public ModelAircraft(XmlNode node) : base(node)
         {
-            XmlNode type = node.SelectSingleNode(".//AircraftType", nsmgr);
-            if (type != null) ModelAircraftType = new ModelAircraftType(node.SelectSingleNode(".//AircraftType", nsmgr));
+            XmlNode type = node.SelectSingleNode(".//amsx-datatypes:AircraftTypeId", nsmgr);
+            if (type != null) ModelAircraftType = new ModelAircraftType(node.SelectSingleNode(".//amsx-datatypes:AircraftType", nsmgr));
             AircraftRegistration = node.SelectSingleNode(".//amsx-datatypes:Registration", nsmgr)?.InnerText;
             foreach (XmlNode n in node.SelectNodes(".//amsx-datatypes:AircraftState/amsx-datatypes:Value", nsmgr))
             {
@@ -190,6 +192,8 @@ apiVersion=""2.8"">
             sb.AppendLine($"<amsx-datatypes:Registration>{AircraftRegistration}</amsx-datatypes:Registration>");
             sb.AppendLine("</amsx-messages:AircraftId>");
             sb.AppendLine("<amsx-messages:AircraftUpdates>");
+
+            sb.AppendLine($"<amsx-messages:Update propertyName=\"AircraftTypeId\">{ModelAircraftType.ModelAircraftTypeId.AircraftTypeCodeIATA}</amsx-messages:Update>");
             foreach (KeyValuePair<string, string> n in State)
             {
                 sb.AppendLine($"<amsx-messages:Update propertyName=\"{n.Key}\">{n.Value}</amsx-messages:Update>");
@@ -209,6 +213,8 @@ apiVersion=""2.8"">
             sb.AppendLine($"<amsx-datatypes:Registration>{AircraftRegistration}</amsx-datatypes:Registration>");
             sb.AppendLine("</amsx-messages:AircraftId>");
             sb.AppendLine("<amsx-messages:AircraftUpdates>");
+
+            sb.AppendLine($"<amsx-messages:Update propertyName=\"AircraftTypeId\">{ModelAircraftType?.ModelAircraftTypeId?.AircraftTypeCodeIATA}</amsx-messages:Update>");
             foreach (KeyValuePair<string, string> n in State)
             {
                 sb.AppendLine($"<amsx-messages:Update propertyName=\"{n.Key}\">{n.Value}</amsx-messages:Update>");
@@ -260,7 +266,7 @@ apiVersion=""2.8"">
 
         public ModelAirline(XmlNode node) : base(node)
         {
- 
+
             ModelAirlineId = new ModelAirlineId(node);
             foreach (XmlNode n in node.SelectNodes(".//amsx-datatypes:Value", nsmgr))
             {

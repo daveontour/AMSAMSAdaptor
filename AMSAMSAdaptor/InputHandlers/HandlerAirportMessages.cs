@@ -25,7 +25,7 @@ namespace AMSAMSAdaptor
     internal class HandlerAirport : HandlerAbstract
     {
         public override string MessageName { get; } = "Airport";
-        public override string HandlerAction => "UpdateAirport";
+        public override string HandlerAction => "UpdateAirport,CreateAirport";
         public override string HandlerModel => "AMSAMSAdaptor.ModelAirport";
 
     }

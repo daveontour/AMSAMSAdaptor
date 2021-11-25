@@ -79,11 +79,6 @@ namespace AMSAMSAdaptor
             logger.Info($"AMS-AMS Adaptor Service Starting ({Parameters.VERSION})");
 
 
-
-            stopProcessing = false;
-            startThread = new Thread(new ThreadStart(StartThread));
-            startThread.Start();
-
             // Find all the classes that manage the different message types
             var type = typeof(IInputMessageHandler);
             var types = AppDomain.CurrentDomain.GetAssemblies()
@@ -165,6 +160,9 @@ namespace AMSAMSAdaptor
             baseDataInit.Sync();
             UpdateFlights();
 
+            stopProcessing = false;
+            startThread = new Thread(new ThreadStart(StartThread));
+            startThread.Start();
             logger.Info($"AMS-AMS Adaptor Started");
 
             return true;
@@ -259,16 +257,13 @@ namespace AMSAMSAdaptor
             {
                 try
                 {
-                    if (newNode.SelectSingleNode($"//amsx-messages:{messageType}", nsmgr) != null || newNode.SelectSingleNode($"//amsx-datatypes:{messageType}", nsmgr) != null)
+                    if (newNode.SelectSingleNode($"//amsx-messages:Content/amsx-messages:{messageType}", nsmgr) != null || newNode.SelectSingleNode($"/amsx-datatypes:{messageType}", nsmgr) != null)
                     {
                         logger.Debug($"Received Managed Message Type: {messageType}");
                         Dispatchers[messageType].Fire(newNode);
                         return;
                     }
-                    else
-                    {
-                        logger.Debug($"Received Unmanaged Message Type {messageType}");
-                    }
+                  
                 }
                 catch (Exception e)
                 {
@@ -276,7 +271,7 @@ namespace AMSAMSAdaptor
                     return;
                 }
             }
-
+            logger.Debug($"Received Unmanaged Message Type");
         }
 
         public void SendFlightMessage(ModelFlight flt, string action)

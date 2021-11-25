@@ -128,7 +128,7 @@ namespace AMSAMSAdaptor
                     XmlNodeList fls = res.SelectNodes("//amsx-datatypes:AircraftType", nsmgr);
                     foreach (XmlNode fl in fls)
                     {
-                        logger.Warn("Startup AircraftType Update");
+                        logger.Debug("Startup AircraftType Update");
                         supervisor.ProcessMessage(fl.OuterXml);
                     }
 

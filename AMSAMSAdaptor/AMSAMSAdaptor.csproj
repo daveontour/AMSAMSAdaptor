@@ -66,6 +66,7 @@
     <Compile Include="BaseDataInit.cs" />
     <Compile Include="InputHandlers\HandlerAircraftTypeMessages.cs" />
     <Compile Include="InputHandlers\HandlerAircraftMessages.cs" />
+    <Compile Include="InputHandlers\HandlerCheckinMessages.cs" />
     <Compile Include="InputHandlers\HandlerAirlineMessages.cs" />
     <Compile Include="InputHandlers\HandlerDispatcher.cs" />
     <Compile Include="InputHandlers\HandlerFlightMessages.cs" />

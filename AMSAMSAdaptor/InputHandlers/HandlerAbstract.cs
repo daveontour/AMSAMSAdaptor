@@ -60,16 +60,15 @@ namespace AMSAMSAdaptor
 
             supervisor.Dispatchers[MessageName].TriggerFire += HandleMessage;
         }
-        //public virtual void HandleMessage(XmlNode node)
-        //{
-        //    this.node = node;
-        //    nsmgr = new XmlNamespaceManager(node.OwnerDocument.NameTable);
-        //    nsmgr.AddNamespace("amsx-messages", "http://www.sita.aero/ams6-xml-api-messages");
-        //    nsmgr.AddNamespace("amsx-datatypes", "http://www.sita.aero/ams6-xml-api-datatypes");
-        //}
+
 
         public virtual void HandleMessage(XmlNode node)
         {
+
+            if (MessageName == "Aircraft")
+            {
+                Console.WriteLine();
+            }
             this.node = node;
             nsmgr = new XmlNamespaceManager(node.OwnerDocument.NameTable);
             nsmgr.AddNamespace("amsx-messages", "http://www.sita.aero/ams6-xml-api-messages");
@@ -77,6 +76,7 @@ namespace AMSAMSAdaptor
             nsmgr.AddNamespace("ams", "http://www.sita.aero/ams6-xml-api-datatypes");
             if (!CheckHandleMessage())
             {
+                logger.Warn("Message did not pass filtering criteria");
                 return;
             }
             // Pass the message through all the transformers
@@ -91,11 +91,17 @@ namespace AMSAMSAdaptor
             {
                 if (HandlerDestination == "BaseDataDistributor")
                 {
-                    supervisor.SendBaseDataMessage((ModelBase)obj, HandlerAction);
+                    foreach (string action in HandlerAction.Split(','))
+                    {
+                        supervisor.SendBaseDataMessage((ModelBase)obj, action);
+                    }
                 }
                 if (HandlerDestination == "FlightDataDistributor")
                 {
-                    supervisor.SendFlightMessage((ModelFlight)obj, HandlerAction);
+                    foreach (string action in HandlerAction.Split(','))
+                    {
+                        supervisor.SendFlightMessage((ModelFlight)obj, HandlerAction);
+                    }
                 }
             }
             else
