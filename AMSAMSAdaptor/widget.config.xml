@@ -3,17 +3,18 @@
 	<FromAMSQueue>.\private$\fromams</FromAMSQueue>
 	<ToAMSRequestQueue>.\private$\fromli</ToAMSRequestQueue>
 	<ReadMessageLoopInterval>10</ReadMessageLoopInterval>
-	<FromToken>937695b8-47e3-4b63-96b6-d2c053015554</FromToken>
-	<ToToken>937695b8-47e3-4b63-96b6-d2c053015554</ToToken>
+	<FromToken>32b8ef7a-0a16-4b4a-9e01-799960c91e0e</FromToken>
+	<ToToken>32b8ef7a-0a16-4b4a-9e01-799960c91e0e</ToToken>
 	<AirportCode>IXE</AirportCode>
 	<FromAMSWebServiceURL>http://localhost:9191/SITAAMSIntegrationService/v2/SITAAMSIntegrationService/</FromAMSWebServiceURL>
 	<ToAMSWebServiceURL>http://localhost:9191/SITAAMSIntegrationService/v2/SITAAMSIntegrationService/</ToAMSWebServiceURL>
 
 
-	<InitAircraftTypes>true</InitAircraftTypes>
+	<InitAircraftTypes>false</InitAircraftTypes>
 	<InitAircraft>false</InitAircraft>
 	<InitAirports>false</InitAirports>
 	<InitAirlines>false</InitAirlines>
+	<InitAreas>true</InitAreas>
 	
 	<InitFlights>false</InitFlights>
 	<StartFromHours>-1000</StartFromHours>
@@ -42,6 +43,12 @@
 		<Message>AircraftTypeCreatedNotification</Message>
 		<Message>AircraftTypeUpdatedNotification</Message>
 		<Message>AircraftTypeDeletedNotification</Message>
+		<Message>AreaCreatedNotification</Message>
+		<Message>AreaUpdatedNotification</Message>
+		<Message>AreaDeletedNotification</Message>
+		<Message>CheckInCreatedNotification</Message>
+		<Message>CheckInUpdatedNotification</Message>
+		<Message>CheckInDeletedNotification</Message>
 		
 		<!-- Not messages type, but we need a handler for the different types for an initial load on startup-->
 		<Message>Flight</Message> 
@@ -49,6 +56,7 @@
 		<Message>Airline</Message>
 		<Message>AircraftType</Message>
 		<Message>Aircraft</Message>
+		<Message>Area</Message>
 	</ProcessMessages>
 	
 	<!-- Configuration for handlers that need specific configuration.-->

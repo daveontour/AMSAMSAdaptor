@@ -18,6 +18,8 @@ namespace AMSAMSAdaptor
         private bool initAC = false;
         private bool initAirports = false;
         private bool initAirlines = false;
+        private bool initAreas = false;
+        private bool initCheckIns = false;
 
         private static readonly NLog.Logger logger = NLog.LogManager.GetLogger("consoleLogger");
 
@@ -30,6 +32,8 @@ namespace AMSAMSAdaptor
             bool.TryParse(config.SelectSingleNode(".//InitAircraft")?.InnerText, out initAC);
             bool.TryParse(config.SelectSingleNode(".//InitAirports")?.InnerText, out initAirports);
             bool.TryParse(config.SelectSingleNode(".//InitAirlines")?.InnerText, out initAirlines);
+            bool.TryParse(config.SelectSingleNode(".//InitAreas")?.InnerText, out initAreas);
+            bool.TryParse(config.SelectSingleNode(".//InitCheckIns")?.InnerText, out initCheckIns);
 
             binding = new BasicHttpBinding
             {
@@ -46,6 +50,9 @@ namespace AMSAMSAdaptor
             if (initAC) InitAircrafts();
             if (initAirports) InitAirports();
             if (initAirlines) InitAirlines();
+            if (initAreas) InitAreas();
+           // if (initCheckIns) InitCheckIns();
+
         }
 
         public void InitAirports()
@@ -169,6 +176,37 @@ namespace AMSAMSAdaptor
                 }
             }
             logger.Info("Populating Airlines Complete");
+        }
+
+        public void InitAreas()
+        {
+            logger.Info("Populating Areas");
+
+            using (AMSIntegrationServiceClient client = new AMSIntegrationServiceClient(binding, address))
+            {
+                try
+                {
+                    XmlElement res = client.GetAreas(Parameters.FROMTOKEN,"IXE", WorkBridge.Modules.AMS.AMSIntegrationWebAPI.Srv.AirportIdentifierType.IATACode);
+                    XmlNamespaceManager nsmgr = new XmlNamespaceManager(res.OwnerDocument.NameTable);
+                    nsmgr = new XmlNamespaceManager(res.OwnerDocument.NameTable);
+                    nsmgr.AddNamespace("amsx-messages", "http://www.sita.aero/ams6-xml-api-messages");
+                    nsmgr.AddNamespace("amsx-datatypes", "http://www.sita.aero/ams6-xml-api-datatypes");
+
+                    XmlNodeList fls = res.SelectNodes("//amsx-datatypes:Areas/amsx-datatypes:Area", nsmgr);
+                    foreach (XmlNode fl in fls)
+                    {
+                        logger.Warn("Startup Area Update");
+                        supervisor.ProcessMessage(fl.OuterXml);
+                    }
+
+                }
+                catch (Exception e)
+                {
+                    logger.Error(e.Message);
+                }
+            }
+            logger.Info("Populating Aircraft Complete");
+
         }
     }
 }

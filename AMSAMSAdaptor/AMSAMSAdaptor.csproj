@@ -64,6 +64,8 @@
   <ItemGroup>
     <Compile Include="AMS.cs" />
     <Compile Include="BaseDataInit.cs" />
+    <Compile Include="InputHandlers\HandlerCheckInMessages.cs" />
+    <Compile Include="InputHandlers\HandlerAreaMessages.cs" />
     <Compile Include="InputHandlers\HandlerAircraftTypeMessages.cs" />
     <Compile Include="InputHandlers\HandlerAircraftMessages.cs" />
     <Compile Include="InputHandlers\HandlerAirlineMessages.cs" />
@@ -73,7 +75,7 @@
     <Compile Include="Models\ModelBaseDataTypes.cs" />
     <Compile Include="Models\ModelFlight.cs" />
     <Compile Include="OutputHandlers\OutputBaseData.cs" />
-    <Compile Include="OutputHandlers\OutputFlightSOAP.cs" />
+    <Compile Include="OutputHandlers\OutputFlightWS.cs" />
     <Compile Include="ReMapper.cs" />
     <Compile Include="Transformers\TransformerFlightAddProperties.cs" />
     <Compile Include="Transformers\TransformerFlightRemoveProperties.cs" />

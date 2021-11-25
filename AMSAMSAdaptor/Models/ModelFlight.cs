@@ -57,7 +57,6 @@ namespace AMSAMSAdaptor
         }
     }
 
-    [Serializable]
     public class ModelFlight
     {
 

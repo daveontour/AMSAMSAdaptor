@@ -10,7 +10,7 @@ using WorkBridge.Modules.AMS.AMSIntegrationAPI.Mod.Intf.DataTypes;
 
 namespace AMSAMSAdaptor
 {
-    internal class OutputFlightSOAP : IOutputMessageHandler
+    internal class OutputFlightWS : IOutputMessageHandler
     {
         private BasicHttpBinding binding;
         private EndpointAddress address;
@@ -42,21 +42,18 @@ namespace AMSAMSAdaptor
         {
             if (action.Contains("DeleteFlight"))
             {
-                //               Console.WriteLine(PrintXML(flt.GetDeleteSoapMessage()));
                 logger.Info($"Delete Flight: {flt.FlightProperties["AirlineIATA"]?.Value} {flt.FlightProperties["FlightNumber"]?.Value}");
                 SendDeleteFlight(flt);
-                supervisor.SendPostFlightMessage(flt,action);
+                supervisor.SendPostFlightMessage(flt, action);
             }
             if (action.Contains("CreateFlight"))
             {
-                //               Console.WriteLine(PrintXML(flt.GetCreateSoapMessage()));
                 logger.Info($"Create Flight: {flt.FlightProperties["AirlineIATA"]?.Value} {flt.FlightProperties["FlightNumber"]?.Value}");
                 SendCreateFlight(flt);
                 supervisor.SendPostFlightMessage(flt, action);
             }
             if (action.Contains("UpdateFlight"))
             {
-                //               Console.WriteLine(PrintXML(flt.GetUpdateSoapMessage()));
                 logger.Info($"Update Flight: {flt.FlightProperties["AirlineIATA"]?.Value} {flt.FlightProperties["FlightNumber"]?.Value}");
                 SendUpdateFlight(flt);
                 supervisor.SendPostFlightMessage(flt, action);
@@ -70,7 +67,7 @@ namespace AMSAMSAdaptor
                 try
                 {
                     FlightId flightId = GetFlightId(flt);
-                    
+
                     XmlElement res = client.DeleteFlight(Parameters.TOTOKEN, flightId);
                 }
                 catch (Exception e)
@@ -87,7 +84,8 @@ namespace AMSAMSAdaptor
                 {
                     FlightId flightId = GetFlightId(flt);
                     WorkBridge.Modules.AMS.AMSIntegrationAPI.Mod.Intf.DataTypes.PropertyValue[] propertyValues = GetPropertValues(flt);
-                    XmlElement res = client.CreateFlight(Parameters.TOTOKEN, flightId, propertyValues);
+                    client.CreateFlight(Parameters.TOTOKEN, flightId, propertyValues);
+                    ProcessLinking(flt);
                 }
                 catch (Exception e)
                 {
@@ -103,12 +101,39 @@ namespace AMSAMSAdaptor
                 {
                     FlightId flightId = GetFlightId(flt);
                     WorkBridge.Modules.AMS.AMSIntegrationAPI.Mod.Intf.DataTypes.PropertyValue[] propertyValues = GetPropertValues(flt);
-                    XmlElement res = client.UpdateFlight(Parameters.TOTOKEN, flightId, propertyValues);
-
+                    client.UpdateFlight(Parameters.TOTOKEN, flightId, propertyValues);
+                    ProcessLinking(flt);
                 }
                 catch (Exception e)
                 {
                     Console.Write(e.ToString());
+                }
+            }
+        }
+
+        private void ProcessLinking(ModelFlight flt)
+        {
+            FlightId fltId = GetFlightId(flt);
+            FlightId lfltId = GetFlightId(flt);
+            {
+
+                using (AMSIntegrationServiceClient client = new AMSIntegrationServiceClient(binding, address))
+                {
+                    try
+                    {
+                        if (flt.FlightProperties["LinkedAirlineIATA"].Value != null)
+                        {
+                            client.LinkFlights(Parameters.TOTOKEN, fltId, lfltId);
+                        }
+                        else
+                        {
+                            client.UnlinkFlight(Parameters.TOTOKEN, fltId);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Console.Write(e.ToString());
+                    }
                 }
             }
         }
@@ -138,6 +163,34 @@ namespace AMSAMSAdaptor
             flightID.airlineDesignatorField = al;
             flightID.scheduledDateField = Convert.ToDateTime(flt.FlightProperties["ScheduledDate"].Value);
             flightID.flightNumberField = flt.FlightProperties["FlightNumber"].Value;
+
+            return flightID;
+        }
+
+        private FlightId GetLinkedFlightId(ModelFlight flt)
+        {
+            LookupCode apCode = new LookupCode();
+            apCode.codeContextField = CodeContext.ICAO;
+            apCode.valueField = flt.FlightProperties["LinkedAirportICAO"].Value;
+            LookupCode[] ap = { apCode };
+
+            LookupCode apCode2 = new LookupCode();
+            apCode2.codeContextField = CodeContext.IATA;
+            apCode2.valueField = flt.FlightProperties["LinkedAirportIATA"].Value;
+            ap.Append(apCode2);
+
+
+            LookupCode alCode = new LookupCode();
+            alCode.codeContextField = CodeContext.IATA;
+            alCode.valueField = flt.FlightProperties["LinkedAirlineIATA"].Value;
+            LookupCode[] al = { alCode };
+
+            FlightId flightID = new FlightId();
+            flightID.flightKindField = flt.FlightProperties["LinkedNature"].Value == "Arrival" ? FlightKind.Arrival : FlightKind.Departure;
+            flightID.airportCodeField = ap;
+            flightID.airlineDesignatorField = al;
+            flightID.scheduledDateField = Convert.ToDateTime(flt.FlightProperties["LinkedScheduledDate"].Value);
+            flightID.flightNumberField = flt.FlightProperties["LinkedFlightNumber"].Value;
 
             return flightID;
         }
