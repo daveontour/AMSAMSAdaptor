@@ -25,10 +25,10 @@
 		<!-- To not handles a particular type, just delete it from the list below -->
 		
 		<!-- Flight Messages -->
-	<!--	<Message>FlightUpdatedNotification</Message>
+		<Message>FlightUpdatedNotification</Message>
 		<Message>FlightCreatedNotification</Message>
 		<Message>FlightDeletedNotification</Message> 
-		-->
+	
 		<!-- Base Data Messages -->
 		<!-- Delete any types you don't want to manage -->
 		<Message>AirportCreatedNotification</Message>
@@ -43,20 +43,13 @@
 		<Message>AircraftTypeCreatedNotification</Message>
 		<Message>AircraftTypeUpdatedNotification</Message>
 		<Message>AircraftTypeDeletedNotification</Message>
-		<Message>AreaCreatedNotification</Message>
-		<Message>AreaUpdatedNotification</Message>
-		<Message>AreaDeletedNotification</Message>
-		<Message>CheckInCreatedNotification</Message>
-		<Message>CheckInUpdatedNotification</Message>
-		<Message>CheckInDeletedNotification</Message>
 		
 		<!-- Not messages type, but we need a handler for the different types for an initial load on startup-->
-		<Message>Flight</Message> 
+		<!--<Message>Flight</Message>--> 
 		<Message>Airport</Message>
 		<Message>Airline</Message>
 		<Message>AircraftType</Message>
 		<Message>Aircraft</Message>
-		<Message>Area</Message>
 	</ProcessMessages>
 	
 	<!-- Configuration for handlers that need specific configuration.-->
@@ -110,7 +103,10 @@
 
 	<!-- There are built in handlers for each type. The built in handlers can effectively be 
 	disabled using filters, see below. This allows some other custom handler to handle the message -->
-	<HandlerAircraftType>
+	
+	<!--
+	HandlerAircraftType>
 		<NoPassFilter>.//*</NoPassFilter>
 	</HandlerAircraftType>
+	-->
 </config>

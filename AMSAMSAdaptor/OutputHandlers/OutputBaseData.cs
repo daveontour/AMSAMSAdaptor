@@ -43,12 +43,13 @@ namespace AMSAMSAdaptor
 
              
             xml = xml.Replace("TOKEN", token);
-            Console.WriteLine(xml);
+            //Console.WriteLine(xml);
             Send(xml);
         }
 
         private void Send(string xml)
         {
+            logger.Debug("Sending base data message to destination queue");
             using (MessageQueue msgQueue = new MessageQueue(toqueue))
             {
                 try
@@ -59,8 +60,7 @@ namespace AMSAMSAdaptor
                 }
                 catch (Exception ex)
                 {
-                    logger.Error(ex.Message);
-                    logger.Error(ex.StackTrace);
+                    logger.Error($"Error sending message to destination queue: {ex.Message}");
                     return;
                 }
             }

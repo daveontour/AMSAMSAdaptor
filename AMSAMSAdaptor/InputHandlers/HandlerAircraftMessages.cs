@@ -23,7 +23,7 @@ namespace AMSAMSAdaptor
     internal class HandlerAircraft : HandlerAbstract
     {
         public override string MessageName { get; } = "Aircraft";
-        public override string HandlerAction { get; } = "UpdateAircraft";
+        public override string HandlerAction { get; } = "UpdateAircraft,CreateAircraft";
         public override string HandlerModel => "AMSAMSAdaptor.ModelAircraft";
     }
 }
