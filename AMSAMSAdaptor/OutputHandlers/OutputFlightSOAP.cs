@@ -70,6 +70,7 @@ namespace AMSAMSAdaptor
                 try
                 {
                     FlightId flightId = GetFlightId(flt);
+                    
                     XmlElement res = client.DeleteFlight(Parameters.TOTOKEN, flightId);
                 }
                 catch (Exception e)

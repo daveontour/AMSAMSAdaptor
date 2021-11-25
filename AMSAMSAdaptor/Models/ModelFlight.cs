@@ -96,7 +96,7 @@ namespace AMSAMSAdaptor
 
             SetCoreValue("ScheduledTime", ".//ams:FlightState/ams:ScheduledTime");
 
-            SetCoreValue("AircraftTypeCode", ".//ams:FlightState/ams:AircraftType/ams:AircraftTypeId/ams:AircraftTypeCode[@codeContext='IATA']");
+            SetCoreValue("AircraftTypeCodeIATA", ".//ams:FlightState/ams:AircraftType/ams:AircraftTypeId/ams:AircraftTypeCode[@codeContext='IATA']");
             SetCoreValue("AircraftTypeCodeICAO", ".//ams:FlightState/ams:AircraftType/ams:AircraftTypeId/ams:AircraftTypeCode[@codeContext='ICAO']");
             SetCoreValue("AircraftRegistration", ".//ams:FlightState/ams:Aircraft/ams:AircraftId/ams:Registration");
 
