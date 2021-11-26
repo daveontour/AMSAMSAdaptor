@@ -1,5 +1,4 @@
-﻿
-namespace AMSAMSAdaptor
+﻿namespace AMSAMSAdaptor
 {
     public class HandlerCheckInUpdate : HandlerAbstract
     {
@@ -23,8 +22,7 @@ namespace AMSAMSAdaptor
     internal class HandlerCheckIn : HandlerAbstract
     {
         public override string MessageName { get; } = "CheckIn";
-        public override string HandlerAction { get; } = "UpdateCheckIn";
+        public override string HandlerAction { get; } = "UpdateCheckIn,CreateCheckin";
         public override string HandlerModel => "AMSAMSAdaptor.ModelCheckIn";
     }
 }
-

@@ -18,7 +18,6 @@ namespace AMSAMSAdaptor
 
         private static readonly NLog.Logger logger = NLog.LogManager.GetLogger("consoleLogger");
 
-
         public void SetSupervisor(Supervisor supervisor, XmlDocument configDoc)
         {
             this.supervisor = supervisor;
@@ -66,13 +65,12 @@ namespace AMSAMSAdaptor
             {
                 try
                 {
-                    FlightId flightId = GetFlightId(flt);
-
-                    XmlElement res = client.DeleteFlight(Parameters.TOTOKEN, flightId);
+                    XmlElement res = client.DeleteFlight(Parameters.TOTOKEN, flt.GetFlightId());
+                    logger.Trace(res.OuterXml);
                 }
                 catch (Exception e)
                 {
-                    Console.Write(e.ToString());
+                    logger.Error(e, "Error Deleting Flight");
                 }
             }
         }
@@ -82,14 +80,14 @@ namespace AMSAMSAdaptor
             {
                 try
                 {
-                    FlightId flightId = GetFlightId(flt);
-                    WorkBridge.Modules.AMS.AMSIntegrationAPI.Mod.Intf.DataTypes.PropertyValue[] propertyValues = GetPropertValues(flt);
-                    client.CreateFlight(Parameters.TOTOKEN, flightId, propertyValues);
+                    WorkBridge.Modules.AMS.AMSIntegrationAPI.Mod.Intf.DataTypes.PropertyValue[] propertyValues = flt.GetPropertValues();
+                    XmlElement res = client.CreateFlight(Parameters.TOTOKEN, flt.GetFlightId(), propertyValues);
+                    logger.Trace(res.OuterXml);
                     ProcessLinking(flt);
                 }
                 catch (Exception e)
                 {
-                    Console.Write(e.ToString());
+                    logger.Error(e, "Error Creating Flight");
                 }
             }
         }
@@ -99,161 +97,64 @@ namespace AMSAMSAdaptor
             {
                 try
                 {
-                    FlightId flightId = GetFlightId(flt);
-                    WorkBridge.Modules.AMS.AMSIntegrationAPI.Mod.Intf.DataTypes.PropertyValue[] propertyValues = GetPropertValues(flt);
-                    client.UpdateFlight(Parameters.TOTOKEN, flightId, propertyValues);
+                    WorkBridge.Modules.AMS.AMSIntegrationAPI.Mod.Intf.DataTypes.PropertyValue[] propertyValues = flt.GetPropertValues();
+                    XmlElement res = client.UpdateFlight(Parameters.TOTOKEN, flt.GetFlightId(), propertyValues);
+                    logger.Trace(res.OuterXml);
                     ProcessLinking(flt);
                 }
                 catch (Exception e)
                 {
-                    Console.Write(e.ToString());
+                    logger.Error(e, "Error Updating Flight");
+                }
+            }
+        }
+        private void SendUpdateFlightExtended(ModelFlight flt)
+        {
+            using (AMSIntegrationServiceClient client = new AMSIntegrationServiceClient(binding, address))
+            {
+                try
+                {
+                    XmlElement res = client.UpdateFlightExtended(Parameters.TOTOKEN, flt.GetFlightId(), flt.GetFlightUpdateInformation());
+
+                    logger.Trace(res.OuterXml);
+                    ProcessLinking(flt);
+                }
+                catch (Exception e)
+                {
+                    logger.Error(e, "Error Updating Flight");
                 }
             }
         }
 
         private void ProcessLinking(ModelFlight flt)
         {
-            FlightId fltId = GetFlightId(flt);
-            FlightId lfltId = GetFlightId(flt);
+            FlightId fltId = flt.GetFlightId();
+            FlightId lfltId = flt.GetLinkedFlightId();
             {
 
                 using (AMSIntegrationServiceClient client = new AMSIntegrationServiceClient(binding, address))
                 {
                     try
                     {
-                        if (flt.FlightProperties["LinkedAirlineIATA"].Value != null)
+                        if (lfltId != null)
                         {
-                            client.LinkFlights(Parameters.TOTOKEN, fltId, lfltId);
+                            // If the incoming flight message is linked, then link the flights
+                            XmlElement res = client.LinkFlights(Parameters.TOTOKEN, fltId, lfltId);
+                            logger.Trace(res.OuterXml);
                         }
                         else
                         {
-                            client.UnlinkFlight(Parameters.TOTOKEN, fltId);
+                            // If the incoming flight message is not linked, then unlink the flight
+                            XmlElement res = client.UnlinkFlight(Parameters.TOTOKEN, fltId);
+                            logger.Trace(res.OuterXml);
                         }
                     }
                     catch (Exception e)
                     {
-                        Console.Write(e.ToString());
+                        logger.Error(e, "Error Processing Lininking for flight");
                     }
                 }
             }
-        }
-
-
-        private FlightId GetFlightId(ModelFlight flt)
-        {
-            LookupCode apCode = new LookupCode();
-            apCode.codeContextField = CodeContext.ICAO;
-            apCode.valueField = flt.FlightProperties["AirportICAO"].Value;
-            LookupCode[] ap = { apCode };
-
-            LookupCode apCode2 = new LookupCode();
-            apCode2.codeContextField = CodeContext.IATA;
-            apCode2.valueField = flt.FlightProperties["AirportIATA"].Value;
-            ap.Append(apCode2);
-
-
-            LookupCode alCode = new LookupCode();
-            alCode.codeContextField = CodeContext.IATA;
-            alCode.valueField = flt.FlightProperties["AirlineIATA"].Value;
-            LookupCode[] al = { alCode };
-
-            FlightId flightID = new FlightId();
-            flightID.flightKindField = flt.FlightProperties["Nature"].Value == "Arrival" ? FlightKind.Arrival : FlightKind.Departure;
-            flightID.airportCodeField = ap;
-            flightID.airlineDesignatorField = al;
-            flightID.scheduledDateField = Convert.ToDateTime(flt.FlightProperties["ScheduledDate"].Value);
-            flightID.flightNumberField = flt.FlightProperties["FlightNumber"].Value;
-
-            return flightID;
-        }
-
-        private FlightId GetLinkedFlightId(ModelFlight flt)
-        {
-            LookupCode apCode = new LookupCode();
-            apCode.codeContextField = CodeContext.ICAO;
-            apCode.valueField = flt.FlightProperties["LinkedAirportICAO"].Value;
-            LookupCode[] ap = { apCode };
-
-            LookupCode apCode2 = new LookupCode();
-            apCode2.codeContextField = CodeContext.IATA;
-            apCode2.valueField = flt.FlightProperties["LinkedAirportIATA"].Value;
-            ap.Append(apCode2);
-
-
-            LookupCode alCode = new LookupCode();
-            alCode.codeContextField = CodeContext.IATA;
-            alCode.valueField = flt.FlightProperties["LinkedAirlineIATA"].Value;
-            LookupCode[] al = { alCode };
-
-            FlightId flightID = new FlightId();
-            flightID.flightKindField = flt.FlightProperties["LinkedNature"].Value == "Arrival" ? FlightKind.Arrival : FlightKind.Departure;
-            flightID.airportCodeField = ap;
-            flightID.airlineDesignatorField = al;
-            flightID.scheduledDateField = Convert.ToDateTime(flt.FlightProperties["LinkedScheduledDate"].Value);
-            flightID.flightNumberField = flt.FlightProperties["LinkedFlightNumber"].Value;
-
-            return flightID;
-        }
-
-        private WorkBridge.Modules.AMS.AMSIntegrationAPI.Mod.Intf.DataTypes.PropertyValue[] GetPropertValues(ModelFlight flt)
-        {
-
-            WorkBridge.Modules.AMS.AMSIntegrationAPI.Mod.Intf.DataTypes.PropertyValue[] val = { };
-
-            foreach (PropertyValue liPV in flt.FlightProperties.Values)
-            {
-                if (liPV.FlightIdProp) continue;
-                WorkBridge.Modules.AMS.AMSIntegrationAPI.Mod.Intf.DataTypes.PropertyValue pv = new WorkBridge.Modules.AMS.AMSIntegrationAPI.Mod.Intf.DataTypes.PropertyValue()
-                {
-                    propertyNameField = liPV.PropertyName,
-                    valueField = liPV.Value,
-                    codeContextField = (liPV.PropertyCodeContext == "ICAO") ? CodeContext.ICAO : CodeContext.IATA
-                };
-            }
-
-            return val;
-        }
-        public static string PrintXML(string xml)
-        {
-            string result = "";
-
-            MemoryStream mStream = new MemoryStream();
-            XmlTextWriter writer = new XmlTextWriter(mStream, Encoding.Unicode);
-            XmlDocument document = new XmlDocument();
-
-            try
-            {
-                // Load the XmlDocument with the XML.
-                document.LoadXml(xml);
-
-                writer.Formatting = Formatting.Indented;
-
-                // Write the XML into a formatting XmlTextWriter
-                document.WriteContentTo(writer);
-                writer.Flush();
-                mStream.Flush();
-
-                // Have to rewind the MemoryStream in order to read
-                // its contents.
-                mStream.Position = 0;
-
-                // Read MemoryStream contents into a StreamReader.
-                StreamReader sReader = new StreamReader(mStream);
-
-                // Extract the text from the StreamReader.
-                string formattedXml = sReader.ReadToEnd();
-
-                result = formattedXml;
-            }
-            catch (XmlException)
-            {
-                // Handle the exception
-            }
-
-            mStream.Close();
-            writer.Close();
-
-            return result;
         }
     }
 }

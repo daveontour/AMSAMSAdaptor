@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
+using WorkBridge.Modules.AMS.AMSIntegrationAPI.Mod.Intf.DataTypes;
 
 namespace AMSAMSAdaptor
 {
@@ -12,7 +13,7 @@ namespace AMSAMSAdaptor
     {
         public bool CoreProperty { get; set; } = false;
 
-        public bool FlightIdProp { get; set; } = false;    
+        public bool FlightIdProp { get; set; } = false;
         public string Value { get; set; }
         public string PropertyName { get; set; }
 
@@ -23,10 +24,14 @@ namespace AMSAMSAdaptor
             set
             {
                 propertyCodeContext = value;
-                if (value != null) {
-                    PropertyCodeContextSpecified = true; }
-                else {
-                    PropertyCodeContextSpecified = false; }
+                if (value != null)
+                {
+                    PropertyCodeContextSpecified = true;
+                }
+                else
+                {
+                    PropertyCodeContextSpecified = false;
+                }
             }
         }
         public bool PropertyCodeContextSpecified { get; set; } = false;
@@ -39,29 +44,13 @@ namespace AMSAMSAdaptor
             this.PropertyCodeContext = node.Attributes["codeContext"]?.Value;
             this.Value = node.InnerText;
         }
-        public override string ToString()
-        {
-            string template = @"<wor:PropertyValue>
-					<wor:codeContextField>@contextCode@</wor:codeContextField>
-					<wor:codeContextFieldSpecified>@contextCodeSpecified@</wor:codeContextFieldSpecified>
-					<wor:propertyNameField>@propertyNameField@</wor:propertyNameField>
-					<wor:valueField>@valueField@</wor:valueField>
-				</wor:PropertyValue>";
-            string val = template.Replace("@contextCode@", PropertyCodeContext)
-                .Replace("@contextCode@", PropertyCodeContext)
-                .Replace("@contextCodeSpecified@", PropertyCodeContextSpecified.ToString())
-                .Replace("@propertyNameField@", PropertyName)
-                .Replace("@valueField@", Value);
-
-            return val;
-        }
     }
 
     public class ModelFlight
     {
 
         public XmlNamespaceManager nsmgr;
-        private XmlNode node;
+        public XmlNode node;
 
         protected XmlDocument configDoc;
 
@@ -74,40 +63,44 @@ namespace AMSAMSAdaptor
         {
             this.node = node;
             nsmgr = new XmlNamespaceManager(node.OwnerDocument.NameTable);
-            nsmgr.AddNamespace("ams", "http://www.sita.aero/ams6-xml-api-datatypes");
+            nsmgr.AddNamespace("amsx-messages", "http://www.sita.aero/ams6-xml-api-messages");
+            nsmgr.AddNamespace("amsx-datatypes", "http://www.sita.aero/ams6-xml-api-datatypes");
 
-            SetCoreValue("Nature", ".//ams:FlightId/ams:FlightKind", true);
-            SetCoreValue("AirlineIATA", ".//ams:AirlineDesignator[@codeContext = 'IATA']", true);
-            SetCoreValue("AirlineICAO", ".//ams:AirlineDesignator[@codeContext='ICAO']", true);
-            SetCoreValue("FlightNumber", ".//ams:FlightId/ams:FlightNumber", true);
-            SetCoreValue("ScheduledDate", ".//ams:FlightId/ams:ScheduledDate", true);
-            SetCoreValue("AirportIATA", ".//ams:FlightId/ams:AirportCode[@codeContext='IATA']", true);
-            SetCoreValue("AirportICAO", ".//ams:FlightId/ams:AirportCode[@codeContext='ICAO']", true);
+            SetCoreValue("Nature", ".//amsx-datatypes:FlightId/amsx-datatypes:FlightKind", true);
+            SetCoreValue("AirlineIATA", ".//amsx-datatypes:AirlineDesignator[@codeContext = 'IATA']", true);
+            SetCoreValue("AirlineICAO", ".//amsx-datatypes:AirlineDesignator[@codeContext='ICAO']", true);
+            SetCoreValue("FlightNumber", ".//amsx-datatypes:FlightId/amsx-datatypes:FlightNumber", true);
+            SetCoreValue("ScheduledDate", ".//amsx-datatypes:FlightId/amsx-datatypes:ScheduledDate", true);
+            SetCoreValue("AirportIATA", ".//amsx-datatypes:FlightId/amsx-datatypes:AirportCode[@codeContext='IATA']", true);
+            SetCoreValue("AirportICAO", ".//amsx-datatypes:FlightId/amsx-datatypes:AirportCode[@codeContext='ICAO']", true);
 
 
-            SetCoreValue("LinkedNature", ".//ams:LinkedFlight/ams:FlightId/ams:FlightKind", true);
-            SetCoreValue("LinkedAirlineIATA", ".//ams:LinkedFlight/ams:AirlineDesignator[@codeContext = 'IATA']", true);
-            SetCoreValue("LinkedAirlineICAO", ".//ams:LinkedFlight/ams:AirlineDesignator[@codeContext='ICAO']", true);
-            SetCoreValue("LinkedFlightNumber", ".//ams:LinkedFlight/ams:FlightId/ams:FlightNumber", true); ;
-            SetCoreValue("LinkedScheduledDate", ".//ams:LinkedFlight/ams:FlightId/ams:ScheduledDate", true);
-            SetCoreValue("LinkedAirportIATA", ".//ams:LinkedFlight/ams:FlightId/ams:AirportCode[@codeContext='IATA']", true);
-            SetCoreValue("LinkedAirportICAO", ".//ams:LinkedFlight/ams:FlightId/ams:AirportCode[@codeContext='ICAO']", true);
+            SetCoreValue("LinkedNature", ".//amsx-datatypes:LinkedFlight/amsx-datatypes:FlightId/amsx-datatypes:FlightKind", true);
+            SetCoreValue("LinkedAirlineIATA", ".//amsx-datatypes:LinkedFlight/amsx-datatypes:AirlineDesignator[@codeContext = 'IATA']", true);
+            SetCoreValue("LinkedAirlineICAO", ".//amsx-datatypes:LinkedFlight/amsx-datatypes:AirlineDesignator[@codeContext='ICAO']", true);
+            SetCoreValue("LinkedFlightNumber", ".//amsx-datatypes:LinkedFlight/amsx-datatypes:FlightId/amsx-datatypes:FlightNumber", true); ;
+            SetCoreValue("LinkedScheduledDate", ".//amsx-datatypes:LinkedFlight/amsx-datatypes:FlightId/amsx-datatypes:ScheduledDate", true);
+            SetCoreValue("LinkedAirportIATA", ".//amsx-datatypes:LinkedFlight/amsx-datatypes:FlightId/amsx-datatypes:AirportCode[@codeContext='IATA']", true);
+            SetCoreValue("LinkedAirportICAO", ".//amsx-datatypes:LinkedFlight/amsx-datatypes:FlightId/amsx-datatypes:AirportCode[@codeContext='ICAO']", true);
 
-            SetCoreValue("ScheduledTime", ".//ams:FlightState/ams:ScheduledTime");
+            SetCoreValue("ScheduledTime", ".//amsx-datatypes:FlightState/amsx-datatypes:ScheduledTime");
 
-            SetCoreValue("AircraftTypeCodeIATA", ".//ams:FlightState/ams:AircraftType/ams:AircraftTypeId/ams:AircraftTypeCode[@codeContext='IATA']");
-            SetCoreValue("AircraftTypeCodeICAO", ".//ams:FlightState/ams:AircraftType/ams:AircraftTypeId/ams:AircraftTypeCode[@codeContext='ICAO']");
-            SetCoreValue("AircraftRegistration", ".//ams:FlightState/ams:Aircraft/ams:AircraftId/ams:Registration");
+            SetCoreValue("AircraftTypeCodeIATA", ".//amsx-datatypes:FlightState/amsx-datatypes:AircraftType/amsx-datatypes:AircraftTypeId/amsx-datatypes:AircraftTypeCode[@codeContext='IATA']");
+            SetCoreValue("AircraftTypeCodeICAO", ".//amsx-datatypes:FlightState/amsx-datatypes:AircraftType/amsx-datatypes:AircraftTypeId/amsx-datatypes:AircraftTypeCode[@codeContext='ICAO']");
+            SetCoreValue("AircraftRegistration", ".//amsx-datatypes:FlightState/amsx-datatypes:Aircraft/amsx-datatypes:AircraftId/amsx-datatypes:Registration");
 
-            foreach (XmlNode v in node.SelectNodes(".//ams:FlightState/ams:Route/ams:ViaPoints/ams:RouteViaPoint/ams:AirportCode[@codeContext='IATA']", nsmgr))
+            foreach (XmlNode v in node.SelectNodes(".//amsx-datatypes:FlightState/amsx-datatypes:Route/amsx-datatypes:ViaPoints/amsx-datatypes:RouteViaPoint/amsx-datatypes:AirportCode[@codeContext='IATA']", nsmgr))
             {
                 Routes.Add(v.InnerText);
             }
-
-            foreach (XmlNode v in node.SelectNodes(".//ams:FlightState/ams:Value", nsmgr))
+            if (Routes.Count > 0)
+            {
+                SetCoreValue("Route", string.Join(",", Routes));
+            }
+            foreach (XmlNode v in node.SelectNodes(".//amsx-datatypes:FlightState/amsx-datatypes:Value", nsmgr))
             {
                 PropertyValue pv = new PropertyValue(v);
-                FlightProperties.Add(pv.PropertyName, pv); 
+                FlightProperties.Add(pv.PropertyName, pv);
             }
         }
 
@@ -131,12 +124,12 @@ namespace AMSAMSAdaptor
         {
 
             StringBuilder sb = new StringBuilder();
-            foreach(PropertyValue v in FlightProperties.Values)
+            foreach (PropertyValue v in FlightProperties.Values)
             {
                 if (!v.CoreProperty) continue;
                 sb.AppendLine($"{v.PropertyName}: {v.Value}");
             }
-            sb.AppendLine($"Route: {string.Join(",",Routes)}");
+            sb.AppendLine($"Route: {string.Join(",", Routes)}");
 
             foreach (PropertyValue v in FlightProperties.Values)
             {
@@ -146,116 +139,166 @@ namespace AMSAMSAdaptor
 
 
 
-            return sb.ToString();  
+            return sb.ToString();
         }
 
-        public string GetFlightID()
+        public FlightId GetFlightId()
         {
-            string template = @"
-         <ams6:flightIdentifier>
-            <wor:_hasAirportCodes>true</wor:_hasAirportCodes>
-            <wor:_hasFlightDesignator>true</wor:_hasFlightDesignator>
-            <wor:_hasScheduledTime>true</wor:_hasScheduledTime>
-            <wor:airlineDesignatorField>
-               <wor:LookupCode>
-                  <wor:codeContextField>IATA</wor:codeContextField>
-                  <wor:valueField>@@airline@@</wor:valueField>
-               </wor:LookupCode>
-            </wor:airlineDesignatorField>
-            <wor:airportCodeField>
-               <wor:LookupCode>
-                  <wor:codeContextField>IATA</wor:codeContextField>
-                  <wor:valueField>@@airport@@</wor:valueField>
-               </wor:LookupCode>
-            </wor:airportCodeField>
-            <wor:flightKindField>@@nature@@</wor:flightKindField>
-            <wor:flightNumberField>@@fltNum@@</wor:flightNumberField>
-            <wor:scheduledDateField>@@schedDate@@</wor:scheduledDateField>
-         </ams6:flightIdentifier>";
+            LookupCode[] ap = { };
+            if (FlightProperties.ContainsKey("AirportICAO"))
+            {
+                LookupCode apCode = new LookupCode();
+                apCode.codeContextField = CodeContext.ICAO;
+                apCode.valueField = FlightProperties["AirportICAO"]?.Value;
+                if (apCode.valueField != null)
+                {
+                    ap = ap.Append<LookupCode>(apCode).ToArray();
+                }
+            }
+            if (FlightProperties.ContainsKey("AirportIATA"))
+            {
+                LookupCode apCode2 = new LookupCode();
+                apCode2.codeContextField = CodeContext.IATA;
+                apCode2.valueField = FlightProperties["AirportIATA"].Value;
+                if (apCode2.valueField != null)
+                {
+                    ap = ap.Append<LookupCode>(apCode2).ToArray();
+                }
+            }
 
-            string flightID = template.Replace("@@airline@@", FlightProperties["AirlineIATA"].Value)
-                .Replace("@@airport@@", FlightProperties["AirportIATA"].Value)
-                .Replace("@@nature@@", FlightProperties["Nature"].Value)
-                .Replace("@@fltNum@@", FlightProperties["FlightNumber"].Value)
-                .Replace("@@schedDate@@", FlightProperties["ScheduledDate"].Value);
+            LookupCode alCode = new LookupCode();
+            alCode.codeContextField = CodeContext.IATA;
+            alCode.valueField = FlightProperties["AirlineIATA"].Value;
+            LookupCode[] al = { alCode };
+
+            FlightId flightID = new FlightId();
+            flightID.flightKindField = FlightProperties["Nature"].Value == "Arrival" ? FlightKind.Arrival : FlightKind.Departure;
+            flightID.airportCodeField = ap;
+            flightID.airlineDesignatorField = al;
+            flightID.scheduledDateField = Convert.ToDateTime(FlightProperties["ScheduledDate"].Value);
+            flightID.flightNumberField = FlightProperties["FlightNumber"].Value;
 
             return flightID;
         }
 
-        public string GetUpdateSoapMessage()
+        public FlightId GetLinkedFlightId()
         {
-            StringBuilder sb = new StringBuilder();
-            sb.AppendLine(@"<soapenv:Envelope xmlns:soapenv = ""http://schemas.xmlsoap.org/soap/envelope/"" xmlns:ams6 = ""http://www.sita.aero/ams6-xml-api-webservice"" xmlns:wor = ""http://schemas.datacontract.org/2004/07/WorkBridge.Modules.AMS.AMSIntegrationAPI.Mod.Intf.DataTypes"" >
-    <soapenv:Header/>
-    <soapenv:Body>
-        <ams6:UpdateFlight>
-            <ams6:sessionToken>@@TOKEN@@</ams6:sessionToken>");
 
-            sb.AppendLine(GetFlightID());
-            sb.AppendLine(GetUpdates());
-
-            sb.AppendLine("</ams6:UpdateFlight>");
-            sb.AppendLine("</soapenv:Body>");
-            sb.AppendLine("</soapenv:Envelope>");
-            return sb.ToString();
-        }
-        public string GetCreateSoapMessage()
-        {
-            StringBuilder sb = new StringBuilder();
-            sb.AppendLine(@"<soapenv:Envelope xmlns:soapenv = ""http://schemas.xmlsoap.org/soap/envelope/"" xmlns:ams6 = ""http://www.sita.aero/ams6-xml-api-webservice"" xmlns:wor = ""http://schemas.datacontract.org/2004/07/WorkBridge.Modules.AMS.AMSIntegrationAPI.Mod.Intf.DataTypes"" >
-    <soapenv:Header/>
-    <soapenv:Body>
-        <ams6:CreateFlight>
-            <ams6:sessionToken>@@TOKEN@@</ams6:sessionToken>");
-
-            sb.AppendLine(GetFlightID());
-            sb.AppendLine(GetUpdates());
-
-            sb.AppendLine("</ams6:CreateFlight>");
-            sb.AppendLine("</soapenv:Body>");
-            sb.AppendLine("</soapenv:Envelope>");
-            return sb.ToString();
-        }
-
-        public string GetDeleteSoapMessage()
-        {
-            StringBuilder sb = new StringBuilder();
-            sb.AppendLine(@"<soapenv:Envelope xmlns:soapenv = ""http://schemas.xmlsoap.org/soap/envelope/"" xmlns:ams6 = ""http://www.sita.aero/ams6-xml-api-webservice"" xmlns:wor = ""http://schemas.datacontract.org/2004/07/WorkBridge.Modules.AMS.AMSIntegrationAPI.Mod.Intf.DataTypes"" >
-    <soapenv:Header/>
-    <soapenv:Body>
-        <ams6:DeleteFlight>
-            <ams6:sessionToken>@@TOKEN@@</ams6:sessionToken>");
-
-            sb.AppendLine(GetFlightID());
-            sb.AppendLine("</ams6:DeleteFlight>");
-            sb.AppendLine("</soapenv:Body>");
-            sb.AppendLine("</soapenv:Envelope>");
-            return sb.ToString();
-        }
-        public string GetUpdates()
-        {
-            StringBuilder sb = new StringBuilder();
-            if (FlightProperties.ContainsKey("ScheduledTime")) sb.AppendLine(FlightProperties["ScheduledTime"]?.ToString());
-            if (FlightProperties.ContainsKey("AircraftRegisitration")) sb.AppendLine(FlightProperties["AircraftRegisitration"]?.ToString());
-            if (FlightProperties.ContainsKey("AircraftTypeCode")) sb.AppendLine(FlightProperties["AircraftTypeCode"]?.ToString());
-            if (Routes.Count > 0)
+            if (FlightProperties["LinkedAirportIATA"].Value == null)
             {
-                string template = @"<wor:PropertyValue>
-					<wor:codeContextField>IATA</wor:codeContextField>
-					<wor:codeContextFieldSpecified>true</wor:codeContextFieldSpecified>
-					<wor:propertyNameField>Route</wor:propertyNameField>
-					<wor:valueField>@@route@@</wor:valueField>
-				</wor:PropertyValue>";
-                sb.AppendLine(template.Replace("@@route@@", string.Join(",",Routes)));
+                return null;
             }
-            sb.AppendLine("<ams6:updates>");
-            foreach (PropertyValue v in FlightProperties.Values)
+
+            LookupCode apCode = new LookupCode();
+            apCode.codeContextField = CodeContext.ICAO;
+            apCode.valueField = FlightProperties["LinkedAirportICAO"].Value;
+            LookupCode[] ap = { apCode };
+
+            LookupCode apCode2 = new LookupCode();
+            apCode2.codeContextField = CodeContext.IATA;
+            apCode2.valueField = FlightProperties["LinkedAirportIATA"].Value;
+            ap.Append(apCode2);
+
+
+            LookupCode alCode = new LookupCode();
+            alCode.codeContextField = CodeContext.IATA;
+            alCode.valueField = FlightProperties["LinkedAirlineIATA"].Value;
+            LookupCode[] al = { alCode };
+
+            FlightId flightID = new FlightId();
+            flightID.flightKindField = FlightProperties["LinkedNature"].Value == "Arrival" ? FlightKind.Arrival : FlightKind.Departure;
+            flightID.airportCodeField = ap;
+            flightID.airlineDesignatorField = al;
+            flightID.scheduledDateField = Convert.ToDateTime(FlightProperties["LinkedScheduledDate"].Value);
+            flightID.flightNumberField = FlightProperties["LinkedFlightNumber"].Value;
+
+            return flightID;
+        }
+
+
+        public FlightUpdateInformation GetFlightUpdateInformation()
+        {
+            FlightUpdateInformation flightUpdateInformation = new FlightUpdateInformation();
+
+            flightUpdateInformation.updateField = GetPropertValues();
+            flightUpdateInformation.tableValueUpdateField = GetTableValue();
+            flightUpdateInformation.activityUpdateField = GetActivityUpdate();
+            flightUpdateInformation.eventUpdateField = GetEventUpdate();
+
+            return flightUpdateInformation;
+        }
+
+
+        public WorkBridge.Modules.AMS.AMSIntegrationAPI.Mod.Intf.DataTypes.PropertyValue[] GetPropertValues()
+        {
+
+            WorkBridge.Modules.AMS.AMSIntegrationAPI.Mod.Intf.DataTypes.PropertyValue[] val = { };
+
+            foreach (PropertyValue liPV in FlightProperties.Values)
             {
-                if (v.CoreProperty) continue;
-                sb.AppendLine(v.ToString());
+                if (liPV.FlightIdProp) continue;
+                WorkBridge.Modules.AMS.AMSIntegrationAPI.Mod.Intf.DataTypes.PropertyValue pv = new WorkBridge.Modules.AMS.AMSIntegrationAPI.Mod.Intf.DataTypes.PropertyValue()
+                {
+                    propertyNameField = liPV.PropertyName,
+                    valueField = liPV.Value,
+                    codeContextField = (liPV.PropertyCodeContext == "ICAO") ? CodeContext.ICAO : CodeContext.IATA
+                };
+
+                val = val.Append<WorkBridge.Modules.AMS.AMSIntegrationAPI.Mod.Intf.DataTypes.PropertyValue>(pv).ToArray();
             }
-            sb.AppendLine("</ams6:updates>");
-            return sb.ToString();
-        }        
+
+            return val;
+        }
+
+        public TableValueUpdate[] GetTableValue()
+        {
+
+            TableValueUpdate[] val = { };
+
+            foreach (XmlNode table in node.SelectNodes("//amsx-datatypes:TableValue", nsmgr))
+            {
+                TableValueUpdate tableValueUpdate = new TableValueUpdate();
+                tableValueUpdate.propertyNameField = table.Attributes["propertyName"]?.Value;
+                TableRow[] rows = { };
+
+                foreach (XmlNode row in table.SelectNodes(".//amsx-datatypes:Row", nsmgr))
+                {
+                    TableRow tr = new TableRow();
+                    WorkBridge.Modules.AMS.AMSIntegrationAPI.Mod.Intf.DataTypes.PropertyValue[] valueField = { };
+
+                    foreach (XmlNode field in row.SelectNodes(".//amsx-datatypes:Value", nsmgr))
+                    {
+                        WorkBridge.Modules.AMS.AMSIntegrationAPI.Mod.Intf.DataTypes.PropertyValue pv = new WorkBridge.Modules.AMS.AMSIntegrationAPI.Mod.Intf.DataTypes.PropertyValue();
+
+                        pv.propertyNameField = field.Attributes["propertyName"]?.Value;
+                        pv.valueField = field.InnerText;
+
+                        valueField = valueField.Append<WorkBridge.Modules.AMS.AMSIntegrationAPI.Mod.Intf.DataTypes.PropertyValue>(pv).ToArray();
+                    }
+
+                    tr.valueField = valueField;
+
+                    rows = rows.Append(tr).ToArray();
+                }
+
+                tableValueUpdate.rowField = rows;
+
+                val = val.Append(tableValueUpdate).ToArray();
+            }
+
+            return val;
+        }
+        public EventUpdate[] GetEventUpdate()
+        {
+            EventUpdate[] val = { };
+
+            return val;
+        }
+        public ActivityUpdate[] GetActivityUpdate()
+        {
+            ActivityUpdate[] val = { };
+
+            return val;
+        }
     }
 }
