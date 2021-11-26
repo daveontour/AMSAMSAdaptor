@@ -81,6 +81,7 @@
     <Compile Include="Transformers\TransformerFlightAddProperties.cs" />
     <Compile Include="Transformers\TransformerFlightLookupReMapper.cs" />
     <Compile Include="Transformers\TransformerFlightRemoveSlots.cs" />
+    <Compile Include="Transformers\TransformerFlightSlotToTableMapping.cs" />
     <Compile Include="Transformers\TransformerFlightRemoveTabularTypeData.cs" />
     <Compile Include="Transformers\TransformerFlightOnlyProperties.cs" />
     <Compile Include="Transformers\TransformerFlightRemoveProperties.cs" />
