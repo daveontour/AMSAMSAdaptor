@@ -33,6 +33,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.VisualBasic" />
     <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
       <HintPath>..\packages\NLog.4.7.12\lib\net45\NLog.dll</HintPath>
     </Reference>
@@ -78,7 +79,10 @@
     <Compile Include="OutputHandlers\OutputFlightWS.cs" />
     <Compile Include="ReMapper.cs" />
     <Compile Include="Transformers\TransformerFlightAddProperties.cs" />
-    <Compile Include="Transformers\TransformerFlightRemoveCustomTable.cs" />
+    <Compile Include="Transformers\TransformerFlightLookupReMapper.cs" />
+    <Compile Include="Transformers\TransformerFlightRemoveSlots.cs" />
+    <Compile Include="Transformers\TransformerFlightRemoveTabularTypeData.cs" />
+    <Compile Include="Transformers\TransformerFlightOnlyProperties.cs" />
     <Compile Include="Transformers\TransformerFlightRemoveProperties.cs" />
     <Compile Include="Transformers\TransformerFlightReMapper.cs" />
     <Compile Include="InputHandlers\HandlerAbstract.cs" />

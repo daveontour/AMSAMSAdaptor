@@ -16,5 +16,9 @@ namespace AMSAMSAdaptor
         public string AltrernatePropertyName { get; set; }
         public string DatetimeFormat { get; set; }
         public string PropertyFixedValue { get; set; }
+        public string FileName { get; set; }
+        public string IndexField { get; set; }
+        public string ValueField { get; set; }
+        public Dictionary<string, string> LookupDict = new Dictionary<string, string>();
     }
 }
