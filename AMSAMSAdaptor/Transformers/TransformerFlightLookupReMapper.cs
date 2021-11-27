@@ -21,10 +21,22 @@ namespace AMSAMSAdaptor
                 ReMapper reMapper = new ReMapper()
                 {
                     PropertyName = property.Attributes["propertyName"]?.Value,
+                    LookupPropertyName = property.Attributes["lookupPropertyName"]?.Value,
                     FileName = property.Attributes["fileName"]?.Value,
                     IndexField = property.Attributes["indexField"]?.Value,
-                    ValueField = property.Attributes["valueField"]?.Value
+                    ValueField = property.Attributes["valueField"]?.Value,
+                    TimeFormat = property.Attributes["timeFormat"]?.Value
                 };
+
+                bool timeOffest = false;
+                bool.TryParse(property.Attributes["timeOffset"]?.Value, out timeOffest);
+
+                reMapper.TimeOffset = timeOffest;
+                // If a Lookup prtopertname is not specified, then use the property name
+                if (reMapper.LookupPropertyName == null)
+                {
+                    reMapper.LookupPropertyName = reMapper.PropertyName;
+                }
 
                 using (TextFieldParser parser = new TextFieldParser(reMapper.FileName))
                 {
@@ -59,7 +71,7 @@ namespace AMSAMSAdaptor
             {
                 try
                 {
-                    string newValue = LookupNewValue(mapper,fl);
+                    string newValue = LookupNewValue(mapper, fl);
                     newProperties[mapper.PropertyName].Value = newValue;
                 }
                 catch (KeyNotFoundException)
@@ -78,9 +90,24 @@ namespace AMSAMSAdaptor
 
         private string LookupNewValue(ReMapper mapper, ModelFlight fl)
         {
-            string key = fl.FlightProperties[mapper.PropertyName].Value;
+            string key = fl.FlightProperties[mapper.LookupPropertyName].Value;
             if (!mapper.LookupDict.ContainsKey(key)) { return null; }
-            return mapper.LookupDict[key];  
+            string lookupValue = mapper.LookupDict[key];
+            if (!mapper.TimeOffset)
+            {
+                return lookupValue;
+            }
+
+            int off = int.Parse(lookupValue);
+
+            if (mapper.TimeFormat != null)
+            {
+                return DateTime.Parse(key).AddMinutes(off).ToString(mapper.TimeFormat);
+            }
+            else
+            {
+                return DateTime.Parse(key).AddMinutes(off).ToString();
+            }
         }
 
         public T DeepClone<T>(T obj)
