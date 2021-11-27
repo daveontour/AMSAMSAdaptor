@@ -9,10 +9,8 @@ namespace AMSAMSAdaptor
 {
     internal class TransformerStandSlotToTable : ITransformer
     {
-       // private string Table { get; set; }
         public void SetConfig(XmlNode configNode)
         {
-           // Table = configNode.SelectSingleNode(".//Property")?.Attributes["tableName"]?.Value;
         }
 
         public object Transform(object input)
@@ -52,13 +50,6 @@ namespace AMSAMSAdaptor
                     e.InnerText = StandName;
                     row.AppendChild(e);
                 }
-                if (StandName != null)
-                {
-                    XmlElement e = doc.CreateElement("Value");
-                    e.SetAttribute("propertyName", "StandName");
-                    e.InnerText = StandName;
-                    row.AppendChild(e);
-                }
                 if (StandExternalName != null)
                 {
                     XmlElement e = doc.CreateElement("Value");
@@ -80,4 +71,138 @@ namespace AMSAMSAdaptor
             return fl;
         }
     }
+
+    internal class TransformerCheckInSlotToTable : ITransformer
+    {
+        public void SetConfig(XmlNode configNode)
+        {
+        }
+
+        public object Transform(object input)
+        {
+            ModelFlight fl = (ModelFlight)input;
+            XmlDocument doc = fl.node.OwnerDocument;
+            XmlElement tv = doc.CreateElement("TableValue");
+            tv.SetAttribute("propertyName", "CheckInSlots");
+            foreach (XmlNode s in fl.node.SelectNodes(".//amsx-datatypes:CheckInSlot", fl.nsmgr))
+            {
+                XmlElement row = doc.CreateElement("Row");
+
+                string StartTime = s.SelectSingleNode("./amsx-datatypes:Value[@property='StartTime']", fl.nsmgr)?.InnerText;
+                string EndTime = s.SelectSingleNode("./amsx-datatypes:Value[@property='EndTime']", fl.nsmgr)?.InnerText;
+                string CheckInName = s.SelectSingleNode("./amsx-datatypes:CheckIn/amsx-datatypes:Value[@property='Name']", fl.nsmgr)?.InnerText;
+                string CheckInExternalName = s.SelectSingleNode("./amsx-datatypes:CheckIn/amsx-datatypes:Value[@property='ExternalName']", fl.nsmgr)?.InnerText;
+                string Area = s.SelectSingleNode("./amsx-datatypes:Area/amsx-datatypes:Value[@property='Name']", fl.nsmgr)?.InnerText;
+
+                if (StartTime != null)
+                {
+                    XmlElement e = doc.CreateElement("Value");
+                    e.SetAttribute("propertyName", "StartTime");
+                    e.InnerText = StartTime;
+                    row.AppendChild(e);
+                }
+                if (EndTime != null)
+                {
+                    XmlElement e = doc.CreateElement("Value");
+                    e.SetAttribute("propertyName", "EndTime");
+                    e.InnerText = EndTime;
+                    row.AppendChild(e);
+                }
+                if (CheckInName != null)
+                {
+                    XmlElement e = doc.CreateElement("Value");
+                    e.SetAttribute("propertyName", "CheckInName");
+                    e.InnerText = CheckInName;
+                    row.AppendChild(e);
+                }
+
+                if (CheckInExternalName != null)
+                {
+                    XmlElement e = doc.CreateElement("Value");
+                    e.SetAttribute("propertyName", "CheckInExternalName");
+                    e.InnerText = CheckInExternalName;
+                    row.AppendChild(e);
+                }
+                if (Area != null)
+                {
+                    XmlElement e = doc.CreateElement("Value");
+                    e.SetAttribute("propertyName", "Area");
+                    e.InnerText = Area;
+                    row.AppendChild(e);
+                }
+                tv.AppendChild(row);
+            }
+
+
+            return fl;
+        }
+    }
+
+
+    internal class TransformerGateSlotToTable : ITransformer
+    {
+        public void SetConfig(XmlNode configNode)
+        {
+        }
+
+        public object Transform(object input)
+        {
+            ModelFlight fl = (ModelFlight)input;
+            XmlDocument doc = fl.node.OwnerDocument;
+            XmlElement tv = doc.CreateElement("TableValue");
+            tv.SetAttribute("propertyName", "GateSlots");
+            foreach (XmlNode s in fl.node.SelectNodes(".//amsx-datatypes:GateSlot", fl.nsmgr))
+            {
+                XmlElement row = doc.CreateElement("Row");
+
+                string StartTime = s.SelectSingleNode("./amsx-datatypes:Value[@property='StartTime']", fl.nsmgr)?.InnerText;
+                string EndTime = s.SelectSingleNode("./amsx-datatypes:Value[@property='EndTime']", fl.nsmgr)?.InnerText;
+                string GateName = s.SelectSingleNode("./amsx-datatypes:Gate/amsx-datatypes:Value[@property='Name']", fl.nsmgr)?.InnerText;
+                string GateExternalName = s.SelectSingleNode("./amsx-datatypes:Gate/amsx-datatypes:Value[@property='ExternalName']", fl.nsmgr)?.InnerText;
+                string Area = s.SelectSingleNode("./amsx-datatypes:Area/amsx-datatypes:Value[@property='Name']", fl.nsmgr)?.InnerText;
+
+                if (StartTime != null)
+                {
+                    XmlElement e = doc.CreateElement("Value");
+                    e.SetAttribute("propertyName", "StartTime");
+                    e.InnerText = StartTime;
+                    row.AppendChild(e);
+                }
+                if (EndTime != null)
+                {
+                    XmlElement e = doc.CreateElement("Value");
+                    e.SetAttribute("propertyName", "EndTime");
+                    e.InnerText = EndTime;
+                    row.AppendChild(e);
+                }
+
+                if (GateName != null)
+                {
+                    XmlElement e = doc.CreateElement("Value");
+                    e.SetAttribute("propertyName", "GateName");
+                    e.InnerText = GateName;
+                    row.AppendChild(e);
+                }
+                if (GateExternalName != null)
+                {
+                    XmlElement e = doc.CreateElement("Value");
+                    e.SetAttribute("propertyName", "GateExternalName");
+                    e.InnerText = GateExternalName;
+                    row.AppendChild(e);
+                }
+                if (Area != null)
+                {
+                    XmlElement e = doc.CreateElement("Value");
+                    e.SetAttribute("propertyName", "Area");
+                    e.InnerText = Area;
+                    row.AppendChild(e);
+                }
+                tv.AppendChild(row);
+            }
+
+
+            return fl;
+        }
+    }
+
 }

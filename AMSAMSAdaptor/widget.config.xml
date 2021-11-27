@@ -59,6 +59,20 @@
 					<Property propertyName="AirportIATA" type="fixed" value="DJB" />
 				</TransformerConfig>
 			</Transformer>
+			
+			<!-- Remove one or more custom table -->
+			<Transformer class ="TransformerFlightRemoveCustomTable">
+				<Property tableName="customTableNameToRemove" />
+				<Property tableName="customSensitiveData" />
+			</Transformer>
+			
+			<Transformer class ="TransformerFlightRemoveActivities" />
+			<Transformer class ="TransformerFlightRemoveEvents" />
+			<Transformer class ="TransformerFlightRemoveVehicleSlots" />
+			
+			<!-- Convert the CheckInSlot data to a custom table format-->
+			<Transformer class ="TransformerFlightCheckInSlotToTable" />
+
 			<Transformer class="TransformerFlightLookupReMapper">
 				<TransformerConfig>
 					<!-- 
