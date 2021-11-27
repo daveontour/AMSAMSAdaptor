@@ -22,6 +22,7 @@ namespace AMSAMSAdaptor
         public string ValueField { get; set; }
         public bool TimeOffset { get; internal set; }
         public string TimeFormat { get; internal set; }
+        public string TimeReferenceProperty { get; internal set; }
 
         public Dictionary<string, string> LookupDict = new Dictionary<string, string>();
     }

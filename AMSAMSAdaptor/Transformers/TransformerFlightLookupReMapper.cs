@@ -25,7 +25,8 @@ namespace AMSAMSAdaptor
                     FileName = property.Attributes["fileName"]?.Value,
                     IndexField = property.Attributes["indexField"]?.Value,
                     ValueField = property.Attributes["valueField"]?.Value,
-                    TimeFormat = property.Attributes["timeFormat"]?.Value
+                    TimeFormat = property.Attributes["timeFormat"]?.Value,
+                    TimeReferenceProperty = property.Attributes["referencePropertyName"]?.Value
                 };
 
                 bool timeOffest = false;
@@ -99,14 +100,15 @@ namespace AMSAMSAdaptor
             }
 
             int off = int.Parse(lookupValue);
+            string referenceValue = fl.FlightProperties[mapper.TimeReferenceProperty].Value;
 
             if (mapper.TimeFormat != null)
             {
-                return DateTime.Parse(key).AddMinutes(off).ToString(mapper.TimeFormat);
+                return DateTime.Parse(referenceValue).AddMinutes(off).ToString(mapper.TimeFormat);
             }
             else
             {
-                return DateTime.Parse(key).AddMinutes(off).ToString();
+                return DateTime.Parse(referenceValue).AddMinutes(off).ToString();
             }
         }
 

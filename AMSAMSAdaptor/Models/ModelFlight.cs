@@ -291,13 +291,42 @@ namespace AMSAMSAdaptor
         public EventUpdate[] GetEventUpdate()
         {
             EventUpdate[] val = { };
+            foreach (XmlNode e in node.SelectNodes("//amsx-datatypes:Event", nsmgr))
+            {
+                EventUpdate eu = new EventUpdate();
+                eu.codeField = e.Attributes["code"]?.Value;
+                WorkBridge.Modules.AMS.AMSIntegrationAPI.Mod.Intf.DataTypes.PropertyValue[] valueField = { };
+                foreach (XmlNode v in e.SelectNodes(".///amsx-datatypes:Value"))
+                {
+                    WorkBridge.Modules.AMS.AMSIntegrationAPI.Mod.Intf.DataTypes.PropertyValue pv = new WorkBridge.Modules.AMS.AMSIntegrationAPI.Mod.Intf.DataTypes.PropertyValue();
+                    pv.propertyNameField = v.Attributes["propertyName"]?.Value;
+                    pv.valueField = v.InnerText;
+                    valueField = valueField.Append<WorkBridge.Modules.AMS.AMSIntegrationAPI.Mod.Intf.DataTypes.PropertyValue>(pv).ToArray();
+                }
+                eu.updateField = valueField;
+                val = val.Append(eu).ToArray();
+            }
 
             return val;
         }
         public ActivityUpdate[] GetActivityUpdate()
         {
             ActivityUpdate[] val = { };
-
+            foreach (XmlNode e in node.SelectNodes("//amsx-datatypes:Activity", nsmgr))
+            {
+                ActivityUpdate eu = new ActivityUpdate();
+                eu.codeField = e.Attributes["code"]?.Value;
+                WorkBridge.Modules.AMS.AMSIntegrationAPI.Mod.Intf.DataTypes.PropertyValue[] valueField = { };
+                foreach (XmlNode v in e.SelectNodes(".///amsx-datatypes:Value"))
+                {
+                    WorkBridge.Modules.AMS.AMSIntegrationAPI.Mod.Intf.DataTypes.PropertyValue pv = new WorkBridge.Modules.AMS.AMSIntegrationAPI.Mod.Intf.DataTypes.PropertyValue();
+                    pv.propertyNameField = v.Attributes["propertyName"]?.Value;
+                    pv.valueField = v.InnerText;
+                    valueField = valueField.Append<WorkBridge.Modules.AMS.AMSIntegrationAPI.Mod.Intf.DataTypes.PropertyValue>(pv).ToArray();
+                }
+                eu.updateField = valueField;
+                val = val.Append(eu).ToArray();
+            }
             return val;
         }
     }

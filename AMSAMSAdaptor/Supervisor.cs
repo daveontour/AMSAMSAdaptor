@@ -60,12 +60,12 @@ namespace AMSAMSAdaptor
 
             configDoc.Load("widget.config.xml");
 
-            foreach (XmlNode node in configDoc.SelectNodes("//ProcessMessages/Message"))
-            {
-                managedMessages.Add(node.InnerText);
-                AddDispatcher(node.InnerText);
-                logger.Info($"Managing Message Type: {node.InnerText}");
-            }
+            //foreach (XmlNode node in configDoc.SelectNodes("//ProcessMessages/Message"))
+            //{
+            //    managedMessages.Add(node.InnerText);
+            //    AddDispatcher(node.InnerText);
+            //    logger.Info($"Managing Message Type: {node.InnerText}");
+            //}
 
             // Set the binding and address for use by the web services client
             binding = new BasicHttpBinding
@@ -78,34 +78,26 @@ namespace AMSAMSAdaptor
 
             logger.Info($"AMS-AMS Adaptor Service Starting ({Parameters.VERSION})");
 
-
-            // Find all the classes that manage the different message types
-            var type = typeof(IInputMessageHandler);
-            var types = AppDomain.CurrentDomain.GetAssemblies()
-                .SelectMany(s => s.GetTypes())
-                .Where(p => type.IsAssignableFrom(p));
-
-            // Set up the trggers to manage the different types
-            foreach (var handler in types)
+            foreach (XmlNode node in configDoc.SelectNodes("//Handlers/Handler"))
             {
-                try
-                {
+                string handlerClass = node.Attributes["class"].Value;
+                string handlerMessageType = node.Attributes["messageType"].Value;
+                string handlerName = node.Attributes["name"]?.Value;
+                string handlerEnabled = node.Attributes["enabled"].Value;
 
-                    IInputMessageHandler obj = (IInputMessageHandler)Activator.CreateInstance(handler);
-                    if (this.managedMessages.Contains(obj.GetMessageName()))
-                    {
-                        obj.SetSupervisor(this, configDoc);
-                        InputHandlers.Add(obj);
-                        logger.Info($"Implemented Message Handler for {obj.GetMessageName()}, Handler: {obj.HandlerName}");
-                    }
-                    else
-                    {
-                        logger.Warn($"Found Message Handler for {obj.GetMessageName()} but the messages type is not configured to be handled");
-                    }
-                }
-                catch (Exception)
+                if (handlerEnabled.ToUpper() == "TRUE")
                 {
-                    //logger.Error(ex.Message);
+                    if (!managedMessages.Contains(handlerMessageType))
+                    {
+                        managedMessages.Add(handlerMessageType);
+                        AddDispatcher(handlerMessageType);
+                    }
+                    Type t = Type.GetType($"AMSAMSAdaptor.{handlerClass}");
+                    IInputMessageHandler handler = (IInputMessageHandler)Activator.CreateInstance(t, this,node);
+                    InputHandlers.Add(handler);
+
+                    logger.Info($"Loaded Handler: {handlerClass} ({handlerName}) to handle message type: {handlerMessageType}");
+
                 }
             }
 
@@ -263,7 +255,7 @@ namespace AMSAMSAdaptor
                         Dispatchers[messageType].Fire(newNode);
                         return;
                     }
-                  
+
                 }
                 catch (Exception e)
                 {

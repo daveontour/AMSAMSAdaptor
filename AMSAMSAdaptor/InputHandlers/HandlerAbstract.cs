@@ -13,7 +13,7 @@ namespace AMSAMSAdaptor
         private XmlNode node;
 
 
-        protected XmlDocument configDoc;
+        protected XmlNode config;
         protected List<string> passFilters = new List<string>();
         protected List<string> noPassFilters = new List<string>();
         protected List<string> transformerClass = new List<string>();
@@ -33,23 +33,22 @@ namespace AMSAMSAdaptor
         {
             return MessageName;
         }
-
-        public virtual void SetSupervisor(Supervisor supervisor, XmlDocument configDoc)
+        public HandlerAbstract(Supervisor supervisor, XmlNode config)
         {
             this.supervisor = supervisor;
-            this.configDoc = configDoc;
+            this.config = config;
 
-            foreach (XmlNode node in configDoc.SelectNodes($"//{HandlerName}/PassFilter"))
+            foreach (XmlNode node in config.SelectNodes($"./PassFilter"))
             {
                 passFilters.Add(node.InnerText);
             }
-            foreach (XmlNode node in configDoc.SelectNodes($"//{HandlerName}/NoPassFilter"))
+            foreach (XmlNode node in config.SelectNodes($"./NoPassFilter"))
             {
                 noPassFilters.Add(node.InnerText);
             }
-            foreach (XmlNode node in configDoc.SelectNodes($"//{HandlerName}/Transformer"))
+            foreach (XmlNode node in config.SelectNodes($"./Transformer"))
             {
-                string className = node.SelectSingleNode(".//TransformerClass")?.InnerText;
+                string className = node.Attributes["class"].Value;
                 XmlNode configNode = node.SelectSingleNode(".//TransformerConfig");
                 Type t = Type.GetType($"AMSAMSAdaptor.{className}");
 
@@ -60,7 +59,6 @@ namespace AMSAMSAdaptor
 
             supervisor.Dispatchers[MessageName].TriggerFire += HandleMessage;
         }
-
 
         public virtual void HandleMessage(XmlNode node)
         {

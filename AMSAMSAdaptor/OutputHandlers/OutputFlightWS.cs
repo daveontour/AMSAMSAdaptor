@@ -54,6 +54,7 @@ namespace AMSAMSAdaptor
             if (action.Contains("UpdateFlight"))
             {
                 logger.Info($"Update Flight: {flt.FlightProperties["AirlineIATA"]?.Value} {flt.FlightProperties["FlightNumber"]?.Value}");
+                //try{flt.FlightProperties.Remove("ScheduledTime");
                 SendUpdateFlight(flt);
                 supervisor.SendPostFlightMessage(flt, action);
             }
@@ -67,6 +68,8 @@ namespace AMSAMSAdaptor
                 {
                     XmlElement res = client.DeleteFlight(Parameters.TOTOKEN, flt.GetFlightId());
                     logger.Trace(res.OuterXml);
+
+                   
                 }
                 catch (Exception e)
                 {
