@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
 
 namespace AMSAMSAdaptor
@@ -10,6 +7,7 @@ namespace AMSAMSAdaptor
     internal class TransformerFlightAddProperties : ITransformer
     {
         private List<ReMapper> _remppers = new List<ReMapper>();
+
         public void SetConfig(XmlNode configNode)
         {
             foreach (XmlNode property in configNode.SelectNodes(".//Property"))
@@ -29,7 +27,7 @@ namespace AMSAMSAdaptor
         public object Transform(object input)
         {
             ModelFlight fl = (ModelFlight)input;
-            foreach(ReMapper mapper in _remppers)
+            foreach (ReMapper mapper in _remppers)
             {
                 string value = null;
                 if (mapper.IsFixedValue)
@@ -45,7 +43,8 @@ namespace AMSAMSAdaptor
                     value = fl.FlightProperties[mapper.AltrernatePropertyName].Value;
                 }
 
-                PropertyValue pv = new PropertyValue() {
+                FlightPropertyValue pv = new FlightPropertyValue()
+                {
                     PropertyName = mapper.PropertyName,
                     Value = value
                 };

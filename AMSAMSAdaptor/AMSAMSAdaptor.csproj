@@ -70,6 +70,7 @@
     <Compile Include="InputHandlers\HandlerAircraftMessages.cs" />
     <Compile Include="InputHandlers\HandlerAirlineMessages.cs" />
     <Compile Include="InputHandlers\HandlerGateMessages.cs" />
+    <Compile Include="InputHandlers\HandlerRouteMessages.cs" />
     <Compile Include="InputHandlers\HandlerStandMessages.cs" />
     <Compile Include="InputHandlers\HandlerCheckinMessages.cs" />
     <Compile Include="InputHandlers\HandlerDispatcher.cs" />

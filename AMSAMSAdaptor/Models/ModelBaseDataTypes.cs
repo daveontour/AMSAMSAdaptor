@@ -1,18 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
 
 namespace AMSAMSAdaptor
 {
-
     public abstract class ModelBase
     {
         public XmlNamespaceManager nsmgr;
         public static string token;
+
         public string AMSXMessageHeader = @"<?xml version=""1.0"" encoding=""utf-8"" ?>
 <amsx-messages:Envelope
 xmlns:amsx-messages=""http://www.sita.aero/ams6-xml-api-messages""
@@ -20,9 +18,11 @@ xmlns:amsx-datatypes=""http://www.sita.aero/ams6-xml-api-datatypes""
 xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance""
 apiVersion=""2.8"">
 <amsx-messages:Content>";
+
         public string AMSXMessageBottom = @"</amsx-messages:Content></amsx-messages:Envelope>";
         public XmlNode node;
         public Dictionary<string, string> State { get; set; } = new Dictionary<string, string>();
+
         public ModelBase(XmlNode node)
         {
             if (node != null)
@@ -34,12 +34,17 @@ apiVersion=""2.8"">
             }
         }
 
-        public virtual string CreateRequest() { return null; }
-        public virtual string UpdateRequest() { return null; }
-        public virtual string DeleteRequest() { return null; }
+        public virtual string CreateRequest()
+        { return null; }
+
+        public virtual string UpdateRequest()
+        { return null; }
+
+        public virtual string DeleteRequest()
+        { return null; }
+
         public static string PrintXML(string xml)
         {
-
             string result = "";
 
             MemoryStream mStream = new MemoryStream();
@@ -80,7 +85,6 @@ apiVersion=""2.8"">
 
             return result;
         }
-
     }
 
     public class ModelAircraftTypeId : ModelBase
@@ -137,6 +141,7 @@ apiVersion=""2.8"">
             sb.AppendLine(AMSXMessageBottom);
             return PrintXML(sb.ToString());
         }
+
         public override string UpdateRequest()
         {
             StringBuilder sb = new StringBuilder();
@@ -154,6 +159,7 @@ apiVersion=""2.8"">
             sb.AppendLine(AMSXMessageBottom);
             return PrintXML(sb.ToString());
         }
+
         public override string DeleteRequest()
         {
             StringBuilder sb = new StringBuilder();
@@ -169,8 +175,9 @@ apiVersion=""2.8"">
 
     public class ModelAircraft : ModelBase
     {
-        ModelAircraftType ModelAircraftType { get; set; }
-        string AircraftRegistration { get; set; }
+        private ModelAircraftType ModelAircraftType { get; set; }
+        private string AircraftRegistration { get; set; }
+
         public ModelAircraft(XmlNode node) : base(node)
         {
             XmlNode type = node.SelectSingleNode(".//amsx-datatypes:AircraftTypeId", nsmgr);
@@ -210,6 +217,7 @@ apiVersion=""2.8"">
             sb.AppendLine(AMSXMessageBottom);
             return PrintXML(sb.ToString().Replace("&", "&amp;"));
         }
+
         public override string UpdateRequest()
         {
             StringBuilder sb = new StringBuilder();
@@ -231,6 +239,7 @@ apiVersion=""2.8"">
             sb.AppendLine(AMSXMessageBottom);
             return PrintXML(sb.ToString().Replace("&", "&amp;"));
         }
+
         public override string DeleteRequest()
         {
             StringBuilder sb = new StringBuilder();
@@ -256,6 +265,7 @@ apiVersion=""2.8"">
             AirlineCodeIATA = node.SelectSingleNode(".//amsx-datatypes:AirlineCode[@codeContext = 'IATA']", nsmgr)?.InnerText;
             AirlineCodeICAO = node.SelectSingleNode(".//amsx-datatypes:AirlineCode[@codeContext = 'ICAO']", nsmgr)?.InnerText;
         }
+
         public string GetTypeId()
         {
             StringBuilder sb = new StringBuilder();
@@ -269,17 +279,17 @@ apiVersion=""2.8"">
 
     public class ModelAirline : ModelBase
     {
-        ModelAirlineId ModelAirlineId { get; set; }
+        private ModelAirlineId ModelAirlineId { get; set; }
 
         public ModelAirline(XmlNode node) : base(node)
         {
-
             ModelAirlineId = new ModelAirlineId(node);
             foreach (XmlNode n in node.SelectNodes(".//amsx-datatypes:Value", nsmgr))
             {
                 State.Add(n.Attributes["propertyName"]?.Value, n.InnerText);
             }
         }
+
         public override string CreateRequest()
         {
             StringBuilder sb = new StringBuilder();
@@ -297,6 +307,7 @@ apiVersion=""2.8"">
             sb.AppendLine(AMSXMessageBottom);
             return PrintXML(sb.ToString().Replace("&", "&amp;"));
         }
+
         public override string UpdateRequest()
         {
             StringBuilder sb = new StringBuilder();
@@ -314,6 +325,7 @@ apiVersion=""2.8"">
             sb.AppendLine(AMSXMessageBottom);
             return PrintXML(sb.ToString().Replace("&", "&amp;"));
         }
+
         public override string DeleteRequest()
         {
             StringBuilder sb = new StringBuilder();
@@ -337,6 +349,7 @@ apiVersion=""2.8"">
             AirportCodeIATA = node.SelectSingleNode(".//amsx-datatypes:AirportCode[@codeContext = 'IATA']", nsmgr)?.InnerText;
             AirportCodeICAO = node.SelectSingleNode(".//amsx-datatypes:AirportCode[@codeContext = 'ICAO']", nsmgr)?.InnerText;
         }
+
         public string GetTypeId()
         {
             StringBuilder sb = new StringBuilder();
@@ -350,17 +363,17 @@ apiVersion=""2.8"">
 
     public class ModelAirport : ModelBase
     {
-        ModelAirportId ModelAirportId { get; set; }
+        private ModelAirportId ModelAirportId { get; set; }
 
         public ModelAirport(XmlNode node) : base(node)
         {
-
             ModelAirportId = new ModelAirportId(node);
             foreach (XmlNode n in node.SelectNodes(".//amsx-datatypes:AirportState/amsx-datatypes:Value", nsmgr))
             {
                 State.Add(n.Attributes["propertyName"]?.Value, n.InnerText);
             }
         }
+
         public override string CreateRequest()
         {
             StringBuilder sb = new StringBuilder();
@@ -378,6 +391,7 @@ apiVersion=""2.8"">
             sb.AppendLine(AMSXMessageBottom);
             return PrintXML(sb.ToString().Replace("&", "&amp;"));
         }
+
         public override string UpdateRequest()
         {
             StringBuilder sb = new StringBuilder();
@@ -395,6 +409,7 @@ apiVersion=""2.8"">
             sb.AppendLine(AMSXMessageBottom);
             return PrintXML(sb.ToString().Replace("&", "&amp;"));
         }
+
         public override string DeleteRequest()
         {
             StringBuilder sb = new StringBuilder();
@@ -408,25 +423,22 @@ apiVersion=""2.8"">
         }
     }
 
-
     public class ModelArea : ModelBase
     {
-
         private string AreaId { get; set; }
         private string AirportCode { get; set; }
+
         public ModelArea(XmlNode node) : base(node)
         {
-
-
             AreaId = node.SelectSingleNode(".//amsx-datatypes:AreaId/amsx-datatypes:ExternalName", nsmgr)?.InnerText;
             AirportCode = node.SelectSingleNode(".//amsx-datatypes:AreaId/amsx-datatypes:AirportCode[@codeContext = 'IATA']", nsmgr)?.InnerText;
-
 
             foreach (XmlNode n in node.SelectNodes(".//amsx-datatypes:AreaState/amsx-datatypes:Value", nsmgr))
             {
                 State.Add(n.Attributes["propertyName"]?.Value, n.InnerText);
             }
         }
+
         public override string CreateRequest()
         {
             StringBuilder sb = new StringBuilder();
@@ -457,6 +469,7 @@ apiVersion=""2.8"">
                 return null;
             }
         }
+
         public override string UpdateRequest()
         {
             StringBuilder sb = new StringBuilder();
@@ -487,6 +500,7 @@ apiVersion=""2.8"">
                 return null;
             }
         }
+
         public override string DeleteRequest()
         {
             StringBuilder sb = new StringBuilder();
@@ -505,26 +519,24 @@ apiVersion=""2.8"">
 
     public class ModelGate : ModelBase
     {
-
         private string ExternalName { get; set; }
         private string AirportCode { get; set; }
+
         //private string AreaIdExternalName { get; set; }
         //private string AreaName { get; set; }
         public ModelGate(XmlNode node) : base(node)
         {
-
-
             ExternalName = node.SelectSingleNode(".//amsx-datatypes:GateId/amsx-datatypes:ExternalName", nsmgr)?.InnerText;
             AirportCode = node.SelectSingleNode(".//amsx-datatypes:GateId/amsx-datatypes:AirportCode[@codeContext = 'IATA']", nsmgr)?.InnerText;
             //AreaIdExternalName = node.SelectSingleNode(".//amsx-datatypes:AreaId/amsx-datatypes:ExternalName", nsmgr)?.InnerText;
             //AreaName = node.SelectSingleNode(".//amsx-datatypes:Area/amsx-datatypes:Value[@propertyName = 'Name']", nsmgr)?.InnerText;
-
 
             foreach (XmlNode n in node.SelectNodes(".//amsx-datatypes:ResourceState/amsx-datatypes:Value", nsmgr))
             {
                 State.Add(n.Attributes["propertyName"]?.Value, n.InnerText);
             }
         }
+
         public override string CreateRequest()
         {
             StringBuilder sb = new StringBuilder();
@@ -555,6 +567,7 @@ apiVersion=""2.8"">
                 return null;
             }
         }
+
         public override string UpdateRequest()
         {
             StringBuilder sb = new StringBuilder();
@@ -585,6 +598,7 @@ apiVersion=""2.8"">
                 return null;
             }
         }
+
         //public override string DeleteRequest()
         //{
         //    StringBuilder sb = new StringBuilder();
@@ -603,26 +617,24 @@ apiVersion=""2.8"">
 
     public class ModelStand : ModelBase
     {
-
         private string ExternalName { get; set; }
         private string AirportCode { get; set; }
+
         //private string StandIdExternalName { get; set; }
         //private string StandAreaName { get; set; }
         public ModelStand(XmlNode node) : base(node)
         {
-
-
             ExternalName = node.SelectSingleNode(".//amsx-datatypes:GateId/amsx-datatypes:ExternalName", nsmgr)?.InnerText;
             AirportCode = node.SelectSingleNode(".//amsx-datatypes:GateId/amsx-datatypes:AirportCode[@codeContext = 'IATA']", nsmgr)?.InnerText;
             //AreaIdExternalName = node.SelectSingleNode(".//amsx-datatypes:AreaId/amsx-datatypes:ExternalName", nsmgr)?.InnerText;
             //AreaName = node.SelectSingleNode(".//amsx-datatypes:Area/amsx-datatypes:Value[@propertyName = 'Name']", nsmgr)?.InnerText;
-
 
             foreach (XmlNode n in node.SelectNodes(".//amsx-datatypes:ResourceState/amsx-datatypes:Value", nsmgr))
             {
                 State.Add(n.Attributes["propertyName"]?.Value, n.InnerText);
             }
         }
+
         public override string CreateRequest()
         {
             StringBuilder sb = new StringBuilder();
@@ -653,6 +665,7 @@ apiVersion=""2.8"">
                 return null;
             }
         }
+
         public override string UpdateRequest()
         {
             StringBuilder sb = new StringBuilder();
@@ -683,6 +696,7 @@ apiVersion=""2.8"">
                 return null;
             }
         }
+
         //public override string DeleteRequest()
         //{
         //    StringBuilder sb = new StringBuilder();
@@ -699,29 +713,26 @@ apiVersion=""2.8"">
         //}
     }
 
-
     public class ModelCheckIn : ModelBase
     {
-
         private string ExternalName { get; set; }
         private string AirportCode { get; set; }
+
         //private string CheckInIdExternalName { get; set; }
         //private string CheckInAreaName { get; set; }
         public ModelCheckIn(XmlNode node) : base(node)
         {
-
-
             ExternalName = node.SelectSingleNode(".//amsx-datatypes:GateId/amsx-datatypes:ExternalName", nsmgr)?.InnerText;
             AirportCode = node.SelectSingleNode(".//amsx-datatypes:GateId/amsx-datatypes:AirportCode[@codeContext = 'IATA']", nsmgr)?.InnerText;
             //AreaIdExternalName = node.SelectSingleNode(".//amsx-datatypes:AreaId/amsx-datatypes:ExternalName", nsmgr)?.InnerText;
             //AreaName = node.SelectSingleNode(".//amsx-datatypes:Area/amsx-datatypes:Value[@propertyName = 'Name']", nsmgr)?.InnerText;
-
 
             foreach (XmlNode n in node.SelectNodes(".//amsx-datatypes:ResourceState/amsx-datatypes:Value", nsmgr))
             {
                 State.Add(n.Attributes["propertyName"]?.Value, n.InnerText);
             }
         }
+
         public override string CreateRequest()
         {
             StringBuilder sb = new StringBuilder();
@@ -752,6 +763,7 @@ apiVersion=""2.8"">
                 return null;
             }
         }
+
         public override string UpdateRequest()
         {
             StringBuilder sb = new StringBuilder();
@@ -782,6 +794,7 @@ apiVersion=""2.8"">
                 return null;
             }
         }
+
         //public override string DeleteRequest()
         //{
         //    StringBuilder sb = new StringBuilder();
@@ -796,5 +809,144 @@ apiVersion=""2.8"">
         //    sb.AppendLine(AMSXMessageBottom);
         //    return PrintXML(sb.ToString());
         //}
+    }
+
+    public class ModelRoute : ModelBase
+    {
+        private struct RouteViaPoint
+        {
+            public string sequenceNumber;
+            public string iataAirport;
+            public string icaoAirport;
+        }
+
+        private List<RouteViaPoint> viaPoints = new List<RouteViaPoint>();
+
+        public ModelRoute(XmlNode node) : base(node)
+        {
+            foreach (XmlNode n in node.SelectNodes(".//amsx-datatypes:RouteViaPoint", nsmgr))
+            {
+                RouteViaPoint point;
+                point.sequenceNumber = n.Attributes["sequenceNumber"]?.Value;
+                point.icaoAirport = n.SelectSingleNode(".//amsx-datatypes:AirportCode[@codeContext='ICAO']", nsmgr)?.InnerText;
+                point.iataAirport = n.SelectSingleNode(".//amsx-datatypes:AirportCode[@codeContext='IATA']", nsmgr)?.InnerText;
+
+                viaPoints.Add(point);
+            }
+
+            foreach (XmlNode n in node.SelectNodes(".//amsx-datatypes:ResourceState/amsx-datatypes:Value", nsmgr))
+            {
+                State.Add(n.Attributes["propertyName"]?.Value, n.InnerText);
+            }
+        }
+
+        public override string CreateRequest()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine(AMSXMessageHeader);
+            sb.AppendLine("<amsx-messages:RouteCreateRequest>");
+            sb.AppendLine("<amsx-datatypes:Token>TOKEN</amsx-datatypes:Token>");
+            sb.AppendLine("<amsx-datatypes:RouteId>");
+            sb.AppendLine("<amsx-datatypes:ViaPoints>");
+
+            foreach (RouteViaPoint point in viaPoints)
+            {
+                sb.AppendLine($"<amsx-datatypes:RouteViaPoint sequenceNumber=\"{point.sequenceNumber}\">");
+                sb.AppendLine($"<amsx-datatypes:AirportCode codeContext=\"IATA\">{point.iataAirport}</amsx-datatypes:AirportCode>");
+                sb.AppendLine("</amsx-datatypes:RouteViaPoint>");
+            }
+
+            sb.AppendLine("</amsx-datatypes:ViaPoints>");
+            sb.AppendLine("</amsx-datatypes:RouteId>");
+            sb.AppendLine("<amsx-messages:RouteUpdates>");
+
+            foreach (KeyValuePair<string, string> n in State)
+            {
+                sb.AppendLine($"<amsx-messages:Update propertyName=\"{n.Key}\">{n.Value}</amsx-messages:Update>");
+            }
+
+            sb.AppendLine("</amsx-messages:RouteUpdates>");
+            sb.AppendLine("</amsx-messages:RouteCreateRequest>");
+            sb.AppendLine(AMSXMessageBottom);
+            try
+            {
+                return PrintXML(sb.ToString().Replace("&", "&amp;"));
+            }
+            catch (Exception)
+            {
+                Console.WriteLine(sb.ToString());
+                return null;
+            }
+        }
+
+        public override string UpdateRequest()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine(AMSXMessageHeader);
+            sb.AppendLine("<amsx-messages:RouteUpdateRequest>");
+            sb.AppendLine("<amsx-datatypes:Token>TOKEN</amsx-datatypes:Token>");
+            sb.AppendLine("<amsx-datatypes:RouteId>");
+            sb.AppendLine("<amsx-datatypes:ViaPoints>");
+
+            foreach (RouteViaPoint point in viaPoints)
+            {
+                sb.AppendLine($"<amsx-datatypes:RouteViaPoint sequenceNumber=\"{point.sequenceNumber}\">");
+                sb.AppendLine($"<amsx-datatypes:AirportCode codeContext=\"IATA\">{point.iataAirport}</amsx-datatypes:AirportCode>");
+                sb.AppendLine("</amsx-datatypes:RouteViaPoint>");
+            }
+
+            sb.AppendLine("</amsx-datatypes:ViaPoints>");
+            sb.AppendLine("</amsx-datatypes:RouteId>");
+            sb.AppendLine("<amsx-messages:RouteUpdates>");
+
+            foreach (KeyValuePair<string, string> n in State)
+            {
+                sb.AppendLine($"<amsx-messages:Update propertyName=\"{n.Key}\">{n.Value}</amsx-messages:Update>");
+            }
+
+            sb.AppendLine("</amsx-messages:RouteUpdates>");
+            sb.AppendLine("</amsx-messages:RouteUpdateRequest>");
+            sb.AppendLine(AMSXMessageBottom);
+            try
+            {
+                return PrintXML(sb.ToString().Replace("&", "&amp;"));
+            }
+            catch (Exception)
+            {
+                Console.WriteLine(sb.ToString());
+                return null;
+            }
+        }
+
+        public override string DeleteRequest()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine(AMSXMessageHeader);
+            sb.AppendLine("<amsx-messages:RouteDeleteRequest>");
+            sb.AppendLine("<amsx-datatypes:Token>TOKEN</amsx-datatypes:Token>");
+            sb.AppendLine("<amsx-datatypes:RouteId>");
+            sb.AppendLine("<amsx-datatypes:ViaPoints>");
+
+            foreach (RouteViaPoint point in viaPoints)
+            {
+                sb.AppendLine($"<amsx-datatypes:RouteViaPoint sequenceNumber=\"{point.sequenceNumber}\">");
+                sb.AppendLine($"<amsx-datatypes:AirportCode codeContext=\"IATA\">{point.iataAirport}</amsx-datatypes:AirportCode>");
+                sb.AppendLine("</amsx-datatypes:RouteViaPoint");
+            }
+
+            sb.AppendLine("<amsx-datatypes:ViaPoints>");
+            sb.AppendLine("</amsx-datatypes:RouteId>");
+            sb.AppendLine("</amsx-messages:RouteDeleteRequest>");
+            sb.AppendLine(AMSXMessageBottom);
+            try
+            {
+                return PrintXML(sb.ToString().Replace("&", "&amp;"));
+            }
+            catch (Exception)
+            {
+                Console.WriteLine(sb.ToString());
+                return null;
+            }
+        }
     }
 }

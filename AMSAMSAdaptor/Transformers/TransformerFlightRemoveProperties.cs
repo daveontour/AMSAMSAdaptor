@@ -21,6 +21,7 @@ namespace AMSAMSAdaptor
         public object Transform(object input)
         {
             ModelFlight fl = (ModelFlight)input;
+
             foreach(string property in _properties)
             {
                 if (property != null)   

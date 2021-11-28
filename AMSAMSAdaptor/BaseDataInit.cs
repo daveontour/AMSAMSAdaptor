@@ -22,6 +22,7 @@ namespace AMSAMSAdaptor
         private bool initCheckIns = false;
         private bool initStands = false;
         private bool initGates = false;
+        private bool initRoutes = false;
 
         private static readonly NLog.Logger logger = NLog.LogManager.GetLogger("consoleLogger");
 
@@ -38,6 +39,7 @@ namespace AMSAMSAdaptor
             bool.TryParse(config.SelectSingleNode(".//InitCheckIns")?.InnerText, out initCheckIns);
             bool.TryParse(config.SelectSingleNode(".//InitStands")?.InnerText, out initStands);
             bool.TryParse(config.SelectSingleNode(".//InitGates")?.InnerText, out initGates);
+            bool.TryParse(config.SelectSingleNode(".//InitRoutes")?.InnerText, out initRoutes);
 
             binding = new BasicHttpBinding
             {
@@ -58,7 +60,7 @@ namespace AMSAMSAdaptor
             if (initCheckIns) InitCheckIns();
             if (initGates) InitGates();
             if (initStands) InitStands();
-
+            if (initRoutes) InitRoutes();
         }
 
         public void InitAirports()
@@ -66,7 +68,6 @@ namespace AMSAMSAdaptor
             logger.Info("Populating Airports");
             using (AMSIntegrationServiceClient client = new AMSIntegrationServiceClient(binding, address))
             {
-
                 try
                 {
                     XmlElement res = client.GetAirports(Parameters.FROMTOKEN);
@@ -81,7 +82,6 @@ namespace AMSAMSAdaptor
                         logger.Warn("Startup Airport Update");
                         supervisor.ProcessMessage(fl.OuterXml);
                     }
-
                 }
                 catch (Exception e)
                 {
@@ -89,7 +89,6 @@ namespace AMSAMSAdaptor
                 }
             }
             logger.Info("Populating Airports Complete");
-
         }
 
         public void InitAircrafts()
@@ -112,7 +111,6 @@ namespace AMSAMSAdaptor
                         logger.Warn("Startup Aircraft Update");
                         supervisor.ProcessMessage(fl.OuterXml);
                     }
-
                 }
                 catch (Exception e)
                 {
@@ -120,7 +118,6 @@ namespace AMSAMSAdaptor
                 }
             }
             logger.Info("Populating Aircraft Complete");
-
         }
 
         public void InitAircraftTypes()
@@ -129,7 +126,6 @@ namespace AMSAMSAdaptor
 
             using (AMSIntegrationServiceClient client = new AMSIntegrationServiceClient(binding, address))
             {
-
                 try
                 {
                     XmlElement res = client.GetAircraftTypes(Parameters.FROMTOKEN);
@@ -144,7 +140,6 @@ namespace AMSAMSAdaptor
                         logger.Debug("Startup AircraftType Update");
                         supervisor.ProcessMessage(fl.OuterXml);
                     }
-
                 }
                 catch (Exception e)
                 {
@@ -159,7 +154,6 @@ namespace AMSAMSAdaptor
             logger.Info("Populating Airlines Types");
             using (AMSIntegrationServiceClient client = new AMSIntegrationServiceClient(binding, address))
             {
-
                 try
                 {
                     XmlElement res = client.GetAirlines(Parameters.FROMTOKEN);
@@ -174,7 +168,6 @@ namespace AMSAMSAdaptor
                         logger.Warn("Startup Airline Update");
                         supervisor.ProcessMessage(fl.OuterXml);
                     }
-
                 }
                 catch (Exception e)
                 {
@@ -192,7 +185,7 @@ namespace AMSAMSAdaptor
             {
                 try
                 {
-                    XmlElement res = client.GetAreas(Parameters.FROMTOKEN,"IXE", WorkBridge.Modules.AMS.AMSIntegrationWebAPI.Srv.AirportIdentifierType.IATACode);
+                    XmlElement res = client.GetAreas(Parameters.FROMTOKEN, "IXE", WorkBridge.Modules.AMS.AMSIntegrationWebAPI.Srv.AirportIdentifierType.IATACode);
                     XmlNamespaceManager nsmgr = new XmlNamespaceManager(res.OwnerDocument.NameTable);
                     nsmgr = new XmlNamespaceManager(res.OwnerDocument.NameTable);
                     nsmgr.AddNamespace("amsx-messages", "http://www.sita.aero/ams6-xml-api-messages");
@@ -204,7 +197,6 @@ namespace AMSAMSAdaptor
                         logger.Warn("Startup Area Update");
                         supervisor.ProcessMessage(fl.OuterXml);
                     }
-
                 }
                 catch (Exception e)
                 {
@@ -212,8 +204,8 @@ namespace AMSAMSAdaptor
                 }
             }
             logger.Info("Populating Area Complete");
-
         }
+
         public void InitCheckIns()
         {
             logger.Info("Populating Areas");
@@ -234,7 +226,6 @@ namespace AMSAMSAdaptor
                         logger.Warn("Startup Checkin Update");
                         supervisor.ProcessMessage(fl.OuterXml);
                     }
-
                 }
                 catch (Exception e)
                 {
@@ -242,8 +233,8 @@ namespace AMSAMSAdaptor
                 }
             }
             logger.Info("Populating CheckIns Complete");
-
         }
+
         public void InitGates()
         {
             logger.Info("Populating Areas");
@@ -264,7 +255,6 @@ namespace AMSAMSAdaptor
                         logger.Warn("Startup Gates Update");
                         supervisor.ProcessMessage(fl.OuterXml);
                     }
-
                 }
                 catch (Exception e)
                 {
@@ -272,8 +262,8 @@ namespace AMSAMSAdaptor
                 }
             }
             logger.Info("Populating Gates Complete");
-
         }
+
         public void InitStands()
         {
             logger.Info("Populating Areas");
@@ -294,7 +284,6 @@ namespace AMSAMSAdaptor
                         logger.Warn("Startup Stand Update");
                         supervisor.ProcessMessage(fl.OuterXml);
                     }
-
                 }
                 catch (Exception e)
                 {
@@ -302,7 +291,35 @@ namespace AMSAMSAdaptor
                 }
             }
             logger.Info("Populating Stand Complete");
+        }
 
+        public void InitRoutes()
+        {
+            logger.Info("Populating Routes");
+
+            using (AMSIntegrationServiceClient client = new AMSIntegrationServiceClient(binding, address))
+            {
+                try
+                {
+                    XmlElement res = client.GetRoutes(Parameters.FROMTOKEN);
+                    XmlNamespaceManager nsmgr = new XmlNamespaceManager(res.OwnerDocument.NameTable);
+                    nsmgr = new XmlNamespaceManager(res.OwnerDocument.NameTable);
+                    nsmgr.AddNamespace("amsx-messages", "http://www.sita.aero/ams6-xml-api-messages");
+                    nsmgr.AddNamespace("amsx-datatypes", "http://www.sita.aero/ams6-xml-api-datatypes");
+
+                    XmlNodeList fls = res.SelectNodes("//amsx-datatypes:Routes/amsx-datatypes:Route", nsmgr);
+                    foreach (XmlNode fl in fls)
+                    {
+                        logger.Warn("Startup Routes Update");
+                        supervisor.ProcessMessage(fl.OuterXml);
+                    }
+                }
+                catch (Exception e)
+                {
+                    logger.Error(e.Message);
+                }
+            }
+            logger.Info("Populating Routes Complete");
         }
     }
 }

@@ -2,17 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
 using WorkBridge.Modules.AMS.AMSIntegrationAPI.Mod.Intf.DataTypes;
 
 namespace AMSAMSAdaptor
 {
     [Serializable]
-    public class PropertyValue
+    public class FlightPropertyValue
     {
         public bool CoreProperty { get; set; } = false;
-
         public bool FlightIdProp { get; set; } = false;
         public string Value { get; set; }
         public string PropertyName { get; set; }
@@ -36,9 +34,9 @@ namespace AMSAMSAdaptor
         }
         public bool PropertyCodeContextSpecified { get; set; } = false;
 
-        public PropertyValue() { }
+        public FlightPropertyValue() { }
 
-        public PropertyValue(XmlNode node)
+        public FlightPropertyValue(XmlNode node)
         {
             this.PropertyName = node.Attributes["propertyName"]?.Value;
             this.PropertyCodeContext = node.Attributes["codeContext"]?.Value;
@@ -55,7 +53,7 @@ namespace AMSAMSAdaptor
         protected XmlDocument configDoc;
 
 
-        public Dictionary<string, PropertyValue> FlightProperties { get; set; } = new Dictionary<string, PropertyValue>();
+        public Dictionary<string, FlightPropertyValue> FlightProperties { get; set; } = new Dictionary<string, FlightPropertyValue>();
         public List<string> Routes { get; set; } = new List<string>();
 
 
@@ -95,11 +93,19 @@ namespace AMSAMSAdaptor
             }
             if (Routes.Count > 0)
             {
-                SetCoreValue("Route", string.Join(",", Routes));
+                FlightPropertyValue pv = new FlightPropertyValue()
+                {
+                    Value = string.Join(",", Routes),
+                    PropertyName = "Route",
+                    CoreProperty = true,
+                    FlightIdProp = false
+                };
+                FlightProperties.Add(pv.PropertyName, pv);
+
             }
             foreach (XmlNode v in node.SelectNodes(".//amsx-datatypes:FlightState/amsx-datatypes:Value", nsmgr))
             {
-                PropertyValue pv = new PropertyValue(v);
+                FlightPropertyValue pv = new FlightPropertyValue(v);
                 FlightProperties.Add(pv.PropertyName, pv);
             }
         }
@@ -109,7 +115,7 @@ namespace AMSAMSAdaptor
             string value = node.SelectSingleNode(xpath, nsmgr)?.InnerText;
             if (value != null)
             {
-                PropertyValue pv = new PropertyValue()
+                FlightPropertyValue pv = new FlightPropertyValue()
                 {
                     Value = value,
                     PropertyName = name,
@@ -124,14 +130,13 @@ namespace AMSAMSAdaptor
         {
 
             StringBuilder sb = new StringBuilder();
-            foreach (PropertyValue v in FlightProperties.Values)
+            foreach (FlightPropertyValue v in FlightProperties.Values)
             {
                 if (!v.CoreProperty) continue;
                 sb.AppendLine($"{v.PropertyName}: {v.Value}");
             }
-            sb.AppendLine($"Route: {string.Join(",", Routes)}");
 
-            foreach (PropertyValue v in FlightProperties.Values)
+            foreach (FlightPropertyValue v in FlightProperties.Values)
             {
                 if (v.CoreProperty) continue;
                 sb.AppendLine($"{v.PropertyName}: {v.Value}");
@@ -229,22 +234,22 @@ namespace AMSAMSAdaptor
         }
 
 
-        public WorkBridge.Modules.AMS.AMSIntegrationAPI.Mod.Intf.DataTypes.PropertyValue[] GetPropertValues()
+        public PropertyValue[] GetPropertValues()
         {
 
-            WorkBridge.Modules.AMS.AMSIntegrationAPI.Mod.Intf.DataTypes.PropertyValue[] val = { };
+            PropertyValue[] val = { };
 
-            foreach (PropertyValue liPV in FlightProperties.Values)
+            foreach (FlightPropertyValue liPV in FlightProperties.Values)
             {
                 if (liPV.FlightIdProp) continue;
-                WorkBridge.Modules.AMS.AMSIntegrationAPI.Mod.Intf.DataTypes.PropertyValue pv = new WorkBridge.Modules.AMS.AMSIntegrationAPI.Mod.Intf.DataTypes.PropertyValue()
+                PropertyValue pv = new PropertyValue()
                 {
                     propertyNameField = liPV.PropertyName,
                     valueField = liPV.Value,
                     codeContextField = (liPV.PropertyCodeContext == "ICAO") ? CodeContext.ICAO : CodeContext.IATA
                 };
 
-                val = val.Append<WorkBridge.Modules.AMS.AMSIntegrationAPI.Mod.Intf.DataTypes.PropertyValue>(pv).ToArray();
+                val = val.Append(pv).ToArray();
             }
 
             return val;
@@ -264,16 +269,16 @@ namespace AMSAMSAdaptor
                 foreach (XmlNode row in table.SelectNodes(".//amsx-datatypes:Row", nsmgr))
                 {
                     TableRow tr = new TableRow();
-                    WorkBridge.Modules.AMS.AMSIntegrationAPI.Mod.Intf.DataTypes.PropertyValue[] valueField = { };
+                    PropertyValue[] valueField = { };
 
                     foreach (XmlNode field in row.SelectNodes(".//amsx-datatypes:Value", nsmgr))
                     {
-                        WorkBridge.Modules.AMS.AMSIntegrationAPI.Mod.Intf.DataTypes.PropertyValue pv = new WorkBridge.Modules.AMS.AMSIntegrationAPI.Mod.Intf.DataTypes.PropertyValue();
+                       PropertyValue pv = new PropertyValue();
 
                         pv.propertyNameField = field.Attributes["propertyName"]?.Value;
                         pv.valueField = field.InnerText;
 
-                        valueField = valueField.Append<WorkBridge.Modules.AMS.AMSIntegrationAPI.Mod.Intf.DataTypes.PropertyValue>(pv).ToArray();
+                        valueField = valueField.Append(pv).ToArray();
                     }
 
                     tr.valueField = valueField;
@@ -295,13 +300,13 @@ namespace AMSAMSAdaptor
             {
                 EventUpdate eu = new EventUpdate();
                 eu.codeField = e.Attributes["code"]?.Value;
-                WorkBridge.Modules.AMS.AMSIntegrationAPI.Mod.Intf.DataTypes.PropertyValue[] valueField = { };
+                PropertyValue[] valueField = { };
                 foreach (XmlNode v in e.SelectNodes(".///amsx-datatypes:Value"))
                 {
-                    WorkBridge.Modules.AMS.AMSIntegrationAPI.Mod.Intf.DataTypes.PropertyValue pv = new WorkBridge.Modules.AMS.AMSIntegrationAPI.Mod.Intf.DataTypes.PropertyValue();
+                    PropertyValue pv = new PropertyValue();
                     pv.propertyNameField = v.Attributes["propertyName"]?.Value;
                     pv.valueField = v.InnerText;
-                    valueField = valueField.Append<WorkBridge.Modules.AMS.AMSIntegrationAPI.Mod.Intf.DataTypes.PropertyValue>(pv).ToArray();
+                    valueField = valueField.Append(pv).ToArray();
                 }
                 eu.updateField = valueField;
                 val = val.Append(eu).ToArray();
@@ -316,13 +321,13 @@ namespace AMSAMSAdaptor
             {
                 ActivityUpdate eu = new ActivityUpdate();
                 eu.codeField = e.Attributes["code"]?.Value;
-                WorkBridge.Modules.AMS.AMSIntegrationAPI.Mod.Intf.DataTypes.PropertyValue[] valueField = { };
+                PropertyValue[] valueField = { };
                 foreach (XmlNode v in e.SelectNodes(".///amsx-datatypes:Value"))
                 {
-                    WorkBridge.Modules.AMS.AMSIntegrationAPI.Mod.Intf.DataTypes.PropertyValue pv = new WorkBridge.Modules.AMS.AMSIntegrationAPI.Mod.Intf.DataTypes.PropertyValue();
+                    PropertyValue pv = new PropertyValue();
                     pv.propertyNameField = v.Attributes["propertyName"]?.Value;
                     pv.valueField = v.InnerText;
-                    valueField = valueField.Append<WorkBridge.Modules.AMS.AMSIntegrationAPI.Mod.Intf.DataTypes.PropertyValue>(pv).ToArray();
+                    valueField = valueField.Append(pv).ToArray();
                 }
                 eu.updateField = valueField;
                 val = val.Append(eu).ToArray();

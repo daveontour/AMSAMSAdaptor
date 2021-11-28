@@ -32,7 +32,7 @@ namespace AMSAMSAdaptor
     internal class HandlerFlight : HandlerAbstract
     {
         public override string MessageName => "Flight";
-        public override string HandlerAction => "UpdateFlight,CreateFlight";
+        public override string HandlerAction => "UpdateFlight";
         public override string HandlerModel => "AMSAMSAdaptor.ModelFlight";
         public override string HandlerDestination => "FlightDataDistributor";
         public HandlerFlight(Supervisor supervisor, XmlNode config) : base(supervisor, config) { }

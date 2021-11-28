@@ -21,8 +21,13 @@ namespace AMSAMSAdaptor
         public object Transform(object input)
         {
             ModelFlight fl = (ModelFlight)input;
-            foreach(string property in fl.FlightProperties.Keys)
+
+            //Make a copy of the keys to iterate agains to avoid iteration modification problems
+            List<string> properties = new List<string>(fl.FlightProperties.Keys);
+            
+            foreach (string property in properties)
             {
+
                 if (_properties.Contains(property))
                 {
                     continue;

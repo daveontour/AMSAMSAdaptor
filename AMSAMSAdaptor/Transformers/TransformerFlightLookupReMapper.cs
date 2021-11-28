@@ -67,7 +67,7 @@ namespace AMSAMSAdaptor
         public object Transform(object input)
         {
             ModelFlight fl = (ModelFlight)input;
-            Dictionary<string, PropertyValue> newProperties = DeepClone(fl.FlightProperties);
+            Dictionary<string, FlightPropertyValue> newProperties = DeepClone(fl.FlightProperties);
             foreach (ReMapper mapper in _remppers)
             {
                 try

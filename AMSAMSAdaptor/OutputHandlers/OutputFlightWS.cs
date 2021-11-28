@@ -1,12 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.ServiceModel;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
 using WorkBridge.Modules.AMS.AMSIntegrationAPI.Mod.Intf.DataTypes;
+
 
 namespace AMSAMSAdaptor
 {
@@ -54,7 +50,6 @@ namespace AMSAMSAdaptor
             if (action.Contains("UpdateFlight"))
             {
                 logger.Info($"Update Flight: {flt.FlightProperties["AirlineIATA"]?.Value} {flt.FlightProperties["FlightNumber"]?.Value}");
-                //try{flt.FlightProperties.Remove("ScheduledTime");
                 SendUpdateFlight(flt);
                 supervisor.SendPostFlightMessage(flt, action);
             }
@@ -68,8 +63,6 @@ namespace AMSAMSAdaptor
                 {
                     XmlElement res = client.DeleteFlight(Parameters.TOTOKEN, flt.GetFlightId());
                     logger.Trace(res.OuterXml);
-
-                   
                 }
                 catch (Exception e)
                 {
@@ -83,7 +76,7 @@ namespace AMSAMSAdaptor
             {
                 try
                 {
-                    WorkBridge.Modules.AMS.AMSIntegrationAPI.Mod.Intf.DataTypes.PropertyValue[] propertyValues = flt.GetPropertValues();
+                    PropertyValue[] propertyValues = flt.GetPropertValues();
                     XmlElement res = client.CreateFlight(Parameters.TOTOKEN, flt.GetFlightId(), propertyValues);
                     logger.Trace(res.OuterXml);
                     ProcessLinking(flt);
@@ -96,11 +89,22 @@ namespace AMSAMSAdaptor
         }
         private void SendUpdateFlight(ModelFlight flt)
         {
+            logger.Info($"Would have updated: {flt.ToString()}");
+
             using (AMSIntegrationServiceClient client = new AMSIntegrationServiceClient(binding, address))
             {
                 try
                 {
-                    WorkBridge.Modules.AMS.AMSIntegrationAPI.Mod.Intf.DataTypes.PropertyValue[] propertyValues = flt.GetPropertValues();
+                    // First Check that the flight exist, if not, then create it.
+                    XmlElement existing = client.GetFlight(Parameters.TOTOKEN, flt.GetFlightId());
+                    
+                    if (existing.OuterXml.Contains("<ErrorCode>FLIGHT_NOT_FOUND</ErrorCode>"))
+                    {
+                        SendCreateFlight(flt);
+                        return;
+                    }
+
+                    PropertyValue[] propertyValues = flt.GetPropertValues();
                     XmlElement res = client.UpdateFlight(Parameters.TOTOKEN, flt.GetFlightId(), propertyValues);
                     logger.Trace(res.OuterXml);
                     ProcessLinking(flt);
