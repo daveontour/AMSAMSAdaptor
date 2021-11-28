@@ -40,10 +40,24 @@ namespace AMSAMSAdaptor
 
             foreach (XmlNode node in config.SelectNodes($"./PassFilter"))
             {
+                bool enabled = true;
+                bool.TryParse(node.Attributes["enabled"]?.Value, out enabled);
+
+                if (!enabled)
+                {
+                    continue;
+                }
                 passFilters.Add(node.InnerText);
             }
             foreach (XmlNode node in config.SelectNodes($"./NoPassFilter"))
             {
+                bool enabled = true;
+                bool.TryParse(node.Attributes["enabled"]?.Value, out enabled);
+
+                if (!enabled)
+                {
+                    continue;
+                }
                 noPassFilters.Add(node.InnerText);
             }
             foreach (XmlNode node in config.SelectNodes($"./Transformer"))

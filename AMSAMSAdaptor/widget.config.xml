@@ -49,9 +49,14 @@
 
 			<!-- Pass/NoPass filter work with any message type -->
 			<!-- Uses XPATH of the message to detemine wheter it meets the filer -->
-			<PassFilter>.//ams:FlightId/ams:AirlineDesignator[@codeContext='IATA' and  contains(text(), 'EK')]</PassFilter>
-			<PassFilter>.//ams:FlightId/ams:AirlineDesignator[@codeContext='IATA' and  contains(text(), 'QF')]</PassFilter>
-			<NoPassFilter>.//ams:FlightId/ams:AirlineDesignator[@codeContext='IATA' and  contains(text(), 'QR')]</NoPassFilter>
+			<!-- The namespace manager  for filtering has the following namespaces defined 
+			"amsx-messages", "http://www.sita.aero/ams6-xml-api-messages"
+            "amsx-datatypes", "http://www.sita.aero/ams6-xml-api-datatypes"
+            "ams", "http://www.sita.aero/ams6-xml-api-datatypes"
+ -->
+			<PassFilter>.//amsx-datatypes:FlightId/amsx-datatypes:AirlineDesignator[@codeContext='IATA' and  contains(text(), 'EK')]</PassFilter>
+			<PassFilter>.//amsx-datatypes:FlightId/amsx-datatypes:AirlineDesignator[@codeContext='IATA' and  contains(text(), 'QF')]</PassFilter>
+			<NoPassFilter enabled ="false">.//amsx-datatypes:FlightId/amsx-datatypes:AirlineDesignator[@codeContext='IATA' and  contains(text(), 'QR')]</NoPassFilter>
 
 			<!-- Transformers modify the message in some way -->
 			<!-- Multiple transformer can be applied to one message -->
