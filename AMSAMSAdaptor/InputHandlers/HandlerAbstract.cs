@@ -49,6 +49,14 @@ namespace AMSAMSAdaptor
             foreach (XmlNode node in config.SelectNodes($"./Transformer"))
             {
                 string className = node.Attributes["class"].Value;
+
+                bool enabled = true;
+                bool.TryParse(node.Attributes["enabled"]?.Value, out enabled); 
+                
+                if (!enabled)
+                {
+                    continue;
+                }
                 XmlNode configNode = node.SelectSingleNode(".//TransformerConfig");
                 Type t = Type.GetType($"AMSAMSAdaptor.{className}");
 

@@ -1,15 +1,26 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <config>
+	
+	<!-- These three entries have to be unique if you are running multiple instance on the one machine-->
+	<ServiceName></ServiceName>
+	<ServiceDisplayName></ServiceDisplayName>
+	<ServiceDescription></ServiceDescription>
+
+
+	<!-- Config for the "source" system -->
 	<FromAMSQueue>.\private$\fromams</FromAMSQueue>
-	<ToAMSRequestQueue>.\private$\fromli</ToAMSRequestQueue>
-	<ReadMessageLoopInterval>10</ReadMessageLoopInterval>
+	<FromAMSWebServiceURL>http://localhost:9191/SITAAMSIntegrationService/v2/SITAAMSIntegrationService/</FromAMSWebServiceURL>
 	<FromToken>32b8ef7a-0a16-4b4a-9e01-799960c91e0e</FromToken>
+	<ReadMessageLoopInterval>10</ReadMessageLoopInterval>
+
+	<!-- Config for the "target" system -->
+	<ToAMSRequestQueue>.\private$\fromli</ToAMSRequestQueue>
+	<ToAMSWebServiceURL>http://localhost:9191/SITAAMSIntegrationService/v2/SITAAMSIntegrationService/</ToAMSWebServiceURL>
 	<ToToken>32b8ef7a-0a16-4b4a-9e01-799960c91e0e</ToToken>
 	<AirportCode>IXE</AirportCode>
-	<FromAMSWebServiceURL>http://localhost:9191/SITAAMSIntegrationService/v2/SITAAMSIntegrationService/</FromAMSWebServiceURL>
-	<ToAMSWebServiceURL>http://localhost:9191/SITAAMSIntegrationService/v2/SITAAMSIntegrationService/</ToAMSWebServiceURL>
 
 
+	<!-- Base Data types to initialize on startup-->
 	<InitAircraftTypes>false</InitAircraftTypes>
 	<InitAircraft>false</InitAircraft>
 	<InitAirports>false</InitAirports>
@@ -19,14 +30,20 @@
 	<InitStands>false</InitStands>
 	<InitGates>true</InitGates>
 
+	<!-- Initialise flights on startup and the time span to init-->
 	<InitFlights>false</InitFlights>
 	<StartFromHours>-1000</StartFromHours>
 	<StartFromHours>24</StartFromHours>
 
 
+	<!-- The handlers for the various message types -->
+	<!-- The "class" attribute is the classname in the AMSAMSAdaptor namespace that implements inherits the HandlerAbstract class 
+	     "messageType" is the AMSX message type that is managed
+         "name" is for descriptive purposes only
+		 "enabled" wheterht eh handler is enabled or not  -->
 	<Handlers>
 		<Handler class="HandlerFlightUpdate" messageType="FlightUpdatedNotification" name="Default Flight Update Handler" enabled="true"/>
-		
+
 		<!-- Multiple types of the same type of Handler can be used if different configurations are needed-->
 		<Handler class="HandlerFlightUpdate" messageType="FlightUpdatedNotification" name="Flight Update Handler with filtering" enabled="true">
 
@@ -36,7 +53,11 @@
 			<PassFilter>.//ams:FlightId/ams:AirlineDesignator[@codeContext='IATA' and  contains(text(), 'QF')]</PassFilter>
 			<NoPassFilter>.//ams:FlightId/ams:AirlineDesignator[@codeContext='IATA' and  contains(text(), 'QR')]</NoPassFilter>
 
+			<!-- Transformers modify the message in some way -->
+			<!-- Multiple transformer can be applied to one message -->
+			<!-- Transformers implement the ITransformer interface -->
 			<!-- Transformers are type specific -->
+
 			<Transformer class="TransformerFlightRemoveProperties">
 				<TransformerConfig>
 					<!-- List of properties to remove -->
@@ -59,21 +80,23 @@
 					<Property propertyName="AirportIATA" type="fixed" value="DJB" />
 				</TransformerConfig>
 			</Transformer>
-			
+
 			<!-- Remove one or more custom table -->
 			<Transformer class ="TransformerFlightRemoveCustomTable">
-				<Property tableName="customTableNameToRemove" />
-				<Property tableName="customSensitiveData" />
+				<TransformerConfig>
+					<Property tableName="customTableNameToRemove" />
+					<Property tableName="customSensitiveData" />
+				</TransformerConfig>
 			</Transformer>
-			
+
 			<Transformer class ="TransformerFlightRemoveActivities" />
 			<Transformer class ="TransformerFlightRemoveEvents" />
 			<Transformer class ="TransformerFlightRemoveVehicleSlots" />
-			
+
 			<!-- Convert the CheckInSlot data to a custom table format-->
 			<Transformer class ="TransformerFlightCheckInSlotToTable" />
 
-			<Transformer class="TransformerFlightLookupReMapper">
+			<Transformer class="TransformerFlightLookupReMapper" enabled="false">
 				<TransformerConfig>
 					<!-- 
 				The property we want to change is propertyName="ScheduledTime"
@@ -88,25 +111,25 @@
 				
 				The format of the time is timeFormat="yyyy-MM-ddTHH:mm:ssZ" 
 				-->
-					<!--<Property propertyName="ScheduledTime"  lookupPropertyName="AirportIATA" referencePropertyName="ScheduledTime" timeOffset="true" fileName="flighttimes.csv" indexField="0" valueField="1" timeFormat="yyyy-MM-ddTHH:mm:ssZ"/> -->
+					<Property propertyName="ScheduledTime"  lookupPropertyName="AirportIATA" referencePropertyName="ScheduledTime" timeOffset="true" fileName="flighttimes.csv" indexField="0" valueField="1" timeFormat="yyyy-MM-ddTHH:mm:ssZ"/>
 				</TransformerConfig>
 			</Transformer>
 		</Handler>
 		<Handler class="HandlerFlightDelete" messageType="FlightDeletedNotification" name="Default FlightDeleted Update Handler" enabled="true"/>
 		<Handler class="HandlerFlight" messageType="Flight" name="Default Flight Update Handler" enabled="true"/>
-		
+
 		<Handler class="HandlerCheckInUpdate" messageType="CheckInUpdatedNotification" name="Default CheckIn Update Handler" enabled="true"/>
 		<Handler class="HandlerCheckInCreate" messageType="CheckInCreatedNotification" name="Default CheckIn Created Handler" enabled="true"/>
 		<Handler class="HandlerCheckIn" messageType="CheckIn" name="Default CheckIn Handler" enabled="true"/>
-		
+
 		<Handler class="HandlerStandUpdate" messageType="StandUpdatedNotification" name="Default Stand Update Handler" enabled="true"/>
 		<Handler class="HandlerStandCreate" messageType="StandCreatedNotification" name="Default Stand Created Handler" enabled="true"/>
 		<Handler class="HandlerStand" messageType="Stand" name="Default Stand Handler" enabled="true"/>
-		
+
 		<Handler class="HandlerGateUpdate" messageType="GateUpdatedNotification" name="Default Gate Update Handler" enabled="true"/>
 		<Handler class="HandlerGateCreate" messageType="GateCreatedNotification" name="Default Gate Created Handler" enabled="true"/>
 		<Handler class="HandlerGate" messageType="Gate" name="Default Gate Handler" enabled="true"/>
-		
+
 		<Handler class="HandlerAreaUpdate" messageType="AreaUpdatedNotification" name="Default Area Update Handler" enabled="true"/>
 		<Handler class="HandlerAreaCreate" messageType="AreaCreatedNotification" name="Default Area Created Handler" enabled="true"/>
 		<Handler class="HandlerArea" messageType="Area" name="Default Area Handler" enabled="true"/>
