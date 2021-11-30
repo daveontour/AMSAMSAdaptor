@@ -22,6 +22,7 @@ apiVersion=""2.8"">
         public string AMSXMessageBottom = @"</amsx-messages:Content></amsx-messages:Envelope>";
         public XmlNode node;
         public Dictionary<string, string> State { get; set; } = new Dictionary<string, string>();
+        public Dictionary<string, string> KeyState { get; set; } = new Dictionary<string, string>();
 
         public ModelBase(XmlNode node)
         {
@@ -824,6 +825,8 @@ apiVersion=""2.8"">
 
         public ModelRoute(XmlNode node) : base(node)
         {
+            KeyState.Add("CustomTypeCode", node.SelectSingleNode(".//amsx-datatypes:CustomsTypeCode", nsmgr)?.InnerText);
+
             foreach (XmlNode n in node.SelectNodes(".//amsx-datatypes:RouteViaPoint", nsmgr))
             {
                 RouteViaPoint point;
@@ -846,7 +849,7 @@ apiVersion=""2.8"">
             sb.AppendLine(AMSXMessageHeader);
             sb.AppendLine("<amsx-messages:RouteCreateRequest>");
             sb.AppendLine("<amsx-datatypes:Token>TOKEN</amsx-datatypes:Token>");
-            sb.AppendLine("<amsx-datatypes:RouteId>");
+            sb.AppendLine("<amsx-messages:RouteId>");
             sb.AppendLine("<amsx-datatypes:ViaPoints>");
 
             foreach (RouteViaPoint point in viaPoints)
@@ -857,15 +860,19 @@ apiVersion=""2.8"">
             }
 
             sb.AppendLine("</amsx-datatypes:ViaPoints>");
-            sb.AppendLine("</amsx-datatypes:RouteId>");
-            sb.AppendLine("<amsx-messages:RouteUpdates>");
+            sb.AppendLine("</amsx-messages:RouteId>");
 
-            foreach (KeyValuePair<string, string> n in State)
+            if (KeyState["CustomTypeCode"] != null || State.Count > 0)
             {
-                sb.AppendLine($"<amsx-messages:Update propertyName=\"{n.Key}\">{n.Value}</amsx-messages:Update>");
+                sb.AppendLine("<amsx-messages:RouteUpdates>");
+                if (KeyState["CustomTypeCode"] != null) sb.AppendLine($"<amsx-messages:Update propertyName=\"CustomsTypeCode\">{KeyState["CustomTypeCode"]}</amsx-messages:Update>");
+                foreach (KeyValuePair<string, string> n in State)
+                {
+                    sb.AppendLine($"<amsx-messages:Update propertyName=\"{n.Key}\">{n.Value}</amsx-messages:Update>");
+                }
+                sb.AppendLine("</amsx-messages:RouteUpdates>");
             }
 
-            sb.AppendLine("</amsx-messages:RouteUpdates>");
             sb.AppendLine("</amsx-messages:RouteCreateRequest>");
             sb.AppendLine(AMSXMessageBottom);
             try
@@ -885,7 +892,7 @@ apiVersion=""2.8"">
             sb.AppendLine(AMSXMessageHeader);
             sb.AppendLine("<amsx-messages:RouteUpdateRequest>");
             sb.AppendLine("<amsx-datatypes:Token>TOKEN</amsx-datatypes:Token>");
-            sb.AppendLine("<amsx-datatypes:RouteId>");
+            sb.AppendLine("<amsx-messages:RouteId>");
             sb.AppendLine("<amsx-datatypes:ViaPoints>");
 
             foreach (RouteViaPoint point in viaPoints)
@@ -896,15 +903,18 @@ apiVersion=""2.8"">
             }
 
             sb.AppendLine("</amsx-datatypes:ViaPoints>");
-            sb.AppendLine("</amsx-datatypes:RouteId>");
-            sb.AppendLine("<amsx-messages:RouteUpdates>");
+            sb.AppendLine("</amsx-messages:RouteId>");
 
-            foreach (KeyValuePair<string, string> n in State)
+            if (KeyState["CustomTypeCode"] != null || State.Count > 0)
             {
-                sb.AppendLine($"<amsx-messages:Update propertyName=\"{n.Key}\">{n.Value}</amsx-messages:Update>");
+                sb.AppendLine("<amsx-messages:RouteUpdates>");
+                if (KeyState["CustomTypeCode"] != null) sb.AppendLine($"<amsx-messages:Update propertyName=\"CustomsTypeCode\">{KeyState["CustomTypeCode"]}</amsx-messages:Update>");
+                foreach (KeyValuePair<string, string> n in State)
+                {
+                    sb.AppendLine($"<amsx-messages:Update propertyName=\"{n.Key}\">{n.Value}</amsx-messages:Update>");
+                }
+                sb.AppendLine("</amsx-messages:RouteUpdates>");
             }
-
-            sb.AppendLine("</amsx-messages:RouteUpdates>");
             sb.AppendLine("</amsx-messages:RouteUpdateRequest>");
             sb.AppendLine(AMSXMessageBottom);
             try
@@ -924,7 +934,7 @@ apiVersion=""2.8"">
             sb.AppendLine(AMSXMessageHeader);
             sb.AppendLine("<amsx-messages:RouteDeleteRequest>");
             sb.AppendLine("<amsx-datatypes:Token>TOKEN</amsx-datatypes:Token>");
-            sb.AppendLine("<amsx-datatypes:RouteId>");
+            sb.AppendLine("<amsx-messages:RouteId>");
             sb.AppendLine("<amsx-datatypes:ViaPoints>");
 
             foreach (RouteViaPoint point in viaPoints)
@@ -935,7 +945,7 @@ apiVersion=""2.8"">
             }
 
             sb.AppendLine("<amsx-datatypes:ViaPoints>");
-            sb.AppendLine("</amsx-datatypes:RouteId>");
+            sb.AppendLine("</amsx-messages:RouteId>");
             sb.AppendLine("</amsx-messages:RouteDeleteRequest>");
             sb.AppendLine(AMSXMessageBottom);
             try
@@ -949,4 +959,94 @@ apiVersion=""2.8"">
             }
         }
     }
-}
+
+    public class ModelCustomsType : ModelBase
+    {
+
+
+        public string CustomTypeCode;
+        public string CustomTypeName;
+        public string CustomTypePriority;
+
+        public ModelCustomsType(XmlNode node) : base(node)
+        {
+            CustomTypeCode = node.SelectSingleNode(".//amsx-datatypes:CustomsTypeCode", nsmgr)?.InnerText;
+            CustomTypeName = node.SelectSingleNode(".//amsx-datatypes:CustomsTypeState/amsx-datatypes:Value[@propertyName='Name']", nsmgr)?.InnerText;
+            CustomTypePriority = node.SelectSingleNode(".//amsx-datatypes:CustomsTypeState/amsx-datatypes:Value[@propertyName='Priority']", nsmgr)?.InnerText;
+        }
+
+        public override string CreateRequest()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine(AMSXMessageHeader);
+            sb.AppendLine("<amsx-messages:CustomsTypeCreateRequest>");
+            sb.AppendLine("<amsx-datatypes:Token>TOKEN</amsx-datatypes:Token>");
+            sb.AppendLine("<amsx-messages:CustomsTypeId>");
+            sb.AppendLine($"<amsx-datatypes:CustomsTypeCode>{CustomTypeCode}</amsx-datatypes:CustomsTypeCode>");
+            sb.AppendLine("</amsx-messages:CustomsTypeId>");
+            sb.AppendLine("<amsx-messages:CustomsTypeUpdates>");
+            sb.AppendLine($"<amsx-messages:Update propertyName=\"Name\">{CustomTypeName}</amsx-messages:Update>");
+            sb.AppendLine($"<amsx-messages:Update propertyName=\"Priority\">{CustomTypePriority}</amsx-messages:Update>");
+            sb.AppendLine("</amsx-messages:CustomsTypeUpdates>");
+            sb.AppendLine("</amsx-messages:CustomsTypeCreateRequest>");
+            sb.AppendLine(AMSXMessageBottom);
+            try
+            {
+                return PrintXML(sb.ToString().Replace("&", "&amp;"));
+            }
+            catch (Exception)
+            {
+                Console.WriteLine(sb.ToString());
+                return null;
+            }
+        }
+
+        public override string UpdateRequest()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine(AMSXMessageHeader);
+            sb.AppendLine("<amsx-messages:CustomsTypeUpdateRequest>");
+            sb.AppendLine("<amsx-datatypes:Token>TOKEN</amsx-datatypes:Token>");
+            sb.AppendLine("<amsx-messages:CustomsTypeId>");
+            sb.AppendLine($"<amsx-datatypes:CustomsTypeCode>{CustomTypeCode}</amsx-datatypes:CustomsTypeCode>");
+            sb.AppendLine("</amsx-messages:CustomsTypeId>");
+            sb.AppendLine("<amsx-messages:CustomsTypeUpdates>");
+            sb.AppendLine($"<amsx-messages:Update propertyName=\"Name\">{CustomTypeName}</amsx-messages:Update>");
+            sb.AppendLine($"<amsx-messages:Update propertyName=\"Priority\">{CustomTypePriority}</amsx-messages:Update>");
+            sb.AppendLine("</amsx-messages:CustomsTypeUpdates>");
+            sb.AppendLine("</amsx-messages:CustomsTypeUpdateRequest>");
+            sb.AppendLine(AMSXMessageBottom);
+            try
+            {
+                return PrintXML(sb.ToString().Replace("&", "&amp;"));
+            }
+            catch (Exception)
+            {
+                Console.WriteLine(sb.ToString());
+                return null;
+            }
+        }
+
+        public override string DeleteRequest()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine(AMSXMessageHeader);
+            sb.AppendLine("<amsx-messages:CustomsTypeDeleteRequest>");
+            sb.AppendLine("<amsx-datatypes:Token>TOKEN</amsx-datatypes:Token>");
+            sb.AppendLine("<amsx-messages:CustomsTypeId>");
+            sb.AppendLine($"<amsx-datatypes:CustomsTypeCode>{CustomTypeCode}</amsx-datatypes:CustomsTypeCode>");
+            sb.AppendLine("</amsx-messages:CustomsTypeId>");
+            sb.AppendLine("</amsx-messages:CustomsTypeDeleteRequest>");
+            sb.AppendLine(AMSXMessageBottom);
+            try
+            {
+                return PrintXML(sb.ToString().Replace("&", "&amp;"));
+            }
+            catch (Exception)
+            {
+                Console.WriteLine(sb.ToString());
+                return null;
+            }
+        }
+    }
+    }

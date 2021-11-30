@@ -73,18 +73,18 @@ namespace AMSAMSAdaptor
             SetCoreValue("AirportICAO", ".//amsx-datatypes:FlightId/amsx-datatypes:AirportCode[@codeContext='ICAO']", true);
 
 
-            SetCoreValue("LinkedNature", ".//amsx-datatypes:LinkedFlight/amsx-datatypes:FlightId/amsx-datatypes:FlightKind", true);
-            SetCoreValue("LinkedAirlineIATA", ".//amsx-datatypes:LinkedFlight/amsx-datatypes:AirlineDesignator[@codeContext = 'IATA']", true);
-            SetCoreValue("LinkedAirlineICAO", ".//amsx-datatypes:LinkedFlight/amsx-datatypes:AirlineDesignator[@codeContext='ICAO']", true);
-            SetCoreValue("LinkedFlightNumber", ".//amsx-datatypes:LinkedFlight/amsx-datatypes:FlightId/amsx-datatypes:FlightNumber", true); ;
-            SetCoreValue("LinkedScheduledDate", ".//amsx-datatypes:LinkedFlight/amsx-datatypes:FlightId/amsx-datatypes:ScheduledDate", true);
-            SetCoreValue("LinkedAirportIATA", ".//amsx-datatypes:LinkedFlight/amsx-datatypes:FlightId/amsx-datatypes:AirportCode[@codeContext='IATA']", true);
-            SetCoreValue("LinkedAirportICAO", ".//amsx-datatypes:LinkedFlight/amsx-datatypes:FlightId/amsx-datatypes:AirportCode[@codeContext='ICAO']", true);
+            SetCoreValue("LinkedNature", ".//amsx-messages:Flight/amsx-datatypes:FlightState/amsx-datatypes:LinkedFlight/amsx-datatypes:FlightId/amsx-datatypes:FlightKind", true);
+            SetCoreValue("LinkedAirlineIATA", ".//amsx-messages:Flight/amsx-datatypes:FlightState/amsx-datatypes:LinkedFlight/amsx-datatypes:FlightId/amsx-datatypes:AirlineDesignator[@codeContext = 'IATA']", true);
+            SetCoreValue("LinkedAirlineICAO", ".//amsx-messages:Flight/amsx-datatypes:FlightState/amsx-datatypes:LinkedFlight/amsx-datatypes:FlightId/amsx-datatypes:AirlineDesignator[@codeContext='ICAO']", true);
+            SetCoreValue("LinkedFlightNumber", ".//amsx-messages:Flight/amsx-datatypes:FlightState/amsx-datatypes:LinkedFlight/amsx-datatypes:FlightId/amsx-datatypes:FlightNumber", true); ;
+            SetCoreValue("LinkedScheduledDate", ".//amsx-messages:Flight/amsx-datatypes:FlightState/amsx-datatypes:LinkedFlight/amsx-datatypes:FlightId/amsx-datatypes:ScheduledDate", true);
+            SetCoreValue("LinkedAirportIATA", ".//amsx-messages:Flight/amsx-datatypes:FlightState/amsx-datatypes:LinkedFlight/amsx-datatypes:FlightId/amsx-datatypes:AirportCode[@codeContext='IATA']", true);
+            SetCoreValue("LinkedAirportICAO", ".//amsx-messages:Flight/amsx-datatypes:FlightState/amsx-datatypes:LinkedFlight/amsx-datatypes:FlightId/amsx-datatypes:AirportCode[@codeContext='ICAO']", true);
 
             SetCoreValue("ScheduledTime", ".//amsx-datatypes:FlightState/amsx-datatypes:ScheduledTime");
 
-            SetCoreValue("AircraftTypeCodeIATA", ".//amsx-datatypes:FlightState/amsx-datatypes:AircraftType/amsx-datatypes:AircraftTypeId/amsx-datatypes:AircraftTypeCode[@codeContext='IATA']");
-            SetCoreValue("AircraftTypeCodeICAO", ".//amsx-datatypes:FlightState/amsx-datatypes:AircraftType/amsx-datatypes:AircraftTypeId/amsx-datatypes:AircraftTypeCode[@codeContext='ICAO']");
+            SetCoreValue("AircraftTypeCode", ".//amsx-datatypes:FlightState/amsx-datatypes:AircraftType/amsx-datatypes:AircraftTypeId/amsx-datatypes:AircraftTypeCode[@codeContext='IATA']");
+//            SetCoreValue("AircraftTypeCodeICAO", ".//amsx-datatypes:FlightState/amsx-datatypes:AircraftType/amsx-datatypes:AircraftTypeId/amsx-datatypes:AircraftTypeCode[@codeContext='ICAO']");
             SetCoreValue("AircraftRegistration", ".//amsx-datatypes:FlightState/amsx-datatypes:Aircraft/amsx-datatypes:AircraftId/amsx-datatypes:Registration");
 
             foreach (XmlNode v in node.SelectNodes(".//amsx-datatypes:FlightState/amsx-datatypes:Route/amsx-datatypes:ViaPoints/amsx-datatypes:RouteViaPoint/amsx-datatypes:AirportCode[@codeContext='IATA']", nsmgr))
@@ -149,75 +149,88 @@ namespace AMSAMSAdaptor
 
         public FlightId GetFlightId()
         {
-            LookupCode[] ap = { };
-            if (FlightProperties.ContainsKey("AirportICAO"))
+            try
             {
-                LookupCode apCode = new LookupCode();
-                apCode.codeContextField = CodeContext.ICAO;
-                apCode.valueField = FlightProperties["AirportICAO"]?.Value;
-                if (apCode.valueField != null)
+                LookupCode[] ap = { };
+                //if (FlightProperties.ContainsKey("AirportICAO"))
+                //{
+                //    LookupCode apCode = new LookupCode();
+                //    apCode.codeContextField = CodeContext.ICAO;
+                //    apCode.valueField = FlightProperties["AirportICAO"]?.Value;
+                //    if (apCode.valueField != null)
+                //    {
+                //        ap = ap.Append<LookupCode>(apCode).ToArray();
+                //    }
+                //}
+                if (FlightProperties.ContainsKey("AirportIATA"))
                 {
-                    ap = ap.Append<LookupCode>(apCode).ToArray();
+                    LookupCode apCode2 = new LookupCode();
+                    apCode2.codeContextField = CodeContext.IATA;
+                    apCode2.valueField = FlightProperties["AirportIATA"].Value;
+                    if (apCode2.valueField != null)
+                    {
+                        ap = ap.Append<LookupCode>(apCode2).ToArray();
+                    }
                 }
-            }
-            if (FlightProperties.ContainsKey("AirportIATA"))
+
+                LookupCode alCode = new LookupCode();
+                alCode.codeContextField = CodeContext.IATA;
+                alCode.valueField = FlightProperties["AirlineIATA"].Value;
+                LookupCode[] al = { alCode };
+
+                FlightId flightID = new FlightId();
+                flightID.flightKindField = FlightProperties["Nature"].Value == "Arrival" ? FlightKind.Arrival : FlightKind.Departure;
+                flightID.airportCodeField = ap;
+                flightID.airlineDesignatorField = al;
+                flightID.scheduledDateField = Convert.ToDateTime(FlightProperties["ScheduledDate"].Value);
+                flightID.flightNumberField = FlightProperties["FlightNumber"].Value;
+
+                return flightID;
+            } catch (Exception ex)
             {
-                LookupCode apCode2 = new LookupCode();
-                apCode2.codeContextField = CodeContext.IATA;
-                apCode2.valueField = FlightProperties["AirportIATA"].Value;
-                if (apCode2.valueField != null)
-                {
-                    ap = ap.Append<LookupCode>(apCode2).ToArray();
-                }
+                return null;
             }
-
-            LookupCode alCode = new LookupCode();
-            alCode.codeContextField = CodeContext.IATA;
-            alCode.valueField = FlightProperties["AirlineIATA"].Value;
-            LookupCode[] al = { alCode };
-
-            FlightId flightID = new FlightId();
-            flightID.flightKindField = FlightProperties["Nature"].Value == "Arrival" ? FlightKind.Arrival : FlightKind.Departure;
-            flightID.airportCodeField = ap;
-            flightID.airlineDesignatorField = al;
-            flightID.scheduledDateField = Convert.ToDateTime(FlightProperties["ScheduledDate"].Value);
-            flightID.flightNumberField = FlightProperties["FlightNumber"].Value;
-
-            return flightID;
         }
 
         public FlightId GetLinkedFlightId()
         {
+            try
+            {
+                if (!FlightProperties.ContainsKey("LinkedAirportIATA"))
+                {
+                    return null;
+                }
 
-            if (FlightProperties["LinkedAirportIATA"].Value == null)
+               //LookupCode[] ap = { };
+                //LookupCode apCode = new LookupCode();
+                //apCode.codeContextField = CodeContext.ICAO;
+                //apCode.valueField = FlightProperties["LinkedAirportICAO"].Value;
+                //LookupCode[] ap = { apCode };
+
+                LookupCode apCode2 = new LookupCode();
+                apCode2.codeContextField = CodeContext.IATA;
+                apCode2.valueField = FlightProperties["LinkedAirportIATA"].Value;
+                LookupCode[] ap = { apCode2 };
+
+
+                LookupCode alCode = new LookupCode();
+                alCode.codeContextField = CodeContext.IATA;
+                alCode.valueField = FlightProperties["LinkedAirlineIATA"].Value;
+                LookupCode[] al = { alCode };
+
+                FlightId flightID = new FlightId();
+                flightID.flightKindField = FlightProperties["LinkedNature"].Value == "Arrival" ? FlightKind.Arrival : FlightKind.Departure;
+                flightID.airportCodeField = ap;
+                flightID.airlineDesignatorField = al;
+                flightID.scheduledDateField = Convert.ToDateTime(FlightProperties["LinkedScheduledDate"].Value);
+                flightID.flightNumberField = FlightProperties["LinkedFlightNumber"].Value;
+
+                return flightID;
+            }
+            catch (Exception ex)
             {
                 return null;
             }
-
-            LookupCode apCode = new LookupCode();
-            apCode.codeContextField = CodeContext.ICAO;
-            apCode.valueField = FlightProperties["LinkedAirportICAO"].Value;
-            LookupCode[] ap = { apCode };
-
-            LookupCode apCode2 = new LookupCode();
-            apCode2.codeContextField = CodeContext.IATA;
-            apCode2.valueField = FlightProperties["LinkedAirportIATA"].Value;
-            ap.Append(apCode2);
-
-
-            LookupCode alCode = new LookupCode();
-            alCode.codeContextField = CodeContext.IATA;
-            alCode.valueField = FlightProperties["LinkedAirlineIATA"].Value;
-            LookupCode[] al = { alCode };
-
-            FlightId flightID = new FlightId();
-            flightID.flightKindField = FlightProperties["LinkedNature"].Value == "Arrival" ? FlightKind.Arrival : FlightKind.Departure;
-            flightID.airportCodeField = ap;
-            flightID.airlineDesignatorField = al;
-            flightID.scheduledDateField = Convert.ToDateTime(FlightProperties["LinkedScheduledDate"].Value);
-            flightID.flightNumberField = FlightProperties["LinkedFlightNumber"].Value;
-
-            return flightID;
         }
 
 

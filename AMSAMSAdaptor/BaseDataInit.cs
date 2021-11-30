@@ -23,6 +23,7 @@ namespace AMSAMSAdaptor
         private bool initStands = false;
         private bool initGates = false;
         private bool initRoutes = false;
+        private bool initCustomsTypes = false;
 
         private static readonly NLog.Logger logger = NLog.LogManager.GetLogger("consoleLogger");
 
@@ -40,6 +41,7 @@ namespace AMSAMSAdaptor
             bool.TryParse(config.SelectSingleNode(".//InitStands")?.InnerText, out initStands);
             bool.TryParse(config.SelectSingleNode(".//InitGates")?.InnerText, out initGates);
             bool.TryParse(config.SelectSingleNode(".//InitRoutes")?.InnerText, out initRoutes);
+            bool.TryParse(config.SelectSingleNode(".//InitCustomsTypes")?.InnerText, out initCustomsTypes);
 
             binding = new BasicHttpBinding
             {
@@ -47,7 +49,7 @@ namespace AMSAMSAdaptor
                 MaxBufferSize = 20000000,
                 MaxBufferPoolSize = 20000000
             };
-            address = new EndpointAddress(Parameters.TO_AMS_WEB_SERVICE_URI);
+            address = new EndpointAddress(Parameters.FROM_AMS_WEB_SERVICE_URI);
         }
 
         public void Sync()
@@ -60,9 +62,37 @@ namespace AMSAMSAdaptor
             if (initCheckIns) InitCheckIns();
             if (initGates) InitGates();
             if (initStands) InitStands();
+            if (initCustomsTypes) InitCustomsTypes();
             if (initRoutes) InitRoutes();
         }
 
+        public void InitCustomsTypes()
+        {
+            logger.Info("Populating CustomsTypes");
+            using (AMSIntegrationServiceClient client = new AMSIntegrationServiceClient(binding, address))
+            {
+                try
+                {
+                    XmlElement res = client.GetCustomsTypes(Parameters.FROMTOKEN);
+                    XmlNamespaceManager nsmgr = new XmlNamespaceManager(res.OwnerDocument.NameTable);
+                    nsmgr = new XmlNamespaceManager(res.OwnerDocument.NameTable);
+                    nsmgr.AddNamespace("amsx-messages", "http://www.sita.aero/ams6-xml-api-messages");
+                    nsmgr.AddNamespace("amsx-datatypes", "http://www.sita.aero/ams6-xml-api-datatypes");
+
+                    XmlNodeList fls = res.SelectNodes("//amsx-datatypes:CustomsType", nsmgr);
+                    foreach (XmlNode fl in fls)
+                    {
+                        logger.Warn("Startup CustomsType Update");
+                        supervisor.ProcessMessage(fl.OuterXml);
+                    }
+                }
+                catch (Exception e)
+                {
+                    logger.Error(e.Message);
+                }
+            }
+            logger.Info("Populating Customs Complete");
+        }
         public void InitAirports()
         {
             logger.Info("Populating Airports");

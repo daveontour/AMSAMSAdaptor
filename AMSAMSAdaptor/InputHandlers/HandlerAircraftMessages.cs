@@ -6,7 +6,7 @@ namespace AMSAMSAdaptor
     public class HandlerAircraftUpdate : HandlerAbstract
     {
         public override string MessageName { get; } = "AircraftUpdatedNotification";
-        public override string HandlerAction { get; } = "UpdateAircraft";
+        public override string HandlerAction { get; } = "UpdateAircraft,CreateAircraft";
         public override string HandlerModel => "AMSAMSAdaptor.ModelAircraft";
         public HandlerAircraftUpdate(Supervisor supervisor, XmlNode config) : base(supervisor, config) { }
 

@@ -7,19 +7,19 @@
 	<ServiceDescription></ServiceDescription>
 
 	<!-- Config for the "source" system -->
-	<FromAMSQueue>.\private$\fromams</FromAMSQueue>
-	<FromAMSWebServiceURL>http://localhost:9191/SITAAMSIntegrationService/v2/SITAAMSIntegrationService/</FromAMSWebServiceURL>
+	<FromAMSQueue>.\private$\fromamssfo1</FromAMSQueue>
+	<FromAMSWebServiceURL>http://localhost:91/SITAAMSIntegrationServiceSFO1/v2/SITAAMSIntegrationService/</FromAMSWebServiceURL>
 	<!--	<FromToken>32b8ef7a-0a16-4b4a-9e01-799960c91e0e</FromToken> -->
-	<FromToken>d3e7eb26-194b-4552-bf09-0b6b5dd4be19</FromToken>
+	<FromToken>0b36cdaa-712b-4f27-bb23-a7248c9a17c8</FromToken>
 	<ReadMessageLoopInterval>10</ReadMessageLoopInterval>
 
 	<!-- Config for the "target" system -->
-	<ToAMSRequestQueue>.\private$\fromli</ToAMSRequestQueue>
-	<ToAMSWebServiceURL>http://localhost:9191/SITAAMSIntegrationService/v2/SITAAMSIntegrationService/</ToAMSWebServiceURL>
+	<ToAMSRequestQueue>.\private$\toamssfo2</ToAMSRequestQueue>
+	<ToAMSWebServiceURL>http://localhost:91/SITAAMSIntegrationServiceSFO2/v2/SITAAMSIntegrationService/</ToAMSWebServiceURL>
 
 	<!--	<ToToken>32b8ef7a-0a16-4b4a-9e01-799960c91e0e</ToToken> -->
-	<ToToken>d3e7eb26-194b-4552-bf09-0b6b5dd4be19</ToToken>
-	<AirportCode>DOH</AirportCode>
+	<ToToken>06f7d842-8add-4290-8c9c-298d2dccbfe4</ToToken>
+	<AirportCode>SFO</AirportCode>
 
 	<!-- Base Data types to initialize on startup-->
 	<InitAircraftTypes>false</InitAircraftTypes>
@@ -30,10 +30,11 @@
 	<InitCheckIns>false</InitCheckIns>
 	<InitStands>false</InitStands>
 	<InitGates>false</InitGates>
-	<InitRoutes>true</InitRoutes>
+	<InitRoutes>false</InitRoutes>
+	<InitCustomsTypes>false</InitCustomsTypes>
 
 	<!-- Initialise flights on startup and the time span to init-->
-	<InitFlights>false</InitFlights>
+	<InitFlights>true</InitFlights>
 	<StartFromHours>-1000</StartFromHours>
 	<StartFromHours>24</StartFromHours>
 
@@ -46,7 +47,7 @@
 		<Handler class="HandlerFlightUpdate" messageType="FlightUpdatedNotification" name="Default Flight Update Handler" enabled="false" />
 
 		<!-- Multiple types of the same type of Handler can be used if different configurations are needed-->
-		<Handler class="HandlerFlightUpdate" messageType="FlightUpdatedNotification" name="Flight Update Handler with filtering" enabled="false">
+		<Handler class="HandlerFlightUpdate" messageType="FlightUpdatedNotification" name="Flight Update Handler with filtering" enabled="true">
 
 			<!-- Pass/NoPass filter work with any message type -->
 			<!-- Uses XPATH of the message to detemine wheter it meets the filer -->
@@ -55,43 +56,43 @@
             "amsx-datatypes", "http://www.sita.aero/ams6-xml-api-datatypes"
             "ams", "http://www.sita.aero/ams6-xml-api-datatypes"
  -->
-			<PassFilter>.//amsx-datatypes:FlightId/amsx-datatypes:AirlineDesignator[@codeContext='IATA' and  contains(text(), 'EK')]</PassFilter>
+	<!--		<PassFilter>.//amsx-datatypes:FlightId/amsx-datatypes:AirlineDesignator[@codeContext='IATA' and  contains(text(), 'EK')]</PassFilter>
 			<PassFilter>.//amsx-datatypes:FlightId/amsx-datatypes:AirlineDesignator[@codeContext='IATA' and  contains(text(), 'QF')]</PassFilter>
-			<NoPassFilter enabled ="false">.//amsx-datatypes:FlightId/amsx-datatypes:AirlineDesignator[@codeContext='IATA' and  contains(text(), 'QR')]</NoPassFilter>
+			<NoPassFilter enabled ="false">.//amsx-datatypes:FlightId/amsx-datatypes:AirlineDesignator[@codeContext='IATA' and  contains(text(), 'QR')]</NoPassFilter>  -->
 
 			<!-- Transformers modify the message in some way -->
 			<!-- Multiple transformer can be applied to one message -->
 			<!-- Transformers implement the ITransformer interface -->
 			<!-- Transformers are type specific -->
 
-			<Transformer class="TransformerFlightRemoveProperties">
+			<Transformer class="TransformerFlightRemoveProperties" enabled="true">
 				<TransformerConfig>
-					<!-- List of properties to remove -->
-					<Property propertyName="S---_AlternateRemark2" />
-					<Property propertyName="S---_AlternateRemark1" />
+					
+					<Property propertyName="ArrivalDeskGroupIsManuallySet" />
+					<Property propertyName="FlightUniqueID" />
+					<Property propertyName="DataLocked" />
+					<Property propertyName="CheckInGroupIsManuallySet" />
 				</TransformerConfig>
-			</Transformer>
+			</Transformer> 
 
-			<Transformer class="TransformerFlightOnlyProperties">
+			<Transformer class="TransformerFlightOnlyProperties" enabled="false">
 				<TransformerConfig>
 					<!-- List of the *only* properties to send -->
 					<Property propertyName="d---_ExpectedFirstBagTime" />
 				</TransformerConfig>
 			</Transformer>
 
-			<Transformer class="TransformerFlightAddProperties">
+<!--			<Transformer class="TransformerFlightAddProperties">
 				<TransformerConfig>
-					<!-- List of properties to add -->
 					<Property propertyName="OriginalFlightNature" type="alternateProperty" alternatePropertyName="Nature" />
 					<Property propertyName="TimeMessageReceived" type="dateTime" dateTimeFormat="HH:mm:ss" />
 					<Property propertyName="TargetAirport" type="fixed" value="HEL" />
 				</TransformerConfig>
-			</Transformer>
-			<Transformer class="TransformerFlightReMapper">
+			</Transformer>  -->
+			<Transformer class="TransformerFlightReMapper" enabled="true">
 				<TransformerConfig>
-					<Property propertyName="S---_LastArrivalSource" type="alternateProperty" alternatePropertyName="S---_LastArrivalSource_AltSource" />
-					<Property propertyName="Nature" type="fixed" value="Arrival" />
-					<Property propertyName="AirportIATA" type="fixed" value="DJB" />
+					<Property propertyName="AirportIATA" type="fixed" value="SFO" />
+					<Property propertyName="AirportICAO" type="fixed" value="KSFO" />
 				</TransformerConfig>
 			</Transformer>
 
@@ -103,9 +104,9 @@
 				</TransformerConfig>
 			</Transformer>
 
-			<Transformer class ="TransformerFlightRemoveActivities" />
+	<!--		<Transformer class ="TransformerFlightRemoveActivities" />
 			<Transformer class ="TransformerFlightRemoveEvents" />
-			<Transformer class ="TransformerFlightRemoveVehicleSlots" />
+			<Transformer class ="TransformerFlightRemoveVehicleSlots" /> -->
 
 			<!-- Convert the CheckInSlot data to a custom table format-->
 			<Transformer class ="TransformerFlightCheckInSlotToTable" />
@@ -163,12 +164,26 @@
 		<Handler class="HandlerRouteUpdate" messageType="RouteUpdatedNotification" name="Default Route Update Handler" enabled="true" />
 		<Handler class="HandlerRouteCreate" messageType="RouteCreatedNotification" name="Default Route Created Handler" enabled="true" />
 		<Handler class="HandlerRouteDelete" messageType="RouteDeletedNotification" name="Default Route Deleted Handler" enabled="true" />
-		<Handler class="HandlerRoute" messageType="Route" name="Default Route Handler" enabled="true" />
-
+		<Handler class="HandlerRoute" messageType="Route" name="Default Route Handler" enabled="true" >
+			<Transformer class="TransformerBaseDataAddMissingProperties"  enabled="true">
+				<TransformerConfig>
+					<Property propertyName="CustomTypeCode" value="D" />
+				</TransformerConfig>
+			</Transformer>
+		</Handler>
+		
 		<Handler class="HandlerAirportUpdate" messageType="AirportUpdatedNotification" name="Default Airport Update Handler" enabled="true" />
 		<Handler class="HandlerAirportCreate" messageType="AirportCreatedNotification" name="Default Airport Created Handler" enabled="true" />
-		<Handler class="HandlerAirportDelete" messageType="AirportDeletedNotification" name="Default Airport Deleted Handler" enabled="true" />
-		<Handler class="HandlerAirport" messageType="Airport" name="Default Airport Handler" enabled="true" />
+		<Handler class="HandlerAirportDelete" messageType="AirportDeletedNotification" name="Default Airport Deleted Handler" enabled="true"/>
+		<Handler class="HandlerAirport" messageType="Airport" name="Default Airport Handler" enabled="true" >
+			<Transformer class="TransformerBaseDataRemoveProperties"  enabled="true">
+				<TransformerConfig>
+					<Property propertyName="S---_CityName_hi" />
+					<Property propertyName="S---_CityName_gu" />
+					<Property propertyName="S---_CityName_kn" />
+				</TransformerConfig>
+			</Transformer>
+		</Handler>
 
 		<Handler class="HandlerAircraftUpdate" messageType="AircraftUpdatedNotification" name="Default Aircraft Update Handler" enabled="true" />
 		<Handler class="HandlerAircraftCreate" messageType="AircraftCreatedNotification" name="Default Aircraft Created Handler" enabled="true" />
@@ -179,5 +194,11 @@
 		<Handler class="HandlerAircraftTypeCreate" messageType="AircraftTypeCreatedNotification" name="Default AircraftType Created Handler" enabled="true" />
 		<Handler class="HandlerAircraftTypeDelete" messageType="AircraftTypeDeletedNotification" name="Default AircraftType Deleted Handler" enabled="true" />
 		<Handler class="HandlerAircraftType" messageType="AircraftType" name="Default AircraftType Handler" enabled="true" />
+
+		<Handler class="HandlerCustomsTypeUpdate" messageType="CustomsTypeUpdatedNotification" name="Default CustomsTypeType Update Handler" enabled="true" />
+		<Handler class="HandlerCustomsTypeCreate" messageType="CustomsTypeCreatedNotification" name="Default CustomsTypeType Created Handler" enabled="true" />
+		<Handler class="HandlerCustomsTypeDelete" messageType="CustomsTypeDeletedNotification" name="Default CustomsTypeType Deleted Handler" enabled="true" />
+		<Handler class="HandlerCustomsType" messageType="CustomsType" name="Default CustomsTypeType Handler" enabled="true" />
+
 	</Handlers>
 </config>

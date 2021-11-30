@@ -69,6 +69,7 @@
     <Compile Include="InputHandlers\HandlerAircraftTypeMessages.cs" />
     <Compile Include="InputHandlers\HandlerAircraftMessages.cs" />
     <Compile Include="InputHandlers\HandlerAirlineMessages.cs" />
+    <Compile Include="InputHandlers\HandlerCustomsTypeMessages.cs" />
     <Compile Include="InputHandlers\HandlerGateMessages.cs" />
     <Compile Include="InputHandlers\HandlerRouteMessages.cs" />
     <Compile Include="InputHandlers\HandlerStandMessages.cs" />
@@ -81,8 +82,10 @@
     <Compile Include="OutputHandlers\OutputBaseData.cs" />
     <Compile Include="OutputHandlers\OutputFlightWS.cs" />
     <Compile Include="ReMapper.cs" />
+    <Compile Include="Transformers\TransformerBaseDataAddMissingProperties.cs" />
     <Compile Include="Transformers\TransformerFlightAddProperties.cs" />
     <Compile Include="Transformers\TransformerFlightLookupReMapper.cs" />
+    <Compile Include="Transformers\TransformerBaseDataRemoveProperties.cs" />
     <Compile Include="Transformers\TransformerFlightRemoveSlots.cs" />
     <Compile Include="Transformers\TransformerFlightSlotToTable.cs" />
     <Compile Include="Transformers\TransformerFlightRemoveTabularTypeData.cs" />
