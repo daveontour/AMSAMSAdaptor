@@ -7,7 +7,7 @@
 	<ServiceDescription></ServiceDescription>
 
 	<!-- Config for the "source" system -->
-	<FromAMSQueue>.\private$\fromamssfo1</FromAMSQueue>
+	<FromAMSQueue enabled="true">.\private$\fromamssfo1</FromAMSQueue>
 	<FromAMSWebServiceURL>http://localhost:91/SITAAMSIntegrationServiceSFO1/v2/SITAAMSIntegrationService/</FromAMSWebServiceURL>
 	<!--	<FromToken>32b8ef7a-0a16-4b4a-9e01-799960c91e0e</FromToken> -->
 	<FromToken>0b36cdaa-712b-4f27-bb23-a7248c9a17c8</FromToken>
@@ -57,7 +57,7 @@
  -->
 			<PassFilter enabled ="false">.//amsx-datatypes:FlightId/amsx-datatypes:AirlineDesignator[@codeContext='IATA' and  contains(text(), 'EK')]</PassFilter>
 			<PassFilter enabled ="false">.//amsx-datatypes:FlightId/amsx-datatypes:AirlineDesignator[@codeContext='IATA' and  contains(text(), 'QF')]</PassFilter>
-	<!--		<NoPassFilter enabled ="true">.//amsx-datatypes:FlightId/amsx-datatypes:AirlineDesignator[@codeContext='IATA' and  contains(text(), 'QR')]</NoPassFilter> -->
+			<NoPassFilter enabled ="false">.//amsx-datatypes:FlightId/amsx-datatypes:AirlineDesignator[@codeContext='IATA' and  contains(text(), 'QR')]</NoPassFilter>
 
 			<!-- Transformers modify the message in some way -->
 			<!-- Multiple transformer can be applied to one message -->
@@ -65,8 +65,7 @@
 			<!-- Transformers are type specific -->
 
 			<Transformer class="TransformerFlightRemoveProperties" enabled="true">
-				<TransformerConfig>
-					
+				<TransformerConfig>				
 					<Property propertyName="ArrivalDeskGroupIsManuallySet" />
 					<Property propertyName="FlightUniqueID" />
 					<Property propertyName="DataLocked" />

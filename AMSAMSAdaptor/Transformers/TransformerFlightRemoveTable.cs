@@ -7,7 +7,7 @@ using System.Xml;
 
 namespace AMSAMSAdaptor
 {
-    internal class TransformerFlightRemoveCustomTable : ITransformer
+    internal class TransformerFlightRemoveTable : ITransformer
     {
         private List<string> _tables = new List<string>();
         public void SetConfig(XmlNode configNode)

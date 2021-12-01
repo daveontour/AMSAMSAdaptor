@@ -10,11 +10,30 @@ using System.IO;
 using System.Xml;
 using System.Collections.Concurrent;
 using WorkBridge.Modules.AMS.AMSIntegrationWebAPI.Srv;
+using IBM.WMQ;
+using System.Collections;
 
 namespace AMSAMSAdaptor
 {
     public class Supervisor
     {
+        private string qMgr;
+        private string qSvrChan;
+        private string qHost;
+        private string qPort;
+        private string qUser;
+        private string qPass;
+        private int getTimeout;
+        public string queueName;
+        private bool useSendLocking;
+        private readonly Hashtable connectionParams = new Hashtable();
+
+        private bool fromMSMQ = false;
+        private bool fromIBMMQ = false;
+
+        private bool OK_TO_RUN = true;
+
+
         private static readonly NLog.Logger logger = NLog.LogManager.GetLogger("consoleLogger");
 
         private static MessageQueue recvQueue;  // Queue to recieve update notifications on
@@ -78,6 +97,140 @@ namespace AMSAMSAdaptor
 
             logger.Info($"AMS-AMS Adaptor Service Starting ({Parameters.VERSION})");
 
+            bool.TryParse(configDoc.SelectSingleNode(".//FromAMSQueue")?.Attributes["enabled"]?.Value, out fromMSMQ);
+            bool.TryParse(configDoc.SelectSingleNode(".//FromIBMMQRequestQueue")?.Attributes["enabled"]?.Value, out fromIBMMQ);
+
+
+            XmlNode defn = configDoc.SelectSingleNode(".//FromIBMMQRequestQueue");
+
+            if (defn != null)
+            {
+                try
+                {
+                    try
+                    {
+                        queueName = defn.Attributes["queue"].Value;
+                    }
+                    catch (Exception)
+                    {
+                        logger.Error($"No Queue defined for {defn.Attributes["name"].Value}");
+                        //  return;
+                    }
+
+                    try
+                    {
+                        qMgr = defn.Attributes["queueMgr"].Value;
+                    }
+                    catch (Exception)
+                    {
+                        logger.Error($"Queue Manager not defined for {defn.Attributes["name"].Value}");
+                        // return;
+                    }
+                    try
+                    {
+                        qSvrChan = defn.Attributes["channel"].Value;
+                    }
+                    catch (Exception)
+                    {
+                        logger.Error($"Channel not defined for {defn.Attributes["name"].Value}");
+                        // return;
+                    }
+
+                    try
+                    {
+                        qHost = defn.Attributes["host"].Value;
+                    }
+                    catch (Exception)
+                    {
+                        logger.Error($"Queue  not defined for {defn.Attributes["name"].Value}");
+                        //return;
+                    }
+
+                    try
+                    {
+                        qPort = defn.Attributes["port"].Value;
+                    }
+                    catch (Exception)
+                    {
+                        logger.Error($"Port not defined for {defn.Attributes["name"].Value}");
+                        // return;
+                    }
+
+                    try
+                    {
+                        qUser = defn.Attributes["username"].Value;
+                    }
+                    catch (Exception)
+                    {
+                        qUser = null;
+                        logger.Info($"No username defined for {defn.Attributes["name"].Value}");
+                    }
+
+                    try
+                    {
+                        getTimeout = int.Parse(defn.Attributes["getTimeout"].Value);
+                    }
+                    catch (Exception)
+                    {
+                        getTimeout = 10;
+                        logger.Info("MQ Message Put Timeout set to default");
+                    }
+
+                    try
+                    {
+                        qPass = defn.Attributes["password"].Value;
+                    }
+                    catch (Exception)
+                    {
+                        qPass = null;
+                        logger.Info($"No password defined for {defn.Attributes["name"].Value}");
+                    }
+                    try
+                    {
+                        useSendLocking = bool.Parse(defn.Attributes["useSendLocking"].Value);
+                    }
+                    catch (Exception)
+                    {
+                        useSendLocking = false;
+                    }
+
+                    try
+                    {
+                        // Set the connection parameter
+                        connectionParams.Add(MQC.CHANNEL_PROPERTY, qSvrChan);
+                        connectionParams.Add(MQC.HOST_NAME_PROPERTY, qHost);
+                        connectionParams.Add(MQC.PORT_PROPERTY, qPort);
+
+                        if (qUser != null)
+                        {
+                            connectionParams.Add(MQC.USER_ID_PROPERTY, qUser);
+                        }
+                        if (qPass != null)
+                        {
+                            connectionParams.Add(MQC.PASSWORD_PROPERTY, qPass);
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        //return;
+                    }
+                }
+                catch (AccessViolationException ex)
+                {
+                    logger.Info(ex.Message);
+                    logger.Info(ex.StackTrace);
+                    //return;
+                }
+                catch (Exception ex)
+                {
+                    logger.Info("Error configuring MQ queue");
+                    logger.Info(ex.Message);
+                    logger.Info(ex.StackTrace);
+                    Console.WriteLine($"Error configuring MQ access for {defn.Attributes["name"].Value}");
+                    // return;
+                }
+            }
+
             foreach (XmlNode node in configDoc.SelectNodes("//Handlers/Handler"))
             {
                 string handlerClass = node.Attributes["class"].Value;
@@ -93,7 +246,7 @@ namespace AMSAMSAdaptor
                         AddDispatcher(handlerMessageType);
                     }
                     Type t = Type.GetType($"AMSAMSAdaptor.{handlerClass}");
-                    IInputMessageHandler handler = (IInputMessageHandler)Activator.CreateInstance(t, this,node);
+                    IInputMessageHandler handler = (IInputMessageHandler)Activator.CreateInstance(t, this, node);
                     InputHandlers.Add(handler);
 
                     logger.Info($"Loaded Handler: {handlerClass} ({handlerName}) to handle message type: {handlerMessageType}");
@@ -158,6 +311,7 @@ namespace AMSAMSAdaptor
             logger.Info($"AMS-AMS Adaptor Started");
 
             return true;
+
         }
 
 
@@ -183,7 +337,12 @@ namespace AMSAMSAdaptor
             try
             {
                 this.startListenLoop = true;
-                receiveThread = new Thread(this.ListenToQueue)
+                if (fromMSMQ) receiveThread = new Thread(this.ListenMSMQ)
+                {
+                    IsBackground = false
+                };
+
+                if (fromIBMMQ) receiveThread = new Thread(this.ListenIBMMQ)
                 {
                     IsBackground = false
                 };
@@ -203,7 +362,7 @@ namespace AMSAMSAdaptor
             logger.Info("AMS-AMS Adaptor Service Stopped");
         }
 
-        private void ListenToQueue()
+        private void ListenMSMQ()
         {
 
             while (startListenLoop)
@@ -234,6 +393,44 @@ namespace AMSAMSAdaptor
             receiveThread.Abort();
         }
 
+        public void ListenIBMMQ()
+        {
+
+
+            while (startListenLoop)
+            {
+                try
+                {
+                    using (MQQueueManager queueManager = new MQQueueManager(qMgr, connectionParams))
+                    {
+                        var openOptions = MQC.MQOO_INPUT_AS_Q_DEF + MQC.MQOO_FAIL_IF_QUIESCING;
+                        MQQueue queue = queueManager.AccessQueue(queueName, openOptions);
+
+                        MQGetMessageOptions getOptions = new MQGetMessageOptions
+                        {
+                            WaitInterval = getTimeout,
+                            Options = MQC.MQGMO_WAIT
+                        };
+
+                        MQMessage msg = new MQMessage
+                        {
+                            Format = MQC.MQFMT_STRING
+                        };
+
+                        queue.Get(msg, getOptions);
+                        queue.Close();
+
+                        ProcessMessage( msg.ReadString(msg.MessageLength));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Exception occurs on read timeout or on failure to connect
+                    logger.Trace($"Unable to get message from: {queueName} { ex.Message }");
+                    continue;
+                }
+            };
+        }
 
         public void ProcessMessage(string xml)
         {
@@ -331,5 +528,7 @@ namespace AMSAMSAdaptor
                 logger.Error(e);
             }
         }
+
+
     }
 }
