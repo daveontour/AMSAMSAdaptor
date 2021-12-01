@@ -84,14 +84,13 @@
     <Compile Include="ReMapper.cs" />
     <Compile Include="Transformers\TransformerBaseDataAddMissingProperties.cs" />
     <Compile Include="Transformers\TransformerFlightAddProperties.cs" />
-    <Compile Include="Transformers\TransformerFlightLookupReMapper.cs" />
+    <Compile Include="Transformers\TransformerFlightPropertyRemapper.cs" />
     <Compile Include="Transformers\TransformerBaseDataRemoveProperties.cs" />
     <Compile Include="Transformers\TransformerFlightRemoveSlots.cs" />
     <Compile Include="Transformers\TransformerFlightSlotToTable.cs" />
     <Compile Include="Transformers\TransformerFlightRemoveTabularTypeData.cs" />
     <Compile Include="Transformers\TransformerFlightOnlyProperties.cs" />
     <Compile Include="Transformers\TransformerFlightRemoveProperties.cs" />
-    <Compile Include="Transformers\TransformerFlightReMapper.cs" />
     <Compile Include="InputHandlers\HandlerAbstract.cs" />
     <Compile Include="InputHandlers\IInputMessageHandler.cs" />
     <Compile Include="ITransformer.cs" />
@@ -102,6 +101,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="lookup.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="NLog.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

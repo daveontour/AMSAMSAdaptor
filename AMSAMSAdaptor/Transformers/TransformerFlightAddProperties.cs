@@ -30,15 +30,15 @@ namespace AMSAMSAdaptor
             foreach (ReMapper mapper in _remppers)
             {
                 string value = null;
-                if (mapper.IsFixedValue)
+                if (mapper.Type=="fixed")
                 {
                     value = mapper.PropertyFixedValue;
                 }
-                if (mapper.IsDatetime)
+                if (mapper.Type == "dateTime")
                 {
                     value = DateTime.Now.ToString(mapper.DatetimeFormat);
                 }
-                if (mapper.IsAlternateProperty)
+                if (mapper.Type == "alternateField")
                 {
                     value = fl.FlightProperties[mapper.AltrernatePropertyName].Value;
                 }

@@ -1,16 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml;
+﻿using System.Xml;
 
 namespace AMSAMSAdaptor
 {
     internal class TransformerStandSlotToTable : ITransformer
     {
+        private string tableName;
         public void SetConfig(XmlNode configNode)
         {
+            tableName = configNode.Attributes["tableName"]?.Value;
+            if (tableName == null) tableName = "StandSlots";
         }
 
         public object Transform(object input)
@@ -20,7 +18,7 @@ namespace AMSAMSAdaptor
 
             XmlNode stateNode = doc.SelectSingleNode(".//amsx-messages:Flight/amsx-datatypes:FlightState", fl.nsmgr);
             XmlElement tv = doc.CreateElement(null, "TableValue", "http://www.sita.aero/ams6-xml-api-datatypes");
-            tv.SetAttribute("propertyName", "StandSlots"); 
+            tv.SetAttribute("propertyName", tableName); 
             stateNode.AppendChild(tv);
 
             foreach (XmlNode s in fl.node.SelectNodes(".//amsx-messages:Flight/amsx-datatypes:FlightState/amsx-datatypes:StandSlots/amsx-datatypes:StandSlot", fl.nsmgr))
@@ -78,8 +76,11 @@ namespace AMSAMSAdaptor
 
     internal class TransformerCheckInSlotToTable : ITransformer
     {
+        private string tableName;
         public void SetConfig(XmlNode configNode)
         {
+            tableName = configNode.Attributes["tableName"]?.Value;
+            if (tableName == null) tableName = "CheckInSlots";
         }
 
         public object Transform(object input)
@@ -89,7 +90,7 @@ namespace AMSAMSAdaptor
 
             XmlNode stateNode = doc.SelectSingleNode(".//amsx-messages:Flight/amsx-datatypes:FlightState", fl.nsmgr);
             XmlElement tv = doc.CreateElement(null, "TableValue", "http://www.sita.aero/ams6-xml-api-datatypes");
-            tv.SetAttribute("propertyName", "CheckInSlots");
+            tv.SetAttribute("propertyName", tableName);
             stateNode.AppendChild(tv);
 
             foreach (XmlNode s in fl.node.SelectNodes(".//amsx-messages:Flight/amsx-datatypes:FlightState/amsx-datatypes:CheckInSlots/amsx-datatypes:CheckInSlot", fl.nsmgr))
@@ -148,8 +149,11 @@ namespace AMSAMSAdaptor
 
     internal class TransformerGateSlotToTable : ITransformer
     {
+        private string tableName;
         public void SetConfig(XmlNode configNode)
         {
+            tableName = configNode.Attributes["tableName"]?.Value;
+            if (tableName == null) tableName = "GateSlots";
         }
 
         public object Transform(object input)
@@ -159,7 +163,7 @@ namespace AMSAMSAdaptor
 
             XmlNode stateNode = doc.SelectSingleNode(".//amsx-messages:Flight/amsx-datatypes:FlightState", fl.nsmgr);
             XmlElement tv = doc.CreateElement(null, "TableValue", "http://www.sita.aero/ams6-xml-api-datatypes");
-            tv.SetAttribute("propertyName", "GateSlots");
+            tv.SetAttribute("propertyName", tableName);
             stateNode.AppendChild(tv);
 
             foreach (XmlNode s in fl.node.SelectNodes(".//amsx-messages:Flight/amsx-datatypes:FlightState/amsx-datatypes:GateSlots/amsx-datatypes:GateSlot", fl.nsmgr))

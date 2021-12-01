@@ -57,7 +57,7 @@
  -->
 			<PassFilter enabled ="false">.//amsx-datatypes:FlightId/amsx-datatypes:AirlineDesignator[@codeContext='IATA' and  contains(text(), 'EK')]</PassFilter>
 			<PassFilter enabled ="false">.//amsx-datatypes:FlightId/amsx-datatypes:AirlineDesignator[@codeContext='IATA' and  contains(text(), 'QF')]</PassFilter>
-			<NoPassFilter enabled ="true">.//amsx-datatypes:FlightId/amsx-datatypes:AirlineDesignator[@codeContext='IATA' and  contains(text(), 'QR')]</NoPassFilter>
+	<!--		<NoPassFilter enabled ="true">.//amsx-datatypes:FlightId/amsx-datatypes:AirlineDesignator[@codeContext='IATA' and  contains(text(), 'QR')]</NoPassFilter> -->
 
 			<!-- Transformers modify the message in some way -->
 			<!-- Multiple transformer can be applied to one message -->
@@ -89,17 +89,23 @@
 					<Property propertyName="TargetAirport" type="fixed" value="HEL" />
 				</TransformerConfig>
 			</Transformer>  -->
-			<Transformer class="TransformerFlightReMapper" enabled="true">
+			<Transformer class="TransformerFlightPropertyRemapper" enabled="true">
 				<TransformerConfig>
+					<Property propertyName="Nature" type="fixed" value="Departure" />
 					<Property propertyName="AirportIATA" type="fixed" value="SFO" />
 					<Property propertyName="AirportICAO" type="fixed" value="KSFO" />
+					<Property propertyName="de--_ActualArrival" type="lookup" lookupPropertyName="AirlineIATA" fileName="lookup.csv" indexField="0" valueField="2" referencePropertyName="ScheduledTime" timeOffset="true" timeFormat="yyyy-MM-ddTHH:mm:ssZ" />
 				</TransformerConfig>
 			</Transformer>
-
+			
+			<Transformer class ="TransformerStandSlotToTable" enabled="false" tableName="CustomTableNameOfYourChoice" >
+				<TransformerConfig />
+			</Transformer>
+			
 			<!-- Remove one or more custom table -->
-			<Transformer class ="TransformerFlightRemoveCustomTable">
+			<Transformer class ="TransformerFlightRemoveCustomTable" enabled="true">
 				<TransformerConfig>
-					<Property tableName="customTableNameToRemove" />
+					<Property tableName="DJBTest" />
 					<Property tableName="customSensitiveData" />
 				</TransformerConfig>
 			</Transformer>
@@ -109,7 +115,7 @@
 			<Transformer class ="TransformerFlightRemoveVehicleSlots" /> -->
 
 			<!-- Convert the CheckInSlot data to a custom table format-->
-			<Transformer class ="TransformerStandSlotToTable" enabled="true" />
+
 
 			<Transformer class="TransformerFlightLookupReMapper" enabled="false">
 				<TransformerConfig>
@@ -144,7 +150,7 @@
 					<Property propertyName="Stand" />
 				</TransformerConfig>
 			</Transformer>
-			<Transformer class="TransformerFlightReMapper" enabled="true">
+			<Transformer class="TransformerFlightPropertyRemapper" enabled="true">
 				<TransformerConfig>
 					<Property propertyName="AirportIATA" type="fixed" value="SFO" />
 					<Property propertyName="AirportICAO" type="fixed" value="KSFO" />
