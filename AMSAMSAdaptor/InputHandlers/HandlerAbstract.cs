@@ -85,10 +85,7 @@ namespace AMSAMSAdaptor
         public virtual void HandleMessage(XmlNode node)
         {
 
-            if (MessageName == "Aircraft")
-            {
-                Console.WriteLine();
-            }
+
             this.node = node;
             nsmgr = new XmlNamespaceManager(node.OwnerDocument.NameTable);
             nsmgr.AddNamespace("amsx-messages", "http://www.sita.aero/ams6-xml-api-messages");
@@ -120,7 +117,7 @@ namespace AMSAMSAdaptor
                 {
                     foreach (string action in HandlerAction.Split(','))
                     {
-                        supervisor.SendFlightMessage((ModelFlight)obj, HandlerAction);
+                        supervisor.SendFlightMessage((ModelFlight)obj, action);
                     }
                 }
             }

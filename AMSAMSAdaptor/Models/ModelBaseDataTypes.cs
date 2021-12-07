@@ -10,7 +10,7 @@ namespace AMSAMSAdaptor
     {
         public XmlNamespaceManager nsmgr;
         public static string token;
-
+        public static readonly NLog.Logger logger = NLog.LogManager.GetLogger("consoleLogger");
         public string AMSXMessageHeader = @"<?xml version=""1.0"" encoding=""utf-8"" ?>
 <amsx-messages:Envelope
 xmlns:amsx-messages=""http://www.sita.aero/ams6-xml-api-messages""
@@ -78,7 +78,7 @@ apiVersion=""2.8"">
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
+                logger.Error(e.Message);
             }
 
             mStream.Close();
@@ -207,7 +207,7 @@ apiVersion=""2.8"">
             }
             else
             {
-                Console.WriteLine($"Aircraft with no type. Rego {AircraftRegistration}");
+                logger.Error($"Aircraft with no type. Rego {AircraftRegistration}");
             }
             foreach (KeyValuePair<string, string> n in State)
             {
@@ -466,7 +466,7 @@ apiVersion=""2.8"">
             }
             catch (Exception ex)
             {
-                Console.WriteLine(sb.ToString());
+                logger.Error(ex,sb.ToString());
                 return null;
             }
         }
@@ -495,9 +495,9 @@ apiVersion=""2.8"">
             {
                 return PrintXML(sb.ToString().Replace("&", "&amp;"));
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                Console.WriteLine(sb.ToString());
+                logger.Error(e,sb.ToString());
                 return null;
             }
         }
@@ -562,9 +562,9 @@ apiVersion=""2.8"">
             {
                 return PrintXML(sb.ToString().Replace("&", "&amp;"));
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                Console.WriteLine(sb.ToString());
+                logger.Error(e,sb.ToString());
                 return null;
             }
         }
@@ -593,27 +593,12 @@ apiVersion=""2.8"">
             {
                 return PrintXML(sb.ToString().Replace("&", "&amp;"));
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                Console.WriteLine(sb.ToString());
+                logger.Error(e,sb.ToString());
                 return null;
             }
         }
-
-        //public override string DeleteRequest()
-        //{
-        //    StringBuilder sb = new StringBuilder();
-        //    sb.AppendLine(AMSXMessageHeader);
-        //    sb.AppendLine("<amsx-messages:GateDeleteRequest>");
-        //    sb.AppendLine("<amsx-datatypes:Token>TOKEN</amsx-datatypes:Token>");
-        //    sb.AppendLine("<amsx-datatypes:AreaId>");
-        //    sb.AppendLine($"<amsx-datatypes:ExternalName>{AreaId}</amsx-datatypes:ExternalName>");
-        //    sb.AppendLine($"<amsx-datatypes:AirportCode codeContext=\"IATA\">{AirportCode}</amsx-datatypes:AirportCode>");
-        //    sb.AppendLine("</amsx-datatypes:AreaId>");
-        //    sb.AppendLine("</amsx-messages:GateDeleteRequest>");
-        //    sb.AppendLine(AMSXMessageBottom);
-        //    return PrintXML(sb.ToString());
-        //}
     }
 
     public class ModelStand : ModelBase
@@ -627,8 +612,6 @@ apiVersion=""2.8"">
         {
             ExternalName = node.SelectSingleNode(".//amsx-datatypes:GateId/amsx-datatypes:ExternalName", nsmgr)?.InnerText;
             AirportCode = node.SelectSingleNode(".//amsx-datatypes:GateId/amsx-datatypes:AirportCode[@codeContext = 'IATA']", nsmgr)?.InnerText;
-            //AreaIdExternalName = node.SelectSingleNode(".//amsx-datatypes:AreaId/amsx-datatypes:ExternalName", nsmgr)?.InnerText;
-            //AreaName = node.SelectSingleNode(".//amsx-datatypes:Area/amsx-datatypes:Value[@propertyName = 'Name']", nsmgr)?.InnerText;
 
             foreach (XmlNode n in node.SelectNodes(".//amsx-datatypes:ResourceState/amsx-datatypes:Value", nsmgr))
             {
@@ -660,9 +643,9 @@ apiVersion=""2.8"">
             {
                 return PrintXML(sb.ToString().Replace("&", "&amp;"));
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                Console.WriteLine(sb.ToString());
+                logger.Error(e,sb.ToString());
                 return null;
             }
         }
@@ -691,27 +674,12 @@ apiVersion=""2.8"">
             {
                 return PrintXML(sb.ToString().Replace("&", "&amp;"));
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                Console.WriteLine(sb.ToString());
+                logger.Error(e,sb.ToString());
                 return null;
             }
         }
-
-        //public override string DeleteRequest()
-        //{
-        //    StringBuilder sb = new StringBuilder();
-        //    sb.AppendLine(AMSXMessageHeader);
-        //    sb.AppendLine("<amsx-messages:GateDeleteRequest>");
-        //    sb.AppendLine("<amsx-datatypes:Token>TOKEN</amsx-datatypes:Token>");
-        //    sb.AppendLine("<amsx-datatypes:AreaId>");
-        //    sb.AppendLine($"<amsx-datatypes:ExternalName>{AreaId}</amsx-datatypes:ExternalName>");
-        //    sb.AppendLine($"<amsx-datatypes:AirportCode codeContext=\"IATA\">{AirportCode}</amsx-datatypes:AirportCode>");
-        //    sb.AppendLine("</amsx-datatypes:AreaId>");
-        //    sb.AppendLine("</amsx-messages:GateDeleteRequest>");
-        //    sb.AppendLine(AMSXMessageBottom);
-        //    return PrintXML(sb.ToString());
-        //}
     }
 
     public class ModelCheckIn : ModelBase
@@ -758,9 +726,9 @@ apiVersion=""2.8"">
             {
                 return PrintXML(sb.ToString().Replace("&", "&amp;"));
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                Console.WriteLine(sb.ToString());
+                logger.Error(e,sb.ToString());
                 return null;
             }
         }
@@ -791,25 +759,10 @@ apiVersion=""2.8"">
             }
             catch (Exception)
             {
-                Console.WriteLine(sb.ToString());
+                logger.Error(sb.ToString());
                 return null;
             }
         }
-
-        //public override string DeleteRequest()
-        //{
-        //    StringBuilder sb = new StringBuilder();
-        //    sb.AppendLine(AMSXMessageHeader);
-        //    sb.AppendLine("<amsx-messages:GateDeleteRequest>");
-        //    sb.AppendLine("<amsx-datatypes:Token>TOKEN</amsx-datatypes:Token>");
-        //    sb.AppendLine("<amsx-datatypes:AreaId>");
-        //    sb.AppendLine($"<amsx-datatypes:ExternalName>{AreaId}</amsx-datatypes:ExternalName>");
-        //    sb.AppendLine($"<amsx-datatypes:AirportCode codeContext=\"IATA\">{AirportCode}</amsx-datatypes:AirportCode>");
-        //    sb.AppendLine("</amsx-datatypes:AreaId>");
-        //    sb.AppendLine("</amsx-messages:GateDeleteRequest>");
-        //    sb.AppendLine(AMSXMessageBottom);
-        //    return PrintXML(sb.ToString());
-        //}
     }
 
     public class ModelRoute : ModelBase
@@ -881,7 +834,7 @@ apiVersion=""2.8"">
             }
             catch (Exception)
             {
-                Console.WriteLine(sb.ToString());
+                logger.Error(sb.ToString());
                 return null;
             }
         }
@@ -921,9 +874,9 @@ apiVersion=""2.8"">
             {
                 return PrintXML(sb.ToString().Replace("&", "&amp;"));
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                Console.WriteLine(sb.ToString());
+                logger.Error(e,sb.ToString());
                 return null;
             }
         }
@@ -952,9 +905,9 @@ apiVersion=""2.8"">
             {
                 return PrintXML(sb.ToString().Replace("&", "&amp;"));
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                Console.WriteLine(sb.ToString());
+                logger.Error(e,sb.ToString());
                 return null;
             }
         }
@@ -994,9 +947,9 @@ apiVersion=""2.8"">
             {
                 return PrintXML(sb.ToString().Replace("&", "&amp;"));
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                Console.WriteLine(sb.ToString());
+                logger.Error(e,sb.ToString());
                 return null;
             }
         }
@@ -1020,9 +973,9 @@ apiVersion=""2.8"">
             {
                 return PrintXML(sb.ToString().Replace("&", "&amp;"));
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                Console.WriteLine(sb.ToString());
+                logger.Error(e,sb.ToString());
                 return null;
             }
         }
@@ -1042,9 +995,9 @@ apiVersion=""2.8"">
             {
                 return PrintXML(sb.ToString().Replace("&", "&amp;"));
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                Console.WriteLine(sb.ToString());
+                logger.Error(e,sb.ToString());
                 return null;
             }
         }

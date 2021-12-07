@@ -223,11 +223,9 @@ namespace AMSAMSAdaptor
                 }
                 catch (Exception ex)
                 {
-                    logger.Info("Error configuring MQ queue");
+                    logger.Info($"Error configuring MQ queue  for {defn.Attributes["name"].Value}");
                     logger.Info(ex.Message);
                     logger.Info(ex.StackTrace);
-                    Console.WriteLine($"Error configuring MQ access for {defn.Attributes["name"].Value}");
-                    // return;
                 }
             }
 

@@ -171,10 +171,9 @@ namespace AMSAMSAdaptor
                 }
                 catch (Exception ex)
                 {
-                    logger.Info("Error configuring MQ queue");
+                    logger.Info($"Error configuring MQ queue {defn.Attributes["name"].Value} ");
                     logger.Info(ex.Message);
                     logger.Info(ex.StackTrace);
-                    Console.WriteLine($"Error configuring MQ access for {defn.Attributes["name"].Value}");
                     return;
                 }
             }
@@ -259,8 +258,7 @@ namespace AMSAMSAdaptor
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error sending MQ Message: {ex.Message}");
-                logger.Trace($"Error sending MQ Message: {ex.Message}");
+                logger.Error($"Error sending MQ Message: {ex.Message}");
                 return;
             }
             if (!sent)

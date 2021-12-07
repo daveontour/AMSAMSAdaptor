@@ -14,7 +14,7 @@
 	<ReadMessageLoopInterval>10</ReadMessageLoopInterval>
 
 	<!-- Config for the "target" system -->
-	<ToAMSRequestQueue>.\private$\toamssfo2</ToAMSRequestQueue>
+	<ToAMSRequestQueue>Format:dIRECT:OS=REMOTEHOST:\private$\toamssfo2</ToAMSRequestQueue>
 	<ToAMSWebServiceURL>http://localhost:91/SITAAMSIntegrationServiceSFO2/v2/SITAAMSIntegrationService/</ToAMSWebServiceURL>
 
 	<!--	<ToToken>32b8ef7a-0a16-4b4a-9e01-799960c91e0e</ToToken> -->
@@ -36,7 +36,7 @@
 	<!-- Initialise flights on startup and the time span to init-->
 	<InitFlights>true</InitFlights>
 	<StartFromHours>-1000</StartFromHours>
-	<StartFromHours>24</StartFromHours>
+	<StartToHours>24</StartToHours>
 
 	<!-- The handlers for the various message types -->
 	<!-- The "class" attribute is the classname in the AMSAMSAdaptor namespace that implements inherits the HandlerAbstract class
@@ -90,7 +90,7 @@
 			</Transformer>  -->
 			<Transformer class="TransformerFlightPropertyRemapper" enabled="true">
 				<TransformerConfig>
-					<Property propertyName="Nature" type="fixed" value="Departure" />
+					<Property propertyName="ABC" type="alternateProperty" value="CDF" />
 					<Property propertyName="AirportIATA" type="fixed" value="SFO" />
 					<Property propertyName="AirportICAO" type="fixed" value="KSFO" />
 					<Property propertyName="de--_ActualArrival" type="lookup" lookupPropertyName="AirlineIATA" fileName="lookup.csv" indexField="0" valueField="2" referencePropertyName="ScheduledTime" timeOffset="true" timeFormat="yyyy-MM-ddTHH:mm:ssZ" />

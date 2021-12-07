@@ -15,6 +15,7 @@ namespace AMSAMSAdaptor
         private Supervisor supervisor;
 
         private static readonly NLog.Logger logger = NLog.LogManager.GetLogger("consoleLogger");
+        private static readonly NLog.Logger emailLogger = NLog.LogManager.GetLogger("emailLogger");
 
         public void SetSupervisor(Supervisor supervisor, XmlDocument configDoc)
         {
@@ -72,23 +73,6 @@ namespace AMSAMSAdaptor
                 }
             }
         }
-        //private void SendCreateFlight(ModelFlight flt)
-        //{
-        //    using (AMSIntegrationServiceClient client = new AMSIntegrationServiceClient(binding, address))
-        //    {
-        //        try
-        //        {
-        //            PropertyValue[] propertyValues = flt.GetPropertValues();
-        //            XmlElement res = client.CreateFlight(Parameters.TOTOKEN, flt.GetFlightId(), propertyValues);
-        //            logger.Trace(res.OuterXml);
-        //            ProcessLinking(flt);
-        //        }
-        //        catch (Exception e)
-        //        {
-        //            logger.Error(e, "Error Creating Flight");
-        //        }
-        //    }
-        //}
         private void SendCreateFlightExtended(ModelFlight flt)
         {
             using (AMSIntegrationServiceClient client = new AMSIntegrationServiceClient(binding, address))
@@ -105,44 +89,19 @@ namespace AMSAMSAdaptor
                     }
                     else
                     {
-                        logger.Warn("Flight Creation Not Successful");
-                        logger.Trace(PrintXML(res.OuterXml));
+                        string errorMessage = $"Flight Create Was Not Successful for Flight {flt.ToString()}";
+                        errorMessage = errorMessage + $"Message from host was: \n {PrintXML(res.OuterXml)} ";
+                        emailLogger.Error(errorMessage);
                     }
                 }
                 catch (Exception e)
                 {
-                    logger.Error(e, "Error Creating Flight");
+                    string errorMessage = $"Flight Update Was Not Successful for Flight {flt.ToString()}";
+                    errorMessage = errorMessage + $"Error was: {e.Message} ";
+                    emailLogger.Error(errorMessage);
                 }
             }
         }
-        //private void SendUpdateFlight(ModelFlight flt)
-        //{
-        //    logger.Info($"Updating: {flt.ToString()}");
-
-        //    using (AMSIntegrationServiceClient client = new AMSIntegrationServiceClient(binding, address))
-        //    {
-        //        try
-        //        {
-        //            // First Check that the flight exist, if not, then create it.
-        //            XmlElement existing = client.GetFlight(Parameters.TOTOKEN, flt.GetFlightId());
-                    
-        //            if (existing.OuterXml.Contains("<ErrorCode>FLIGHT_NOT_FOUND</ErrorCode>"))
-        //            {
-        //                SendCreateFlight(flt);
-        //                return;
-        //            }
-
-        //            PropertyValue[] propertyValues = flt.GetPropertValues();
-        //            XmlElement res = client.UpdateFlight(Parameters.TOTOKEN, flt.GetFlightId(), propertyValues);
-        //            logger.Trace(PrintXML(res.OuterXml));
-        //            ProcessLinking(flt);
-        //        }
-        //        catch (Exception e)
-        //        {
-        //            logger.Error(e, "Error Updating Flight");
-        //        }
-        //    }
-        //}
         private void SendUpdateFlightExtended(ModelFlight flt)
         {
             using (AMSIntegrationServiceClient client = new AMSIntegrationServiceClient(binding, address))
@@ -166,12 +125,16 @@ namespace AMSAMSAdaptor
                         ProcessLinking(flt);
                     } else
                     {
-                        logger.Warn("Flight Update Not Successful");
+                        string errorMessage = $"Flight Update Was Not Successful for Flight {flt.ToString()}";
+                        errorMessage = errorMessage + $"Message from host was: \n {PrintXML(res.OuterXml)} ";
+                        emailLogger.Error(errorMessage);
                     }
                 }
                 catch (Exception e)
                 {
-                    logger.Error(e, "Error Updating Flight");
+                    string errorMessage = $"Flight Update Was Not Successful for Flight {flt.ToString()}";
+                    errorMessage = errorMessage + $"Error was: {e.Message} ";
+                    emailLogger.Error(errorMessage);
                 }
             }
         }

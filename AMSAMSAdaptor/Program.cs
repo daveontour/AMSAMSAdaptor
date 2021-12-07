@@ -19,42 +19,7 @@ namespace AMSAMSAdaptor
         // Primarily skeleton code for defining the ConsoleApp/Service to be managed by TopShelf
         static void Main(string[] args)
         {
-            //try
-            //{
-            //    XmlDocument configDoc = new XmlDocument();
-            //    configDoc.Load("C:/Users/dave_/Desktop/flightUpdate.xml");
-            //    XmlNode newNode = configDoc.DocumentElement;
 
-            //    ModelFlight flt = new ModelFlight(newNode);
-
-            //    FlightUpdateInformation x = flt.GetFlightUpdateInformation();
-            //    Console.WriteLine(x);
-
-            //    BasicHttpBinding binding = new BasicHttpBinding
-            //    {
-            //        MaxReceivedMessageSize = 20000000,
-            //        MaxBufferSize = 20000000,
-            //        MaxBufferPoolSize = 20000000
-            //    };
-            //    EndpointAddress address = new EndpointAddress(Parameters.TO_AMS_WEB_SERVICE_URI);
-            //    using (AMSIntegrationServiceClient client = new AMSIntegrationServiceClient(binding, address))
-            //    {
-            //        try
-            //        {
-            //            XmlElement res = client.UpdateFlightExtended(Parameters.TOTOKEN, flt.GetFlightId(), flt.GetFlightUpdateInformation());
-            //            Console.WriteLine(PrintXML(res.OuterXml));
-
-            //        }
-            //        catch (Exception e)
-            //        {
-            //            Console.WriteLine(e);
-            //        }
-            //    }
-            //} catch (Exception ex)
-            //{
-            //    Console.WriteLine(ex.Message);  
-            //}
-            //Console.ReadLine();
             var exitCode = HostFactory.Run(x =>
             {
 
