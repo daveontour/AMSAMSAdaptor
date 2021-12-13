@@ -212,7 +212,7 @@ namespace AMSAMSAdaptor
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
+                logger.Error(e.Message);
             }
 
             mStream.Close();
