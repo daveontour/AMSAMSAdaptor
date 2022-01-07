@@ -3,53 +3,37 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Messaging;
 using System.ServiceModel;
-using System.Text;
-using System.Threading.Tasks;
 using System.Threading;
 using System.IO;
 using System.Xml;
 using System.Collections.Concurrent;
 using WorkBridge.Modules.AMS.AMSIntegrationWebAPI.Srv;
-using IBM.WMQ;
-using System.Collections;
+using System.Timers;
 
 namespace AMSAMSAdaptor
 {
     public class Supervisor
     {
-        private string qMgr;
-        private string qSvrChan;
-        private string qHost;
-        private string qPort;
-        private string qUser;
-        private string qPass;
-        private int getTimeout;
         public string queueName;
-        private bool useSendLocking;
-        private readonly Hashtable connectionParams = new Hashtable();
-
         private bool fromMSMQ = false;
-        private bool fromIBMMQ = false;
-
-        private bool OK_TO_RUN = true;
-
 
         private static readonly NLog.Logger logger = NLog.LogManager.GetLogger("consoleLogger");
 
         private static MessageQueue recvQueue;  // Queue to recieve update notifications on
         private bool startListenLoop = true;    // Flag controlling the execution of the update notificaiton listener
 
-        private readonly static Random random = new Random();
+        private static readonly Random random = new Random();
         public bool stopProcessing = false;
         private Thread startThread;
-        private Thread receiveThread;           // Thread the notification listener runs in 
-        private List<string> managedMessages = new List<string>();
+        private Thread receiveThread;           // Thread the notification listener runs in
+        private readonly List<string> managedMessages = new List<string>();
 
-
-        XmlDocument configDoc = new XmlDocument();
+        private readonly XmlDocument configDoc = new XmlDocument();
 
         public event Action<ModelFlight, string> SendFlightMessageHandler;
+
         public event Action<ModelFlight, string> SendPostFlightMessageHandler;
+
         public event Action<ModelBase, string> SendBaseDataMessageHandler;
 
         private List<IInputMessageHandler> InputHandlers = new List<IInputMessageHandler>();
@@ -59,6 +43,14 @@ namespace AMSAMSAdaptor
         public ConcurrentDictionary<string, HandlerDispatcher> Dispatchers = new ConcurrentDictionary<string, HandlerDispatcher>();
         private BasicHttpBinding binding;
         private EndpointAddress address;
+
+        private string BackCatalogFrom { get; set; }
+        private string BackCatalogTo { get; set; }
+        private int BackCatalogBlockLength { get; set; }
+        private int BackCatalogInterval { get; set; }
+        private System.Timers.Timer bcTimer;
+        private DateTime bcLastUpdate;
+
         // One place to hold all the dispatchers for each trigger
         public HandlerDispatcher AddDispatcher(string messageType)
         {
@@ -76,15 +68,7 @@ namespace AMSAMSAdaptor
 
         public bool Start()
         {
-
             configDoc.Load("widget.config.xml");
-
-            //foreach (XmlNode node in configDoc.SelectNodes("//ProcessMessages/Message"))
-            //{
-            //    managedMessages.Add(node.InnerText);
-            //    AddDispatcher(node.InnerText);
-            //    logger.Info($"Managing Message Type: {node.InnerText}");
-            //}
 
             // Set the binding and address for use by the web services client
             binding = new BasicHttpBinding
@@ -98,136 +82,6 @@ namespace AMSAMSAdaptor
             logger.Info($"AMS-AMS Adaptor Service Starting ({Parameters.VERSION})");
 
             bool.TryParse(configDoc.SelectSingleNode(".//FromAMSQueue")?.Attributes["enabled"]?.Value, out fromMSMQ);
-            bool.TryParse(configDoc.SelectSingleNode(".//FromIBMMQRequestQueue")?.Attributes["enabled"]?.Value, out fromIBMMQ);
-
-
-            XmlNode defn = configDoc.SelectSingleNode(".//FromIBMMQRequestQueue");
-
-            if (defn != null)
-            {
-                try
-                {
-                    try
-                    {
-                        queueName = defn.Attributes["queue"].Value;
-                    }
-                    catch (Exception)
-                    {
-                        logger.Error($"No Queue defined for {defn.Attributes["name"].Value}");
-                        //  return;
-                    }
-
-                    try
-                    {
-                        qMgr = defn.Attributes["queueMgr"].Value;
-                    }
-                    catch (Exception)
-                    {
-                        logger.Error($"Queue Manager not defined for {defn.Attributes["name"].Value}");
-                        // return;
-                    }
-                    try
-                    {
-                        qSvrChan = defn.Attributes["channel"].Value;
-                    }
-                    catch (Exception)
-                    {
-                        logger.Error($"Channel not defined for {defn.Attributes["name"].Value}");
-                        // return;
-                    }
-
-                    try
-                    {
-                        qHost = defn.Attributes["host"].Value;
-                    }
-                    catch (Exception)
-                    {
-                        logger.Error($"Queue  not defined for {defn.Attributes["name"].Value}");
-                        //return;
-                    }
-
-                    try
-                    {
-                        qPort = defn.Attributes["port"].Value;
-                    }
-                    catch (Exception)
-                    {
-                        logger.Error($"Port not defined for {defn.Attributes["name"].Value}");
-                        // return;
-                    }
-
-                    try
-                    {
-                        qUser = defn.Attributes["username"].Value;
-                    }
-                    catch (Exception)
-                    {
-                        qUser = null;
-                        logger.Info($"No username defined for {defn.Attributes["name"].Value}");
-                    }
-
-                    try
-                    {
-                        getTimeout = int.Parse(defn.Attributes["getTimeout"].Value);
-                    }
-                    catch (Exception)
-                    {
-                        getTimeout = 10;
-                        logger.Info("MQ Message Put Timeout set to default");
-                    }
-
-                    try
-                    {
-                        qPass = defn.Attributes["password"].Value;
-                    }
-                    catch (Exception)
-                    {
-                        qPass = null;
-                        logger.Info($"No password defined for {defn.Attributes["name"].Value}");
-                    }
-                    try
-                    {
-                        useSendLocking = bool.Parse(defn.Attributes["useSendLocking"].Value);
-                    }
-                    catch (Exception)
-                    {
-                        useSendLocking = false;
-                    }
-
-                    try
-                    {
-                        // Set the connection parameter
-                        connectionParams.Add(MQC.CHANNEL_PROPERTY, qSvrChan);
-                        connectionParams.Add(MQC.HOST_NAME_PROPERTY, qHost);
-                        connectionParams.Add(MQC.PORT_PROPERTY, qPort);
-
-                        if (qUser != null)
-                        {
-                            connectionParams.Add(MQC.USER_ID_PROPERTY, qUser);
-                        }
-                        if (qPass != null)
-                        {
-                            connectionParams.Add(MQC.PASSWORD_PROPERTY, qPass);
-                        }
-                    }
-                    catch (Exception)
-                    {
-                        //return;
-                    }
-                }
-                catch (AccessViolationException ex)
-                {
-                    logger.Info(ex.Message);
-                    logger.Info(ex.StackTrace);
-                    //return;
-                }
-                catch (Exception ex)
-                {
-                    logger.Info($"Error configuring MQ queue  for {defn.Attributes["name"].Value}");
-                    logger.Info(ex.Message);
-                    logger.Info(ex.StackTrace);
-                }
-            }
 
             foreach (XmlNode node in configDoc.SelectNodes("//Handlers/Handler"))
             {
@@ -236,19 +90,26 @@ namespace AMSAMSAdaptor
                 string handlerName = node.Attributes["name"]?.Value;
                 string handlerEnabled = node.Attributes["enabled"].Value;
 
-                if (handlerEnabled.ToUpper() == "TRUE")
+                try
                 {
-                    if (!managedMessages.Contains(handlerMessageType))
+                    if (handlerEnabled.ToUpper() == "TRUE")
                     {
-                        managedMessages.Add(handlerMessageType);
-                        AddDispatcher(handlerMessageType);
+                        if (!managedMessages.Contains(handlerMessageType))
+                        {
+                            managedMessages.Add(handlerMessageType);
+                            AddDispatcher(handlerMessageType);
+                        }
+                        Type t = Type.GetType($"AMSAMSAdaptor.{handlerClass}");
+                        IInputMessageHandler handler = (IInputMessageHandler)Activator.CreateInstance(t, this, node);
+                        InputHandlers.Add(handler);
+
+                        logger.Info($"Loaded Handler: {handlerClass} ({handlerName}) to handle message type: {handlerMessageType}");
                     }
-                    Type t = Type.GetType($"AMSAMSAdaptor.{handlerClass}");
-                    IInputMessageHandler handler = (IInputMessageHandler)Activator.CreateInstance(t, this, node);
-                    InputHandlers.Add(handler);
-
-                    logger.Info($"Loaded Handler: {handlerClass} ({handlerName}) to handle message type: {handlerMessageType}");
-
+                }
+                catch (Exception ex)
+                {
+                    logger.Error(ex);
+                    logger.Error($"Error loading handler class {handlerClass}");
                 }
             }
 
@@ -262,7 +123,6 @@ namespace AMSAMSAdaptor
             {
                 try
                 {
-
                     IOutputMessageHandler obj = (IOutputMessageHandler)Activator.CreateInstance(handler);
                     obj.SetSupervisor(this, configDoc);
                     logger.Info($"Implemented Output Handler: {obj.GetDescription()}");
@@ -273,7 +133,6 @@ namespace AMSAMSAdaptor
                     //logger.Error(ex.Message);
                 }
             }
-
 
             // Post out put handlers are for when the CRUD has been completed. Could be used for handling linking
             var postouttype = typeof(IPostOutputMessageHandler);
@@ -286,7 +145,6 @@ namespace AMSAMSAdaptor
             {
                 try
                 {
-
                     IPostOutputMessageHandler obj = (IPostOutputMessageHandler)Activator.CreateInstance(handler);
                     obj.SetSupervisor(this, configDoc);
                     logger.Info($"Implemented Post Output Handler: {obj.GetDescription()}");
@@ -298,10 +156,13 @@ namespace AMSAMSAdaptor
                 }
             }
 
-
             BaseDataInit baseDataInit = new BaseDataInit(configDoc, this);
             baseDataInit.Sync();
+            //"Current" flights
             UpdateFlights();
+
+            // Historic flights loaded at a lower priority
+            BackCatalogProcessing();
 
             stopProcessing = false;
             startThread = new Thread(new ThreadStart(StartThread));
@@ -309,20 +170,16 @@ namespace AMSAMSAdaptor
             logger.Info($"AMS-AMS Adaptor Started");
 
             return true;
-
         }
-
-
 
         public void StartThread()
         {
-
             //Start Listener for incoming towing notifications
             recvQueue = new MessageQueue(Parameters.RECVQ);
             StartMQListener();
             logger.Info($"Started Notification Queue Listener on queue: {Parameters.RECVQ}");
 
-            // Optionally process flights 
+            // Optionally process flights
             if (Parameters.STARTUP_FLIGHT_PROCESSING)
             {
                 logger.Warn(">>>>>>> Not Implemented - STARTUP Flight Processing");
@@ -340,10 +197,6 @@ namespace AMSAMSAdaptor
                     IsBackground = false
                 };
 
-                if (fromIBMMQ) receiveThread = new Thread(this.ListenIBMMQ)
-                {
-                    IsBackground = false
-                };
                 receiveThread.Start();
             }
             catch (Exception ex)
@@ -352,6 +205,7 @@ namespace AMSAMSAdaptor
                 logger.Error(ex.Message);
             }
         }
+
         public void Stop()
         {
             logger.Info("AMS-AMS Adaptor Service Stopping");
@@ -362,7 +216,6 @@ namespace AMSAMSAdaptor
 
         private void ListenMSMQ()
         {
-
             while (startListenLoop)
             {
                 //Put it in a Try/Catch so on bad message or reading problem dont stop the system
@@ -391,45 +244,6 @@ namespace AMSAMSAdaptor
             receiveThread.Abort();
         }
 
-        public void ListenIBMMQ()
-        {
-
-
-            while (startListenLoop)
-            {
-                try
-                {
-                    using (MQQueueManager queueManager = new MQQueueManager(qMgr, connectionParams))
-                    {
-                        var openOptions = MQC.MQOO_INPUT_AS_Q_DEF + MQC.MQOO_FAIL_IF_QUIESCING;
-                        MQQueue queue = queueManager.AccessQueue(queueName, openOptions);
-
-                        MQGetMessageOptions getOptions = new MQGetMessageOptions
-                        {
-                            WaitInterval = getTimeout,
-                            Options = MQC.MQGMO_WAIT
-                        };
-
-                        MQMessage msg = new MQMessage
-                        {
-                            Format = MQC.MQFMT_STRING
-                        };
-
-                        queue.Get(msg, getOptions);
-                        queue.Close();
-
-                        ProcessMessage( msg.ReadString(msg.MessageLength));
-                    }
-                }
-                catch (Exception ex)
-                {
-                    // Exception occurs on read timeout or on failure to connect
-                    logger.Trace($"Unable to get message from: {queueName} { ex.Message }");
-                    continue;
-                }
-            };
-        }
-
         public void ProcessMessage(string xml)
         {
             XmlDocument doc = new XmlDocument();
@@ -450,7 +264,6 @@ namespace AMSAMSAdaptor
                         Dispatchers[messageType].Fire(newNode);
                         return;
                     }
-
                 }
                 catch (Exception e)
                 {
@@ -465,10 +278,12 @@ namespace AMSAMSAdaptor
         {
             SendFlightMessageHandler?.Invoke(flt, action);
         }
+
         public void SendBaseDataMessage(ModelBase basedata, string action)
         {
             SendBaseDataMessageHandler?.Invoke(basedata, action);
         }
+
         public void SendPostFlightMessage(ModelFlight flt, string action)
         {
             SendPostFlightMessageHandler?.Invoke(flt, action);
@@ -490,7 +305,6 @@ namespace AMSAMSAdaptor
             {
                 using (AMSIntegrationServiceClient client = new AMSIntegrationServiceClient(binding, address))
                 {
-
                     try
                     {
                         XmlElement flightsElement = client.GetFlights(Parameters.FROMTOKEN, DateTime.Now.AddHours(Parameters.START_FROM_HOURS), DateTime.Now.AddHours(Parameters.START_TO_HOURS), Parameters.APT_CODE, AirportIdentifierType.IATACode);
@@ -509,9 +323,7 @@ namespace AMSAMSAdaptor
 
                             logger.Warn("Startup Flight Update");
                             ProcessMessage(fl.OuterXml);
-
                         }
-
                     }
                     catch (Exception e)
                     {
@@ -527,6 +339,95 @@ namespace AMSAMSAdaptor
             }
         }
 
+        private void BackCatalogProcessing()
+        {
+            bool backCatalog = false;
+            bool.TryParse(configDoc.SelectSingleNode(".//enableBackCatalog")?.InnerText, out backCatalog);
+            if (!backCatalog)
+            {
+                logger.Info("Back Catalog  Flight is NOT configured");
+                return;
+            }
 
+            BackCatalogFrom = configDoc.SelectSingleNode(".//backCatalogFrom").InnerText;
+            BackCatalogTo = configDoc.SelectSingleNode(".//backCatalogTo").InnerText;
+
+            BackCatalogBlockLength = Int32.Parse(configDoc.SelectSingleNode(".//backCatalogBlockLength").InnerText);
+            BackCatalogInterval = Int32.Parse(configDoc.SelectSingleNode(".//backCatalogInterval").InnerText);
+
+            bcLastUpdate = DateTime.Parse(BackCatalogFrom);
+            bcTimer = new System.Timers.Timer
+            {
+                Interval = BackCatalogInterval * 1000,
+                AutoReset = true,
+                Enabled = true
+            };
+            bcTimer.Elapsed += BackCatalogIntervalProcessing;
+
+            logger.Info("Flight initialisation commencing");
+        }
+
+        private void BackCatalogIntervalProcessing(object sender, ElapsedEventArgs e)
+        {
+            try
+            {
+                DateTime st = bcLastUpdate.AddDays(-1 * BackCatalogBlockLength);
+                DateTime et = st.AddDays(BackCatalogBlockLength);
+
+                if (et < DateTime.Parse(BackCatalogTo))
+                {
+                    logger.Info("Back Catalog Processing Completed");
+                    bcTimer.Stop();
+                    return;
+                }
+
+                string sts = $"{st.ToString("dd-MM-yyyy")}%20{st.ToString("HH:mm")}";
+                string ets = $"{et.ToString("dd-MM-yyyy")}%20{et.ToString("HH:mm")}";
+                bcLastUpdate = st;
+
+                logger.Info($"Processing historic flight between {st} and {et}");
+
+                try
+                {
+                    using (AMSIntegrationServiceClient client = new AMSIntegrationServiceClient(binding, address))
+                    {
+                        try
+                        {
+                            XmlElement flightsElement = client.GetFlights(Parameters.FROMTOKEN, st, et, Parameters.APT_CODE, AirportIdentifierType.IATACode);
+
+                            XmlNamespaceManager nsmgr = new XmlNamespaceManager(flightsElement.OwnerDocument.NameTable);
+                            nsmgr.AddNamespace("ams", "http://www.sita.aero/ams6-xml-api-datatypes");
+
+                            XmlNodeList fls = flightsElement.SelectNodes("//ams:Flight", nsmgr);
+                            foreach (XmlNode fl in fls)
+                            {
+                                if (stopProcessing)
+                                {
+                                    logger.Trace("Stop requested while still processing flights");
+                                    break;
+                                }
+
+                                logger.Warn("Startup Flight Update");
+                                ProcessMessage(fl.OuterXml);
+                            }
+                        }
+                        catch (Exception ex1)
+                        {
+                            logger.Error(ex1.Message);
+                            logger.Error(ex1);
+                        }
+                    }
+                }
+                catch (Exception ex1)
+                {
+                    logger.Error(ex1.Message);
+                    logger.Error(ex1);
+                }
+            }
+            catch (Exception)
+            {
+                //NO-OP
+            }
+        }
     }
 }

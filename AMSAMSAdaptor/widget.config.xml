@@ -1,11 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <config>
 
-	<!-- These three entries have to be unique if you are running multiple instance on the one machine-->
-	<ServiceName></ServiceName>
-	<ServiceDisplayName></ServiceDisplayName>
-	<ServiceDescription></ServiceDescription>
-
 	<!-- Config for the "source" system -->
 	<FromAMSQueue enabled="true">.\private$\fromamssfo1</FromAMSQueue>
 	<FromAMSWebServiceURL>http://localhost:91/SITAAMSIntegrationServiceSFO1/v2/SITAAMSIntegrationService/</FromAMSWebServiceURL>
@@ -14,7 +9,7 @@
 	<ReadMessageLoopInterval>10</ReadMessageLoopInterval>
 
 	<!-- Config for the "target" system -->
-	<ToAMSRequestQueue>Format:dIRECT:OS=REMOTEHOST:\private$\toamssfo2</ToAMSRequestQueue>
+	<ToAMSRequestQueue>Format:DIRECT:OS=REMOTEHOST:\private$\toamssfo2</ToAMSRequestQueue>
 	<ToAMSWebServiceURL>http://localhost:91/SITAAMSIntegrationServiceSFO2/v2/SITAAMSIntegrationService/</ToAMSWebServiceURL>
 
 	<!--	<ToToken>32b8ef7a-0a16-4b4a-9e01-799960c91e0e</ToToken> -->
@@ -35,8 +30,21 @@
 
 	<!-- Initialise flights on startup and the time span to init-->
 	<InitFlights>true</InitFlights>
-	<StartFromHours>-1000</StartFromHours>
-	<StartToHours>24</StartToHours>
+	<StartFromHours>-6</StartFromHours>
+	<StartToHours>4</StartToHours>
+
+	<!-- Back Catalog Process to load histroic Flights without impacting current operations -->
+
+	<enableBackCatalog>true</enableBackCatalog>
+	<!-- Enable Back Catalog Processing-->
+	<backCatalogFrom>2021-12-11</backCatalogFrom>
+	<!-- Most RECENT Date to include in backlog -->
+	<backCatalogTo>2021-05-01</backCatalogTo>
+	<!-- Oldest Date to include in backlog -->
+	<backCatalogBlockLength>3</backCatalogBlockLength>
+	<!-- Number of days in each back catalog request -->
+	<backCatalogInterval>15</backCatalogInterval>
+	<!-- Number of seconds between each back catalog request -->
 
 	<!-- The handlers for the various message types -->
 	<!-- The "class" attribute is the classname in the AMSAMSAdaptor namespace that implements inherits the HandlerAbstract class
@@ -65,14 +73,14 @@
 			<!-- Transformers are type specific -->
 
 			<Transformer class="TransformerFlightRemoveProperties" enabled="true">
-				<TransformerConfig>				
+				<TransformerConfig>
 					<Property propertyName="ArrivalDeskGroupIsManuallySet" />
 					<Property propertyName="FlightUniqueID" />
 					<Property propertyName="DataLocked" />
 					<Property propertyName="CheckInGroupIsManuallySet" />
 					<Property propertyName="Stand" />
 				</TransformerConfig>
-			</Transformer> 
+			</Transformer>
 
 			<Transformer class="TransformerFlightOnlyProperties" enabled="false">
 				<TransformerConfig>
@@ -81,7 +89,7 @@
 				</TransformerConfig>
 			</Transformer>
 
-<!--			<Transformer class="TransformerFlightAddProperties">
+			<!--			<Transformer class="TransformerFlightAddProperties">
 				<TransformerConfig>
 					<Property propertyName="OriginalFlightNature" type="alternateProperty" alternatePropertyName="Nature" />
 					<Property propertyName="TimeMessageReceived" type="dateTime" dateTimeFormat="HH:mm:ss" />
@@ -96,25 +104,24 @@
 					<Property propertyName="de--_ActualArrival" type="lookup" lookupPropertyName="AirlineIATA" fileName="lookup.csv" indexField="0" valueField="2" referencePropertyName="ScheduledTime" timeOffset="true" timeFormat="yyyy-MM-ddTHH:mm:ssZ" />
 				</TransformerConfig>
 			</Transformer>
-			
-			<Transformer class ="TransformerStandSlotToTable" enabled="false" tableName="CustomTableNameOfYourChoice" >
+
+			<Transformer class ="TransformerStandSlotToTable" enabled="false" tableName="CustomTableNameOfYourChoice">
 				<TransformerConfig />
 			</Transformer>
-			
+
 			<!-- Remove one or more custom table -->
-			<Transformer class ="TransformerFlightRemoveCustomTable" enabled="true">
+			<Transformer class ="TransformerFlightRemoveTable" enabled="true">
 				<TransformerConfig>
 					<Property tableName="DJBTest" />
 					<Property tableName="customSensitiveData" />
 				</TransformerConfig>
 			</Transformer>
 
-	<!--		<Transformer class ="TransformerFlightRemoveActivities" />
+			<!--		<Transformer class ="TransformerFlightRemoveActivities" />
 			<Transformer class ="TransformerFlightRemoveEvents" />
 			<Transformer class ="TransformerFlightRemoveVehicleSlots" /> -->
 
 			<!-- Convert the CheckInSlot data to a custom table format-->
-
 
 			<Transformer class="TransformerFlightLookupReMapper" enabled="false">
 				<TransformerConfig>
@@ -190,18 +197,18 @@
 		<Handler class="HandlerRouteUpdate" messageType="RouteUpdatedNotification" name="Default Route Update Handler" enabled="true" />
 		<Handler class="HandlerRouteCreate" messageType="RouteCreatedNotification" name="Default Route Created Handler" enabled="true" />
 		<Handler class="HandlerRouteDelete" messageType="RouteDeletedNotification" name="Default Route Deleted Handler" enabled="true" />
-		<Handler class="HandlerRoute" messageType="Route" name="Default Route Handler" enabled="true" >
+		<Handler class="HandlerRoute" messageType="Route" name="Default Route Handler" enabled="true">
 			<Transformer class="TransformerBaseDataAddMissingProperties"  enabled="true">
 				<TransformerConfig>
 					<Property propertyName="CustomTypeCode" value="D" />
 				</TransformerConfig>
 			</Transformer>
 		</Handler>
-		
+
 		<Handler class="HandlerAirportUpdate" messageType="AirportUpdatedNotification" name="Default Airport Update Handler" enabled="true" />
 		<Handler class="HandlerAirportCreate" messageType="AirportCreatedNotification" name="Default Airport Created Handler" enabled="true" />
-		<Handler class="HandlerAirportDelete" messageType="AirportDeletedNotification" name="Default Airport Deleted Handler" enabled="true"/>
-		<Handler class="HandlerAirport" messageType="Airport" name="Default Airport Handler" enabled="true" >
+		<Handler class="HandlerAirportDelete" messageType="AirportDeletedNotification" name="Default Airport Deleted Handler" enabled="true" />
+		<Handler class="HandlerAirport" messageType="Airport" name="Default Airport Handler" enabled="true">
 			<Transformer class="TransformerBaseDataRemoveProperties"  enabled="true">
 				<TransformerConfig>
 					<Property propertyName="S---_CityName_hi" />
@@ -225,6 +232,5 @@
 		<Handler class="HandlerCustomsTypeCreate" messageType="CustomsTypeCreatedNotification" name="Default CustomsTypeType Created Handler" enabled="true" />
 		<Handler class="HandlerCustomsTypeDelete" messageType="CustomsTypeDeletedNotification" name="Default CustomsTypeType Deleted Handler" enabled="true" />
 		<Handler class="HandlerCustomsType" messageType="CustomsType" name="Default CustomsTypeType Handler" enabled="true" />
-
 	</Handlers>
 </config>
