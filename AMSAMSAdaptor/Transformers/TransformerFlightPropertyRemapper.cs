@@ -147,13 +147,17 @@ namespace AMSAMSAdaptor
             int off = int.Parse(lookupValue);
             string referenceValue = fl.FlightProperties[mapper.TimeReferenceProperty].Value;
 
+            DateTime t = DateTime.Parse(referenceValue);
+            DateTime r = t.AddMinutes(off);
             if (mapper.TimeFormat != null)
             {
-                return DateTime.Parse(referenceValue).AddMinutes(off).ToString(mapper.TimeFormat);
+                string s = r.ToString(mapper.TimeFormat);
+                return s;
             }
             else
             {
-                return DateTime.Parse(referenceValue).AddMinutes(off).ToString();
+                string s = r.ToString();
+                return s;
             }
         }
 
