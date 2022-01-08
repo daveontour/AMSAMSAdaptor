@@ -1,0 +1,130 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<config>
+
+	<!-- Config for the "source" system -->
+	<FromAMSQueue enabled="true">.\private$\fromamssfo1</FromAMSQueue>
+	<FromAMSWebServiceURL>http://localhost:91/SITAAMSIntegrationServiceSFO1/v2/SITAAMSIntegrationService/</FromAMSWebServiceURL>
+	<!--	<FromToken>32b8ef7a-0a16-4b4a-9e01-799960c91e0e</FromToken> -->
+	<FromToken>0b36cdaa-712b-4f27-bb23-a7248c9a17c8</FromToken>
+	<ReadMessageLoopInterval>10</ReadMessageLoopInterval>
+
+	<!-- Config for the "target" system -->
+	<ToAMSRequestQueue  enabled="false">Format:DIRECT:OS=REMOTEHOST:\private$\toamssfo2</ToAMSRequestQueue>
+	<ToAMSWebServiceURL>http://localhost:91/SITAAMSIntegrationServiceSFO2/v2/SITAAMSIntegrationService/</ToAMSWebServiceURL>
+
+	<!--	<ToToken>32b8ef7a-0a16-4b4a-9e01-799960c91e0e</ToToken> -->
+	<ToToken>06f7d842-8add-4290-8c9c-298d2dccbfe4</ToToken>
+	<AirportCode>SFO</AirportCode>
+
+	<!-- Base Data types to initialize on startup-->
+	<InitAircraftTypes>false</InitAircraftTypes>
+	<InitAircraft>false</InitAircraft>
+	<InitAirports>false</InitAirports>
+	<InitAirlines>false</InitAirlines>
+	<InitAreas>false</InitAreas>
+	<InitCheckIns>false</InitCheckIns>
+	<InitStands>false</InitStands>
+	<InitGates>false</InitGates>
+	<InitRoutes>false</InitRoutes>
+	<InitCustomsTypes>false</InitCustomsTypes>
+
+	<!-- Initialise flights on startup and the time span to init-->
+	<InitFlights>true</InitFlights>
+	<StartFromHours>-6</StartFromHours>
+	<StartToHours>4</StartToHours>
+
+	<!-- Back Catalog Process to load histroic Flights without impacting current operations -->
+
+	<enableBackCatalog>false</enableBackCatalog>
+	<!-- Enable Back Catalog Processing-->
+	<backCatalogFrom>2021-12-11</backCatalogFrom>
+	<!-- Most RECENT Date to include in backlog -->
+	<backCatalogTo>2021-05-01</backCatalogTo>
+	<!-- Oldest Date to include in backlog -->
+	<backCatalogBlockLength>3</backCatalogBlockLength>
+	<!-- Number of days in each back catalog request -->
+	<backCatalogInterval>15</backCatalogInterval>
+	<!-- Number of seconds between each back catalog request -->
+
+	<!-- The handlers for the various message types -->
+	<!-- The "class" attribute is the classname in the AMSAMSAdaptor namespace that implements inherits the HandlerAbstract class
+	     "messageType" is the AMSX message type that is managed
+         "name" is for descriptive purposes only
+		 "enabled" wheterht eh handler is enabled or not  -->
+	<Handlers>
+
+		<!-- Multiple types of the same type of Handler can be used if different configurations are needed-->
+		<Handler class="HandlerFlightUpdate" messageType="FlightUpdatedNotification" name="Flight Update Handler with filtering" enabled="true">
+			<PassFilter enabled ="false">.//amsx-datatypes:FlightId/amsx-datatypes:AirlineDesignator[@codeContext='IATA' and  contains(text(), 'EK')]</PassFilter>
+			<Transformer class="TransformerFlightLookupReMapper" enabled="false">
+				<TransformerConfig>
+					<!--
+				The property we want to change is propertyName="ScheduledTime"
+				We want to change it by adding a time offset to it timeOffset="true"
+
+				The time offset will be determined by looking up the offset value in a file  fileName="flighttimes.csv"
+				The key field in the lookup file is indexField="0"
+				The value field in the lookup file is valueField="1"
+
+				The key for the lookup is the value of lookupPropertyName="AirportIATA"
+				The base for the offset is calcuated from the value of referencePropertyName="ScheduledTime"
+
+				The format of the time is timeFormat="yyyy-MM-ddTHH:mm:ssZ"
+				-->
+					<Property propertyName="ScheduledTime"  lookupPropertyName="AirportIATA" referencePropertyName="ScheduledTime" timeOffset="true" fileName="flighttimes.csv" indexField="0" valueField="1" timeFormat="yyyy-MM-ddTHH:mm:ssZ" />
+				</TransformerConfig>
+			</Transformer>
+		</Handler>
+		<Handler class="HandlerFlightCreate" messageType="FlightCreatedNotification" name="Flight Update Handler with filtering" enabled="true">
+		</Handler>
+		<Handler class="HandlerFlightDelete" messageType="FlightDeletedNotification" name="Default FlightDeleted Update Handler" enabled="true" />
+		<Handler class="HandlerFlight" messageType="Flight" name="Default Flight Update Handler" enabled="true">
+		</Handler>
+
+		<Handler class="HandlerCheckInUpdate" messageType="CheckInUpdatedNotification" name="Default CheckIn Update Handler" enabled="false" />
+		<Handler class="HandlerCheckInCreate" messageType="CheckInCreatedNotification" name="Default CheckIn Created Handler" enabled="false" />
+		<Handler class="HandlerCheckIn" messageType="CheckIn" name="Default CheckIn Handler" enabled="false" />
+
+		<Handler class="HandlerStandUpdate" messageType="StandUpdatedNotification" name="Default Stand Update Handler" enabled="false" />
+		<Handler class="HandlerStandCreate" messageType="StandCreatedNotification" name="Default Stand Created Handler" enabled="false" />
+		<Handler class="HandlerStand" messageType="Stand" name="Default Stand Handler" enabled="false" />
+
+		<Handler class="HandlerGateUpdate" messageType="GateUpdatedNotification" name="Default Gate Update Handler" enabled="false" />
+		<Handler class="HandlerGateCreate" messageType="GateCreatedNotification" name="Default Gate Created Handler" enabled="false" />
+		<Handler class="HandlerGate" messageType="Gate" name="Default Gate Handler" enabled="false" />
+
+		<Handler class="HandlerAreaUpdate" messageType="AreaUpdatedNotification" name="Default Area Update Handler" enabled="false" />
+		<Handler class="HandlerAreaCreate" messageType="AreaCreatedNotification" name="Default Area Created Handler" enabled="false" />
+		<Handler class="HandlerArea" messageType="Area" name="Default Area Handler" enabled="false" />
+
+		<Handler class="HandlerAirlineUpdate" messageType="AirlineUpdatedNotification" name="Default Airline Update Handler" enabled="false" />
+		<Handler class="HandlerAirlineCreate" messageType="AirlineCreatedNotification" name="Default Airline Created Handler" enabled="false" />
+		<Handler class="HandlerAirlineDelete" messageType="AirlineDeletedNotification" name="Default Airline Deleted Handler" enabled="false" />
+		<Handler class="HandlerAirline" messageType="Airline" name="Default Airline Handler" enabled="false" />
+
+		<Handler class="HandlerRouteUpdate" messageType="RouteUpdatedNotification" name="Default Route Update Handler" enabled="false" />
+		<Handler class="HandlerRouteCreate" messageType="RouteCreatedNotification" name="Default Route Created Handler" enabled="false" />
+		<Handler class="HandlerRouteDelete" messageType="RouteDeletedNotification" name="Default Route Deleted Handler" enabled="false" />
+		<Handler class="HandlerRoute" messageType="Route" name="Default Route Handler" enabled="false" />
+
+		<Handler class="HandlerAirportUpdate" messageType="AirportUpdatedNotification" name="Default Airport Update Handler" enabled="false" />
+		<Handler class="HandlerAirportCreate" messageType="AirportCreatedNotification" name="Default Airport Created Handler" enabled="false" />
+		<Handler class="HandlerAirportDelete" messageType="AirportDeletedNotification" name="Default Airport Deleted Handler" enabled="false" />
+		<Handler class="HandlerAirport" messageType="Airport" name="Default Airport Handler" enabled="false" />
+
+		<Handler class="HandlerAircraftUpdate" messageType="AircraftUpdatedNotification" name="Default Aircraft Update Handler" enabled="false" />
+		<Handler class="HandlerAircraftCreate" messageType="AircraftCreatedNotification" name="Default Aircraft Created Handler" enabled="false" />
+		<Handler class="HandlerAircraftDelete" messageType="AircraftDeletedNotification" name="Default Aircraft Deleted Handler" enabled="false" />
+		<Handler class="HandlerAircraft" messageType="Aircraft" name="Default Aircraft Handler" enabled="false" />
+
+		<Handler class="HandlerAircraftTypeUpdate" messageType="AircraftTypeUpdatedNotification" name="Default AircraftType Update Handler" enabled="false" />
+		<Handler class="HandlerAircraftTypeCreate" messageType="AircraftTypeCreatedNotification" name="Default AircraftType Created Handler" enabled="false" />
+		<Handler class="HandlerAircraftTypeDelete" messageType="AircraftTypeDeletedNotification" name="Default AircraftType Deleted Handler" enabled="false" />
+		<Handler class="HandlerAircraftType" messageType="AircraftType" name="Default AircraftType Handler" enabled="false" />
+
+		<Handler class="HandlerCustomsTypeUpdate" messageType="CustomsTypeUpdatedNotification" name="Default CustomsTypeType Update Handler" enabled="false" />
+		<Handler class="HandlerCustomsTypeCreate" messageType="CustomsTypeCreatedNotification" name="Default CustomsTypeType Created Handler" enabled="false" />
+		<Handler class="HandlerCustomsTypeDelete" messageType="CustomsTypeDeletedNotification" name="Default CustomsTypeType Deleted Handler" enabled="false" />
+		<Handler class="HandlerCustomsType" messageType="CustomsType" name="Default CustomsTypeType Handler" enabled="false" />
+	</Handlers>
+</config>

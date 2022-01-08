@@ -111,6 +111,12 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="widget.config.xml.createarrival">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="widget.config.xml.orig">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <Content Include="widget.config.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

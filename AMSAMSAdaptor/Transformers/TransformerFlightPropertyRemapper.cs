@@ -22,6 +22,7 @@ namespace AMSAMSAdaptor
         public bool TimeOffset { get; internal set; }
         public string TimeFormat { get; internal set; }
         public string TimeReferenceProperty { get; internal set; }
+        public int Offset { get; set; } = 0;
 
         public Dictionary<string, string> LookupDict = new Dictionary<string, string>();
     }
@@ -51,8 +52,9 @@ namespace AMSAMSAdaptor
                 };
 
                 bool.TryParse(property.Attributes["timeOffset"]?.Value, out bool timeOffest);
-
                 reMapper.TimeOffset = timeOffest;
+                int.TryParse(property.Attributes["offset"]?.Value, out int offest);
+                reMapper.Offset = offest;
 
                 if (reMapper.Type == "lookup")
                 {
@@ -115,7 +117,7 @@ namespace AMSAMSAdaptor
                     }
                     if (mapper.Type == "dateTime")
                     {
-                        newProperties[mapper.PropertyName].Value = DateTime.Now.ToString(mapper.DatetimeFormat);
+                        newProperties[mapper.PropertyName].Value = DateTime.Now.AddMinutes(mapper.Offset).ToString(mapper.DatetimeFormat);
                     }
                 }
                 catch (KeyNotFoundException)

@@ -13,6 +13,7 @@ namespace AMSAMSAdaptor
         private Supervisor supervisor;
 
         private readonly Logger logger = LogManager.GetLogger("consoleLogger");
+        private readonly Logger devlogger = LogManager.GetLogger("devLogger");
         private readonly Logger emailLogger = LogManager.GetLogger("emailLogger");
 
         public void SetSupervisor(Supervisor supervisor, XmlDocument configDoc)
@@ -74,6 +75,7 @@ namespace AMSAMSAdaptor
 
         private void SendCreateFlightExtended(ModelFlight flt)
         {
+            devlogger.Trace(flt.node.PrintXML());
             using (AMSIntegrationServiceClient client = new AMSIntegrationServiceClient(binding, address))
             {
                 try
@@ -106,6 +108,7 @@ namespace AMSAMSAdaptor
 
         private void SendUpdateFlightExtended(ModelFlight flt)
         {
+            devlogger.Trace(flt.node.PrintXML());
             using (AMSIntegrationServiceClient client = new AMSIntegrationServiceClient(binding, address))
             {
                 try

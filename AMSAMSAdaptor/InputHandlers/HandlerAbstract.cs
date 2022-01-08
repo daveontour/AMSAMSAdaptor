@@ -18,6 +18,9 @@ namespace AMSAMSAdaptor
         protected List<string> transformerClass = new List<string>();
         protected List<ITransformer> transformers = new List<ITransformer>();
 
+        private string passFilterType { get; set; } = "and";
+        private string nopassFilterType { get; set; } = "and";
+
         public abstract string MessageName { get; }
 
         public virtual string HandlerName
@@ -42,25 +45,36 @@ namespace AMSAMSAdaptor
             this.supervisor = supervisor;
             this.config = config;
 
-            foreach (XmlNode node in config.SelectNodes($"./PassFilter"))
-            {
-                bool.TryParse(node.Attributes["enabled"]?.Value, out bool enabled);
+            XmlNode PassFiltersNode = config.SelectSingleNode($"./PassFilters");
+            XmlNode NoPassFiltersNode = config.SelectSingleNode($"./NoPassFilters");
 
-                if (!enabled)
+            if (PassFiltersNode != null)
+            {
+                passFilterType = PassFiltersNode.Attributes["type"].Value;
+                foreach (XmlNode node in PassFiltersNode.SelectNodes($"./PassFilter"))
                 {
-                    continue;
+                    bool.TryParse(node.Attributes["enabled"]?.Value, out bool enabled);
+
+                    if (!enabled)
+                    {
+                        continue;
+                    }
+                    passFilters.Add(node.InnerText);
                 }
-                passFilters.Add(node.InnerText);
             }
-            foreach (XmlNode node in config.SelectNodes($"./NoPassFilter"))
+            if (NoPassFiltersNode != null)
             {
-                bool.TryParse(node.Attributes["enabled"]?.Value, out bool enabled);
-
-                if (!enabled)
+                nopassFilterType = NoPassFiltersNode.Attributes["type"].Value;
+                foreach (XmlNode node in NoPassFiltersNode.SelectNodes($"./NoPassFilter"))
                 {
-                    continue;
+                    bool.TryParse(node.Attributes["enabled"]?.Value, out bool enabled);
+
+                    if (!enabled)
+                    {
+                        continue;
+                    }
+                    noPassFilters.Add(node.InnerText);
                 }
-                noPassFilters.Add(node.InnerText);
             }
             foreach (XmlNode node in config.SelectNodes($"./Transformer"))
             {
@@ -132,24 +146,54 @@ namespace AMSAMSAdaptor
         {
             if (passFilters.Count != 0)
             {
-                foreach (string pass in passFilters)
+                if (passFilterType == "and")
                 {
-                    if (node.SelectSingleNode(pass, nsmgr) != null)
+                    foreach (string pass in passFilters)
                     {
-                        return true;
+                        if (node.SelectSingleNode(pass, nsmgr) == null)
+                        {
+                            return false;
+                        }
                     }
+                    return true;
                 }
-                return false;
+                else
+                {
+                    // For an "or" operation
+                    foreach (string pass in passFilters)
+                    {
+                        if (node.SelectSingleNode(pass, nsmgr) != null)
+                        {
+                            return true;
+                        }
+                    }
+                    return false;
+                }
             }
 
             if (noPassFilters.Count != 0)
             {
-                foreach (string pass in noPassFilters)
+                if (nopassFilterType == "or")
                 {
-                    if (node.SelectSingleNode(pass, nsmgr) != null)
+                    foreach (string pass in noPassFilters)
                     {
-                        return false;
+                        if (node.SelectSingleNode(pass, nsmgr) != null)
+                        {
+                            return false;
+                        }
                     }
+                    return true;
+                }
+                else
+                {
+                    foreach (string pass in noPassFilters)
+                    {
+                        if (node.SelectSingleNode(pass, nsmgr) == null)
+                        {
+                            return true;
+                        }
+                    }
+                    return false;
                 }
             }
             return true;
