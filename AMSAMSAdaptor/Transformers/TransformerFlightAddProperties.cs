@@ -26,11 +26,13 @@ namespace AMSAMSAdaptor
 
         public object Transform(object input)
         {
+            if (input == null) return null;
+
             ModelFlight fl = (ModelFlight)input;
             foreach (ReMapper mapper in _remppers)
             {
                 string value = null;
-                if (mapper.Type=="fixed")
+                if (mapper.Type == "fixed")
                 {
                     value = mapper.PropertyFixedValue;
                 }

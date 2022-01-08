@@ -5,7 +5,6 @@ using System.Text;
 using System.Xml;
 using WorkBridge.Modules.AMS.AMSIntegrationAPI.Mod.Intf.DataTypes;
 
-
 namespace AMSAMSAdaptor
 {
     internal class OutputFlightWS : IOutputMessageHandler
@@ -73,6 +72,7 @@ namespace AMSAMSAdaptor
                 }
             }
         }
+
         private void SendCreateFlightExtended(ModelFlight flt)
         {
             using (AMSIntegrationServiceClient client = new AMSIntegrationServiceClient(binding, address))
@@ -81,7 +81,7 @@ namespace AMSAMSAdaptor
                 {
                     PropertyValue[] propertyValues = flt.GetPropertValues();
                     XmlElement res = client.CreateFlightExtended(Parameters.TOTOKEN, flt.GetFlightId(), flt.GetFlightUpdateInformation());
-                    
+
                     if (res.OuterXml.Contains("<Status xmlns=\"http://www.sita.aero/ams6-xml-api-datatypes\">Success</Status>"))
                     {
                         logger.Info("Flight Creation Successful :)");
@@ -90,7 +90,7 @@ namespace AMSAMSAdaptor
                     else
                     {
                         string errorMessage = $"Flight Create Was Not Successful for Flight {flt.ToString()}";
-                        errorMessage = errorMessage + $"Message from host was: \n {PrintXML(res.OuterXml)} ";
+                        errorMessage = errorMessage + $"Message from host was: \n {res.PrintXML()} ";
                         emailLogger.Error(errorMessage);
                     }
                 }
@@ -102,6 +102,7 @@ namespace AMSAMSAdaptor
                 }
             }
         }
+
         private void SendUpdateFlightExtended(ModelFlight flt)
         {
             using (AMSIntegrationServiceClient client = new AMSIntegrationServiceClient(binding, address))
@@ -109,7 +110,7 @@ namespace AMSAMSAdaptor
                 try
                 {
                     XmlElement existing = client.GetFlight(Parameters.TOTOKEN, flt.GetFlightId());
-                    
+
                     if (existing.OuterXml.Contains("<ErrorCode>FLIGHT_NOT_FOUND</ErrorCode>"))
                     {
                         logger.Trace("Flight for Update not Found, Will try Create instead");
@@ -119,14 +120,15 @@ namespace AMSAMSAdaptor
                     FlightId fltid = flt.GetFlightId();
                     XmlElement res = client.UpdateFlightExtended(Parameters.TOTOKEN, fltid, flt.GetFlightUpdateInformation());
                     logger.Trace("Result of Update:-");
-                    logger.Trace(PrintXML(res.OuterXml));
+                    logger.Trace(res.PrintXML());
                     if (res.OuterXml.Contains("<Status xmlns=\"http://www.sita.aero/ams6-xml-api-datatypes\">Success</Status>"))
                     {
                         ProcessLinking(flt);
-                    } else
+                    }
+                    else
                     {
                         string errorMessage = $"Flight Update Was Not Successful for Flight {flt.ToString()}";
-                        errorMessage = errorMessage + $"Message from host was: \n {PrintXML(res.OuterXml)} ";
+                        errorMessage = errorMessage + $"Message from host was: \n {res.PrintXML()} ";
                         emailLogger.Error(errorMessage);
                     }
                 }
@@ -146,7 +148,6 @@ namespace AMSAMSAdaptor
                 FlightId fltId = flt.GetFlightId();
                 FlightId lfltId = flt.GetLinkedFlightId();
                 {
-
                     using (AMSIntegrationServiceClient client = new AMSIntegrationServiceClient(binding, address))
                     {
                         try
@@ -156,14 +157,14 @@ namespace AMSAMSAdaptor
                                 // If the incoming flight message is linked, then link the flights
                                 XmlElement res = client.LinkFlights(Parameters.TOTOKEN, fltId, lfltId);
                                 logger.Trace("Result of Linking Operation:-");
-                                logger.Trace(PrintXML(res.OuterXml));
+                                logger.Trace(res.PrintXML());
                             }
                             else
                             {
                                 // If the incoming flight message is not linked, then unlink the flight
                                 XmlElement res = client.UnlinkFlight(Parameters.TOTOKEN, fltId);
                                 logger.Trace("Result of UnLinking Operation:-");
-                                logger.Trace(PrintXML(res.OuterXml));
+                                logger.Trace(res.PrintXML());
                             }
                         }
                         catch (Exception e)
@@ -172,53 +173,12 @@ namespace AMSAMSAdaptor
                         }
                     }
                 }
-            } catch(Exception e)
-            {
-                logger.Error(e,"Error is Linking/Unlinking Operation");
-                logger.Error(e.Message);
-            }
-        }
-        public static string PrintXML(string xml)
-        {
-            string result = "";
-
-            MemoryStream mStream = new MemoryStream();
-            XmlTextWriter writer = new XmlTextWriter(mStream, Encoding.Unicode);
-            XmlDocument document = new XmlDocument();
-
-            try
-            {
-                // Load the XmlDocument with the XML.
-                document.LoadXml(xml);
-
-                writer.Formatting = Formatting.Indented;
-
-                // Write the XML into a formatting XmlTextWriter
-                document.WriteContentTo(writer);
-                writer.Flush();
-                mStream.Flush();
-
-                // Have to rewind the MemoryStream in order to read
-                // its contents.
-                mStream.Position = 0;
-
-                // Read MemoryStream contents into a StreamReader.
-                StreamReader sReader = new StreamReader(mStream);
-
-                // Extract the text from the StreamReader.
-                string formattedXml = sReader.ReadToEnd();
-
-                result = formattedXml;
             }
             catch (Exception e)
             {
+                logger.Error(e, "Error is Linking/Unlinking Operation");
                 logger.Error(e.Message);
             }
-
-            mStream.Close();
-            writer.Close();
-
-            return result;
         }
     }
 }

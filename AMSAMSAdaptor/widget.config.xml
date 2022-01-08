@@ -9,7 +9,7 @@
 	<ReadMessageLoopInterval>10</ReadMessageLoopInterval>
 
 	<!-- Config for the "target" system -->
-	<ToAMSRequestQueue>Format:DIRECT:OS=REMOTEHOST:\private$\toamssfo2</ToAMSRequestQueue>
+	<ToAMSRequestQueue  enabled="false">Format:DIRECT:OS=REMOTEHOST:\private$\toamssfo2</ToAMSRequestQueue>
 	<ToAMSWebServiceURL>http://localhost:91/SITAAMSIntegrationServiceSFO2/v2/SITAAMSIntegrationService/</ToAMSWebServiceURL>
 
 	<!--	<ToToken>32b8ef7a-0a16-4b4a-9e01-799960c91e0e</ToToken> -->
@@ -17,10 +17,10 @@
 	<AirportCode>SFO</AirportCode>
 
 	<!-- Base Data types to initialize on startup-->
-	<InitAircraftTypes>false</InitAircraftTypes>
-	<InitAircraft>false</InitAircraft>
-	<InitAirports>false</InitAirports>
-	<InitAirlines>false</InitAirlines>
+	<InitAircraftTypes>true</InitAircraftTypes>
+	<InitAircraft>true</InitAircraft>
+	<InitAirports>true</InitAirports>
+	<InitAirlines>true</InitAirlines>
 	<InitAreas>false</InitAreas>
 	<InitCheckIns>false</InitCheckIns>
 	<InitStands>false</InitStands>
@@ -35,7 +35,7 @@
 
 	<!-- Back Catalog Process to load histroic Flights without impacting current operations -->
 
-	<enableBackCatalog>true</enableBackCatalog>
+	<enableBackCatalog>false</enableBackCatalog>
 	<!-- Enable Back Catalog Processing-->
 	<backCatalogFrom>2021-12-11</backCatalogFrom>
 	<!-- Most RECENT Date to include in backlog -->

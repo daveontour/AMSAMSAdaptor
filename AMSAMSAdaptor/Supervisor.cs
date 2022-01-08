@@ -134,7 +134,7 @@ namespace AMSAMSAdaptor
                 }
             }
 
-            // Post out put handlers are for when the CRUD has been completed. Could be used for handling linking
+            // Post out put handlers are for when the CRUD has been completed.
             var postouttype = typeof(IPostOutputMessageHandler);
             var postouttypes = AppDomain.CurrentDomain.GetAssemblies()
                 .SelectMany(s => s.GetTypes())
@@ -233,7 +233,7 @@ namespace AMSAMSAdaptor
                 }
                 catch (MessageQueueException)
                 {
-                    logger.Warn("No Messages to Process");
+                    logger.Trace("No Messages to Process");
                 }
                 catch (Exception e)
                 {
@@ -261,6 +261,7 @@ namespace AMSAMSAdaptor
                     if (newNode.SelectSingleNode($"//amsx-messages:Content/amsx-messages:{messageType}", nsmgr) != null || newNode.SelectSingleNode($"/amsx-datatypes:{messageType}", nsmgr) != null)
                     {
                         logger.Debug($"Received Managed Message Type: {messageType}");
+                        logger.Trace(xml.PrintXML());
                         Dispatchers[messageType].Fire(newNode);
                         return;
                     }
@@ -271,7 +272,7 @@ namespace AMSAMSAdaptor
                     return;
                 }
             }
-            logger.Debug($"Received Unmanaged Message Type");
+            logger.Trace($"Received Unmanaged Message Type");
         }
 
         public void SendFlightMessage(ModelFlight flt, string action)

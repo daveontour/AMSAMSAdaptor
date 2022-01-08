@@ -5,6 +5,7 @@ namespace AMSAMSAdaptor
     internal class TransformerStandSlotToTable : ITransformer
     {
         private string tableName;
+
         public void SetConfig(XmlNode configNode)
         {
             tableName = configNode.Attributes["tableName"]?.Value;
@@ -13,12 +14,14 @@ namespace AMSAMSAdaptor
 
         public object Transform(object input)
         {
+            if (input == null) return null;
+
             ModelFlight fl = (ModelFlight)input;
             XmlDocument doc = fl.node.OwnerDocument;
 
             XmlNode stateNode = doc.SelectSingleNode(".//amsx-messages:Flight/amsx-datatypes:FlightState", fl.nsmgr);
             XmlElement tv = doc.CreateElement(null, "TableValue", "http://www.sita.aero/ams6-xml-api-datatypes");
-            tv.SetAttribute("propertyName", tableName); 
+            tv.SetAttribute("propertyName", tableName);
             stateNode.AppendChild(tv);
 
             foreach (XmlNode s in fl.node.SelectNodes(".//amsx-messages:Flight/amsx-datatypes:FlightState/amsx-datatypes:StandSlots/amsx-datatypes:StandSlot", fl.nsmgr))
@@ -35,7 +38,7 @@ namespace AMSAMSAdaptor
                 {
                     XmlElement e = doc.CreateElement(null, "Value", "http://www.sita.aero/ams6-xml-api-datatypes");
                     e.SetAttribute("propertyName", "StartTime");
-                    e.InnerText = StartTime;   
+                    e.InnerText = StartTime;
                     row.AppendChild(e);
                 }
                 if (EndTime != null)
@@ -69,7 +72,6 @@ namespace AMSAMSAdaptor
                 tv.AppendChild(row);
             }
 
-
             return fl;
         }
     }
@@ -77,6 +79,7 @@ namespace AMSAMSAdaptor
     internal class TransformerCheckInSlotToTable : ITransformer
     {
         private string tableName;
+
         public void SetConfig(XmlNode configNode)
         {
             tableName = configNode.Attributes["tableName"]?.Value;
@@ -141,15 +144,14 @@ namespace AMSAMSAdaptor
                 tv.AppendChild(row);
             }
 
-
             return fl;
         }
     }
 
-
     internal class TransformerGateSlotToTable : ITransformer
     {
         private string tableName;
+
         public void SetConfig(XmlNode configNode)
         {
             tableName = configNode.Attributes["tableName"]?.Value;
@@ -214,10 +216,7 @@ namespace AMSAMSAdaptor
                 tv.AppendChild(row);
             }
 
-
             return fl;
         }
-
     }
-
 }

@@ -11,11 +11,12 @@ namespace AMSAMSAdaptor
     {
         public void SetConfig(XmlNode configNode)
         {
-
         }
 
         public object Transform(object input)
         {
+            if (input == null) return null;
+
             ModelFlight fl = (ModelFlight)input;
 
             XmlNode childNode = fl.node.SelectSingleNode($".//amsx-datatypes:CheckInSlots", fl.nsmgr);
@@ -26,11 +27,11 @@ namespace AMSAMSAdaptor
             return fl;
         }
     }
+
     internal class TransformerFlightRemoveStandSlots : ITransformer
     {
         public void SetConfig(XmlNode configNode)
         {
-
         }
 
         public object Transform(object input)
@@ -45,11 +46,11 @@ namespace AMSAMSAdaptor
             return fl;
         }
     }
+
     internal class TransformerFlightRemoveCarouselSlots : ITransformer
     {
         public void SetConfig(XmlNode configNode)
         {
-
         }
 
         public object Transform(object input)
@@ -64,11 +65,11 @@ namespace AMSAMSAdaptor
             return fl;
         }
     }
+
     internal class TransformerFlightRemoveGateSlots : ITransformer
     {
         public void SetConfig(XmlNode configNode)
         {
-
         }
 
         public object Transform(object input)
@@ -88,7 +89,6 @@ namespace AMSAMSAdaptor
     {
         public void SetConfig(XmlNode configNode)
         {
-
         }
 
         public object Transform(object input)
@@ -108,7 +108,6 @@ namespace AMSAMSAdaptor
     {
         public void SetConfig(XmlNode configNode)
         {
-
         }
 
         public object Transform(object input)

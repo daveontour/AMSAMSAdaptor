@@ -11,6 +11,7 @@ namespace AMSAMSAdaptor
     {
         private static readonly NLog.Logger logger = NLog.LogManager.GetLogger("consoleLogger");
         private List<ReMapper> _remppers = new List<ReMapper>();
+
         public void SetConfig(XmlNode configNode)
         {
             foreach (XmlNode property in configNode.SelectNodes(".//Property"))
@@ -28,7 +29,6 @@ namespace AMSAMSAdaptor
                     DatetimeFormat = property.Attributes["dateTimeFormat"]?.Value,
                     AltrernatePropertyName = property.Attributes["alternatePropertyName"]?.Value,
                     Type = property.Attributes["type"]?.Value,
-
                 };
 
                 bool timeOffest = false;
@@ -36,7 +36,8 @@ namespace AMSAMSAdaptor
 
                 reMapper.TimeOffset = timeOffest;
 
-                if (reMapper.Type == "lookup") {
+                if (reMapper.Type == "lookup")
+                {
                     // If a Lookup propertyname is not specified, then use the property name
                     if (reMapper.LookupPropertyName == null)
                     {
@@ -62,16 +63,17 @@ namespace AMSAMSAdaptor
                                 // Do nothing, try the next line
                             }
                         }
-
                     }
                 }
-            
+
                 _remppers.Add(reMapper);
             }
         }
 
         public object Transform(object input)
         {
+            if (input == null) return null;
+
             ModelFlight fl = (ModelFlight)input;
             Dictionary<string, FlightPropertyValue> newProperties = DeepClone(fl.FlightProperties);
             foreach (ReMapper mapper in _remppers)
@@ -146,48 +148,5 @@ namespace AMSAMSAdaptor
                 return (T)formatter.Deserialize(ms);
             }
         }
-
-        //public static string PrintXML(string xml)
-        //{
-        //    string result = "";
-
-        //    MemoryStream mStream = new MemoryStream();
-        //    XmlTextWriter writer = new XmlTextWriter(mStream, Encoding.Unicode);
-        //    XmlDocument document = new XmlDocument();
-
-        //    try
-        //    {
-        //        // Load the XmlDocument with the XML.
-        //        document.LoadXml(xml);
-
-        //        writer.Formatting = Formatting.Indented;
-
-        //        // Write the XML into a formatting XmlTextWriter
-        //        document.WriteContentTo(writer);
-        //        writer.Flush();
-        //        mStream.Flush();
-
-        //        // Have to rewind the MemoryStream in order to read
-        //        // its contents.
-        //        mStream.Position = 0;
-
-        //        // Read MemoryStream contents into a StreamReader.
-        //        StreamReader sReader = new StreamReader(mStream);
-
-        //        // Extract the text from the StreamReader.
-        //        string formattedXml = sReader.ReadToEnd();
-
-        //        result = formattedXml;
-        //    }
-        //    catch (Exception e)
-        //    {
-        //        Console.WriteLine(e.Message);
-        //    }
-
-        //    mStream.Close();
-        //    writer.Close();
-
-        //    return result;
-        //}
     }
 }

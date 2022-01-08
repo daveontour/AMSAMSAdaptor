@@ -6,12 +6,10 @@ namespace AMSAMSAdaptor
 {
     public abstract class HandlerAbstract : IInputMessageHandler, IDisposable
     {
-
         public Supervisor supervisor;
         public readonly NLog.Logger logger = NLog.LogManager.GetLogger("consoleLogger");
         public XmlNamespaceManager nsmgr;
         private XmlNode node;
-
 
         protected XmlNode config;
         protected List<string> passFilters = new List<string>();
@@ -20,10 +18,12 @@ namespace AMSAMSAdaptor
         protected List<ITransformer> transformers = new List<ITransformer>();
 
         public abstract string MessageName { get; }
-        public virtual string HandlerName { get { return this.GetType().Name; } }
+        public virtual string HandlerName
+        { get { return this.GetType().Name; } }
         public abstract string HandlerAction { get; }
         public abstract string HandlerModel { get; }
         public virtual string HandlerDestination { get; } = "BaseDataDistributor";
+
         public virtual void Dispose()
         {
             supervisor.Dispatchers[MessageName].TriggerFire -= HandleMessage;
@@ -33,6 +33,7 @@ namespace AMSAMSAdaptor
         {
             return MessageName;
         }
+
         public HandlerAbstract(Supervisor supervisor, XmlNode config)
         {
             this.supervisor = supervisor;
@@ -65,8 +66,8 @@ namespace AMSAMSAdaptor
                 string className = node.Attributes["class"].Value;
 
                 bool enabled = true;
-                bool.TryParse(node.Attributes["enabled"]?.Value, out enabled); 
-                
+                bool.TryParse(node.Attributes["enabled"]?.Value, out enabled);
+
                 if (!enabled)
                 {
                     continue;
@@ -84,8 +85,6 @@ namespace AMSAMSAdaptor
 
         public virtual void HandleMessage(XmlNode node)
         {
-
-
             this.node = node;
             nsmgr = new XmlNamespaceManager(node.OwnerDocument.NameTable);
             nsmgr.AddNamespace("amsx-messages", "http://www.sita.aero/ams6-xml-api-messages");
@@ -93,7 +92,8 @@ namespace AMSAMSAdaptor
             nsmgr.AddNamespace("ams", "http://www.sita.aero/ams6-xml-api-datatypes");
             if (!CheckHandleMessage())
             {
-                logger.Warn("Message did not pass filtering criteria");
+                logger.Trace("Message did not pass filtering criteria");
+                logger.Trace(node.PrintXML());
                 return;
             }
             // Pass the message through all the transformers
@@ -124,6 +124,7 @@ namespace AMSAMSAdaptor
             else
             {
                 logger.Warn("Message was null after passing through message transformers");
+                logger.Warn(node.PrintXML());
             }
         }
 

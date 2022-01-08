@@ -6,6 +6,7 @@ namespace AMSAMSAdaptor
     internal class TransformerFlightOnlyTable : ITransformer
     {
         private List<string> _tables = new List<string>();
+
         public void SetConfig(XmlNode configNode)
         {
             foreach (XmlNode property in configNode.SelectNodes(".//Property"))
@@ -16,6 +17,8 @@ namespace AMSAMSAdaptor
 
         public object Transform(object input)
         {
+            if (input == null) return null;
+
             ModelFlight fl = (ModelFlight)input;
             foreach (XmlNode childNode in fl.node.SelectSingleNode($".//amsx-datatypes:TableValue", fl.nsmgr))
             {
@@ -32,10 +35,8 @@ namespace AMSAMSAdaptor
 
         internal class TransformerFlightRemoveActivities : ITransformer
         {
-
             public void SetConfig(XmlNode configNode)
             {
-
             }
 
             public object Transform(object input)
@@ -51,11 +52,11 @@ namespace AMSAMSAdaptor
                 return fl;
             }
         }
+
         internal class TransformerFlightRemoveEvents : ITransformer
         {
             public void SetConfig(XmlNode configNode)
             {
-
             }
 
             public object Transform(object input)

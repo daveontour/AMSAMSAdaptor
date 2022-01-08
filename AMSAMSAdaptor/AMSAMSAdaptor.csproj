@@ -79,6 +79,7 @@
     <Compile Include="InputHandlers\HandlerAirportMessages.cs" />
     <Compile Include="Models\ModelBaseDataTypes.cs" />
     <Compile Include="Models\ModelFlight.cs" />
+    <Compile Include="MyExtensionMethods.cs" />
     <Compile Include="OutputHandlers\OutputBaseData.cs" />
     <Compile Include="OutputHandlers\OutputFlightWS.cs" />
     <Compile Include="ReMapper.cs" />

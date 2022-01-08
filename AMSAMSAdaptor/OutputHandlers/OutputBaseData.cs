@@ -1,14 +1,7 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Messaging;
-using System.ServiceModel;
 using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
-using WorkBridge.Modules.AMS.AMSIntegrationAPI.Mod.Intf.DataTypes;
 
 namespace AMSAMSAdaptor
 {
@@ -42,24 +35,33 @@ namespace AMSAMSAdaptor
 
         private void Sender(ModelBase data, string action)
         {
+            logger.Trace($"Base Data output handler received message type {action}");
             string xml = null;
             if (action.Contains("Create")) xml = data.CreateRequest();
             if (action.Contains("Update")) xml = data.UpdateRequest();
             if (action.Contains("Delete")) xml = data.DeleteRequest();
 
             xml = xml.Replace("TOKEN", token);
-            //Console.WriteLine(xml);
+
             Send(xml);
         }
 
         private void Send(string xml)
         {
-            if (toMSMQ) SendMS(xml);
+            if (toMSMQ)
+            {
+                SendMS(xml);
+            }
+            else
+            {
+                logger.Warn($"Output to target queue is not enabled. Is <ToAMSRequestQueue  enabled=\"true\">  set?");
+            }
         }
 
         private void SendMS(string xml)
         {
             logger.Debug("Sending base data message to destination queue");
+            logger.Trace(xml.PrintXML());
             using (MessageQueue msgQueue = new MessageQueue(toqueue))
             {
                 try
@@ -70,7 +72,7 @@ namespace AMSAMSAdaptor
                 }
                 catch (Exception ex)
                 {
-                    logger.Error($"Error sending message to destination queue: {ex.Message}");
+                    logger.Error($"Error sending message to destination queue: {ex.Message}. Destination queue: {toqueue}");
                     return;
                 }
             }

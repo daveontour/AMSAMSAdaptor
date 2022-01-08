@@ -9,14 +9,14 @@ namespace AMSAMSAdaptor
 {
     internal class TransformerBaseDataAddMissingProperties : ITransformer
     {
-        struct Replacement
+        private struct Replacement
         {
             public string property;
             public string value;
         }
 
-        private List <Replacement> _properties = new List<Replacement>();
-        
+        private List<Replacement> _properties = new List<Replacement>();
+
         public void SetConfig(XmlNode configNode)
         {
             foreach (XmlNode property in configNode.SelectNodes(".//Property"))
@@ -30,9 +30,11 @@ namespace AMSAMSAdaptor
 
         public object Transform(object input)
         {
+            if (input == null) return null;
+
             ModelBase fl = (ModelBase)input;
 
-            foreach(Replacement r in _properties)
+            foreach (Replacement r in _properties)
             {
                 if (!fl.KeyState.ContainsKey(r.property))
                 {

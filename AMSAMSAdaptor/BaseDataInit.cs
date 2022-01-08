@@ -82,7 +82,7 @@ namespace AMSAMSAdaptor
                     XmlNodeList fls = res.SelectNodes("//amsx-datatypes:CustomsType", nsmgr);
                     foreach (XmlNode fl in fls)
                     {
-                        logger.Warn("Startup CustomsType Update");
+                        logger.Debug("Startup CustomsType Update");
                         supervisor.ProcessMessage(fl.OuterXml);
                     }
                 }
@@ -93,6 +93,7 @@ namespace AMSAMSAdaptor
             }
             logger.Info("Populating Customs Complete");
         }
+
         public void InitAirports()
         {
             logger.Info("Populating Airports");
@@ -109,7 +110,7 @@ namespace AMSAMSAdaptor
                     XmlNodeList fls = res.SelectNodes("//amsx-datatypes:Airport", nsmgr);
                     foreach (XmlNode fl in fls)
                     {
-                        logger.Warn("Startup Airport Update");
+                        logger.Debug("Startup Airport Update");
                         supervisor.ProcessMessage(fl.OuterXml);
                     }
                 }
@@ -138,7 +139,7 @@ namespace AMSAMSAdaptor
                     XmlNodeList fls = res.SelectNodes("//amsx-datatypes:Aircraft", nsmgr);
                     foreach (XmlNode fl in fls)
                     {
-                        logger.Warn("Startup Aircraft Update");
+                        logger.Debug("Startup Aircraft Update");
                         supervisor.ProcessMessage(fl.OuterXml);
                     }
                 }
@@ -195,7 +196,7 @@ namespace AMSAMSAdaptor
                     XmlNodeList fls = res.SelectNodes("//amsx-datatypes:Airline", nsmgr);
                     foreach (XmlNode fl in fls)
                     {
-                        logger.Warn("Startup Airline Update");
+                        logger.Debug("Startup Airline Update");
                         supervisor.ProcessMessage(fl.OuterXml);
                     }
                 }
@@ -224,7 +225,7 @@ namespace AMSAMSAdaptor
                     XmlNodeList fls = res.SelectNodes("//amsx-datatypes:Areas/amsx-datatypes:Area", nsmgr);
                     foreach (XmlNode fl in fls)
                     {
-                        logger.Warn("Startup Area Update");
+                        logger.Debug("Startup Area Update");
                         supervisor.ProcessMessage(fl.OuterXml);
                     }
                 }
@@ -253,7 +254,7 @@ namespace AMSAMSAdaptor
                     XmlNodeList fls = res.SelectNodes("//amsx-datatypes:CheckIns/amsx-datatypes:CheckIn", nsmgr);
                     foreach (XmlNode fl in fls)
                     {
-                        logger.Warn("Startup Checkin Update");
+                        logger.Debug("Startup Checkin Update");
                         supervisor.ProcessMessage(fl.OuterXml);
                     }
                 }
@@ -282,7 +283,7 @@ namespace AMSAMSAdaptor
                     XmlNodeList fls = res.SelectNodes("//amsx-datatypes:Gates/amsx-datatypes:Gate", nsmgr);
                     foreach (XmlNode fl in fls)
                     {
-                        logger.Warn("Startup Gates Update");
+                        logger.Debug("Startup Gates Update");
                         supervisor.ProcessMessage(fl.OuterXml);
                     }
                 }
@@ -311,7 +312,7 @@ namespace AMSAMSAdaptor
                     XmlNodeList fls = res.SelectNodes("//amsx-datatypes:Stands/amsx-datatypes:Stand", nsmgr);
                     foreach (XmlNode fl in fls)
                     {
-                        logger.Warn("Startup Stand Update");
+                        logger.Debug("Startup Stand Update");
                         supervisor.ProcessMessage(fl.OuterXml);
                     }
                 }
@@ -340,7 +341,7 @@ namespace AMSAMSAdaptor
                     XmlNodeList fls = res.SelectNodes("//amsx-datatypes:Routes/amsx-datatypes:Route", nsmgr);
                     foreach (XmlNode fl in fls)
                     {
-                        logger.Warn("Startup Routes Update");
+                        logger.Debug("Startup Routes Update");
                         supervisor.ProcessMessage(fl.OuterXml);
                     }
                 }

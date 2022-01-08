@@ -10,6 +10,7 @@ namespace AMSAMSAdaptor
     internal class TransformerFlightRemoveProperties : ITransformer
     {
         private List<string> _properties = new List<string>();
+
         public void SetConfig(XmlNode configNode)
         {
             foreach (XmlNode property in configNode.SelectNodes(".//Property"))
@@ -20,12 +21,14 @@ namespace AMSAMSAdaptor
 
         public object Transform(object input)
         {
+            if (input == null) return null;
+
             ModelFlight fl = (ModelFlight)input;
 
-            foreach(string property in _properties)
+            foreach (string property in _properties)
             {
-                if (property != null)   
-                fl.FlightProperties.Remove(property);
+                if (property != null)
+                    fl.FlightProperties.Remove(property);
             }
             return fl;
         }
