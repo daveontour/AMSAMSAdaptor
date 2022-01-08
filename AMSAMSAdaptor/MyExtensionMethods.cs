@@ -49,7 +49,7 @@ namespace AMSAMSAdaptor
 
                 result = formattedXml;
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 // NO-OP
             }

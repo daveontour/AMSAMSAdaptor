@@ -2,24 +2,19 @@
 using System.Messaging;
 using System.Text;
 using System.Xml;
+using NLog;
 
 namespace AMSAMSAdaptor
 {
     internal class OutputBaseData : IOutputMessageHandler
     {
-        private Supervisor supervisor;
         private string token;
         private string toqueue;
-
-        public string queueName;
-
-        public bool toMSMQ = false;
-
-        private static readonly NLog.Logger logger = NLog.LogManager.GetLogger("consoleLogger");
+        private bool toMSMQ = false;
+        private readonly Logger logger = LogManager.GetLogger("consoleLogger");
 
         public void SetSupervisor(Supervisor supervisor, XmlDocument configDoc)
         {
-            this.supervisor = supervisor;
             supervisor.SendBaseDataMessageHandler += Sender;
 
             token = configDoc.SelectSingleNode(".//ToToken")?.InnerText;
@@ -30,7 +25,7 @@ namespace AMSAMSAdaptor
 
         public string GetDescription()
         {
-            return "Send Base Data Messages VIA Request Queue";
+            return "Send Base Data Messages via Request Queue";
         }
 
         private void Sender(ModelBase data, string action)

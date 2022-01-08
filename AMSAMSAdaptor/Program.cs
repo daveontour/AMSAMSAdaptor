@@ -1,28 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Configuration;
-using System.IO;
-using System.Linq;
-using System.ServiceModel;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml;
 using Topshelf;
-using WorkBridge.Modules.AMS.AMSIntegrationAPI.Mod.Intf.DataTypes;
 
 namespace AMSAMSAdaptor
 {
-    class Program
+    internal class Program
     {
-
         // Primarily skeleton code for defining the ConsoleApp/Service to be managed by TopShelf
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
-
             var exitCode = HostFactory.Run(x =>
             {
-
                 x.Service<Supervisor>(s =>
                 {
                     s.ConstructUsing(core => new Supervisor());
@@ -39,8 +28,7 @@ namespace AMSAMSAdaptor
 
                 NameValueCollection appSettings = ConfigurationManager.AppSettings;
 
-
-                string serviceName = string.IsNullOrEmpty(appSettings["serviceName"]) ? $"SITA MEA - AMS to AMS Adaptor" : appSettings["serviceName"];
+                string serviceName = string.IsNullOrEmpty(appSettings["serviceName"]) ? $"SITAAMSAMSAdaptor" : appSettings["serviceName"];
                 string serviceDisplayName = string.IsNullOrEmpty(appSettings["serviceDisplayName"]) ? $"SITA MEA - AMS to AMS Adaptor" : appSettings["serviceDisplayName"];
                 string serviceDescription = string.IsNullOrEmpty(appSettings["serviceDescription"]) ? "Exchanges data from one instance of AMS to another" : appSettings["serviceDescription"];
 

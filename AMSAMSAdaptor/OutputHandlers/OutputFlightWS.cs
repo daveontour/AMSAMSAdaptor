@@ -1,9 +1,8 @@
 ﻿using System;
-using System.IO;
 using System.ServiceModel;
-using System.Text;
 using System.Xml;
 using WorkBridge.Modules.AMS.AMSIntegrationAPI.Mod.Intf.DataTypes;
+using NLog;
 
 namespace AMSAMSAdaptor
 {
@@ -13,8 +12,8 @@ namespace AMSAMSAdaptor
         private EndpointAddress address;
         private Supervisor supervisor;
 
-        private static readonly NLog.Logger logger = NLog.LogManager.GetLogger("consoleLogger");
-        private static readonly NLog.Logger emailLogger = NLog.LogManager.GetLogger("emailLogger");
+        private readonly Logger logger = LogManager.GetLogger("consoleLogger");
+        private readonly Logger emailLogger = LogManager.GetLogger("emailLogger");
 
         public void SetSupervisor(Supervisor supervisor, XmlDocument configDoc)
         {
@@ -85,20 +84,22 @@ namespace AMSAMSAdaptor
                     if (res.OuterXml.Contains("<Status xmlns=\"http://www.sita.aero/ams6-xml-api-datatypes\">Success</Status>"))
                     {
                         logger.Info("Flight Creation Successful :)");
+                        emailLogger.Trace($"Flight created for {flt}");
                         ProcessLinking(flt);
                     }
                     else
                     {
-                        string errorMessage = $"Flight Create Was Not Successful for Flight {flt.ToString()}";
-                        errorMessage = errorMessage + $"Message from host was: \n {res.PrintXML()} ";
+                        string errorMessage = $"Flight Create Was Not Successful for Flight {flt}";
+                        errorMessage += $"Message from host was: \n {res.PrintXML()} ";
                         emailLogger.Error(errorMessage);
                     }
                 }
                 catch (Exception e)
                 {
-                    string errorMessage = $"Flight Update Was Not Successful for Flight {flt.ToString()}";
-                    errorMessage = errorMessage + $"Error was: {e.Message} ";
-                    emailLogger.Error(errorMessage);
+                    string errorMessage = $"Flight Update Was Not Successful for Flight {flt}";
+                    errorMessage += $"Error was: {e.Message} ";
+                    emailLogger.Trace(errorMessage);
+                    logger.Error(errorMessage);
                 }
             }
         }
@@ -127,15 +128,15 @@ namespace AMSAMSAdaptor
                     }
                     else
                     {
-                        string errorMessage = $"Flight Update Was Not Successful for Flight {flt.ToString()}";
-                        errorMessage = errorMessage + $"Message from host was: \n {res.PrintXML()} ";
+                        string errorMessage = $"Flight Update Was Not Successful for Flight {flt}";
+                        errorMessage += $"Message from host was: \n {res.PrintXML()} ";
                         emailLogger.Error(errorMessage);
                     }
                 }
                 catch (Exception e)
                 {
-                    string errorMessage = $"Flight Update Was Not Successful for Flight {flt.ToString()}";
-                    errorMessage = errorMessage + $"Error was: {e.Message} ";
+                    string errorMessage = $"Flight Update Was Not Successful for Flight {flt}";
+                    errorMessage += $"Error was: {e.Message} ";
                     emailLogger.Error(errorMessage);
                 }
             }

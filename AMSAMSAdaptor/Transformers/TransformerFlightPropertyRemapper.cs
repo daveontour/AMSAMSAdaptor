@@ -4,13 +4,32 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Xml;
+using NLog;
 
 namespace AMSAMSAdaptor
 {
+    public class ReMapper
+    {
+        public string Type { get; set; }
+        public string PropertyName { get; set; }
+        public string AltrernatePropertyName { get; set; }
+        public string DatetimeFormat { get; set; }
+        public string PropertyFixedValue { get; set; }
+        public string LookupPropertyName { get; set; }
+        public string FileName { get; set; }
+        public string IndexField { get; set; }
+        public string ValueField { get; set; }
+        public bool TimeOffset { get; internal set; }
+        public string TimeFormat { get; internal set; }
+        public string TimeReferenceProperty { get; internal set; }
+
+        public Dictionary<string, string> LookupDict = new Dictionary<string, string>();
+    }
+
     internal class TransformerFlightPropertyRemapper : ITransformer
     {
-        private static readonly NLog.Logger logger = NLog.LogManager.GetLogger("consoleLogger");
-        private List<ReMapper> _remppers = new List<ReMapper>();
+        private readonly Logger logger = LogManager.GetLogger("consoleLogger");
+        private readonly List<ReMapper> _remppers = new List<ReMapper>();
 
         public void SetConfig(XmlNode configNode)
         {
@@ -31,8 +50,7 @@ namespace AMSAMSAdaptor
                     Type = property.Attributes["type"]?.Value,
                 };
 
-                bool timeOffest = false;
-                bool.TryParse(property.Attributes["timeOffset"]?.Value, out timeOffest);
+                bool.TryParse(property.Attributes["timeOffset"]?.Value, out bool timeOffest);
 
                 reMapper.TimeOffset = timeOffest;
 

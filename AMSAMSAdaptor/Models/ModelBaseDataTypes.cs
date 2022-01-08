@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Xml;
+using NLog;
 
 namespace AMSAMSAdaptor
 {
@@ -10,7 +11,8 @@ namespace AMSAMSAdaptor
     {
         public XmlNamespaceManager nsmgr;
         public static string token;
-        public static readonly NLog.Logger logger = NLog.LogManager.GetLogger("consoleLogger");
+        public readonly Logger logger = LogManager.GetLogger("consoleLogger");
+
         public string AMSXMessageHeader = @"<?xml version=""1.0"" encoding=""utf-8"" ?>
 <amsx-messages:Envelope
 xmlns:amsx-messages=""http://www.sita.aero/ams6-xml-api-messages""
@@ -466,7 +468,7 @@ apiVersion=""2.8"">
             }
             catch (Exception ex)
             {
-                logger.Error(ex,sb.ToString());
+                logger.Error(ex, sb.ToString());
                 return null;
             }
         }
@@ -497,7 +499,7 @@ apiVersion=""2.8"">
             }
             catch (Exception e)
             {
-                logger.Error(e,sb.ToString());
+                logger.Error(e, sb.ToString());
                 return null;
             }
         }
@@ -564,7 +566,7 @@ apiVersion=""2.8"">
             }
             catch (Exception e)
             {
-                logger.Error(e,sb.ToString());
+                logger.Error(e, sb.ToString());
                 return null;
             }
         }
@@ -595,7 +597,7 @@ apiVersion=""2.8"">
             }
             catch (Exception e)
             {
-                logger.Error(e,sb.ToString());
+                logger.Error(e, sb.ToString());
                 return null;
             }
         }
@@ -645,7 +647,7 @@ apiVersion=""2.8"">
             }
             catch (Exception e)
             {
-                logger.Error(e,sb.ToString());
+                logger.Error(e, sb.ToString());
                 return null;
             }
         }
@@ -676,7 +678,7 @@ apiVersion=""2.8"">
             }
             catch (Exception e)
             {
-                logger.Error(e,sb.ToString());
+                logger.Error(e, sb.ToString());
                 return null;
             }
         }
@@ -728,7 +730,7 @@ apiVersion=""2.8"">
             }
             catch (Exception e)
             {
-                logger.Error(e,sb.ToString());
+                logger.Error(e, sb.ToString());
                 return null;
             }
         }
@@ -774,7 +776,7 @@ apiVersion=""2.8"">
             public string icaoAirport;
         }
 
-        private List<RouteViaPoint> viaPoints = new List<RouteViaPoint>();
+        private readonly List<RouteViaPoint> viaPoints = new List<RouteViaPoint>();
 
         public ModelRoute(XmlNode node) : base(node)
         {
@@ -876,7 +878,7 @@ apiVersion=""2.8"">
             }
             catch (Exception e)
             {
-                logger.Error(e,sb.ToString());
+                logger.Error(e, sb.ToString());
                 return null;
             }
         }
@@ -907,7 +909,7 @@ apiVersion=""2.8"">
             }
             catch (Exception e)
             {
-                logger.Error(e,sb.ToString());
+                logger.Error(e, sb.ToString());
                 return null;
             }
         }
@@ -915,8 +917,6 @@ apiVersion=""2.8"">
 
     public class ModelCustomsType : ModelBase
     {
-
-
         public string CustomTypeCode;
         public string CustomTypeName;
         public string CustomTypePriority;
@@ -949,7 +949,7 @@ apiVersion=""2.8"">
             }
             catch (Exception e)
             {
-                logger.Error(e,sb.ToString());
+                logger.Error(e, sb.ToString());
                 return null;
             }
         }
@@ -975,7 +975,7 @@ apiVersion=""2.8"">
             }
             catch (Exception e)
             {
-                logger.Error(e,sb.ToString());
+                logger.Error(e, sb.ToString());
                 return null;
             }
         }
@@ -997,9 +997,9 @@ apiVersion=""2.8"">
             }
             catch (Exception e)
             {
-                logger.Error(e,sb.ToString());
+                logger.Error(e, sb.ToString());
                 return null;
             }
         }
     }
-    }
+}

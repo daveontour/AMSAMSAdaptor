@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using System.Xml;
 
 namespace AMSAMSAdaptor
 {
     internal class TransformerFlightRemoveTable : ITransformer
     {
-        private List<string> _tables = new List<string>();
+        private readonly List<string> _tables = new List<string>();
 
         public void SetConfig(XmlNode configNode)
         {

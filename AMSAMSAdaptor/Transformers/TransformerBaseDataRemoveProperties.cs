@@ -9,7 +9,7 @@ namespace AMSAMSAdaptor
 {
     internal class TransformerBaseDataRemoveProperties : ITransformer
     {
-        private List<string> _properties = new List<string>();
+        private readonly List<string> _properties = new List<string>();
 
         public void SetConfig(XmlNode configNode)
         {

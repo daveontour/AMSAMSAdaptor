@@ -82,7 +82,6 @@
     <Compile Include="MyExtensionMethods.cs" />
     <Compile Include="OutputHandlers\OutputBaseData.cs" />
     <Compile Include="OutputHandlers\OutputFlightWS.cs" />
-    <Compile Include="ReMapper.cs" />
     <Compile Include="Transformers\TransformerBaseDataAddMissingProperties.cs" />
     <Compile Include="Transformers\TransformerFlightAddProperties.cs" />
     <Compile Include="Transformers\TransformerFlightPropertyRemapper.cs" />

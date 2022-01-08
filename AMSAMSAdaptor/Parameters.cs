@@ -29,7 +29,7 @@ namespace AMSAMSAdaptor
         public static int RESTSERVER_RETRY_INTERVAL;
         public static bool STARTUP_FLIGHT_PROCESSING;
         public static bool STARTUP_STAND_PROCESSING;
-        public static string VERSION = "Version 1.0.0, 20211123";
+        public static string VERSION = "Version 1.0.1, 20220108";
         public static bool DEEPTRACE;
         public static bool ALERT_FLIGHT;
         public static bool ALERT_STAND;

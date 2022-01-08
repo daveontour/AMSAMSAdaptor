@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NLog;
+using System;
 using System.Collections.Generic;
 using System.Xml;
 
@@ -7,9 +8,9 @@ namespace AMSAMSAdaptor
     public abstract class HandlerAbstract : IInputMessageHandler, IDisposable
     {
         public Supervisor supervisor;
-        public readonly NLog.Logger logger = NLog.LogManager.GetLogger("consoleLogger");
-        public XmlNamespaceManager nsmgr;
-        private XmlNode node;
+        protected readonly Logger logger = LogManager.GetLogger("consoleLogger");
+        protected XmlNamespaceManager nsmgr;
+        protected XmlNode node;
 
         protected XmlNode config;
         protected List<string> passFilters = new List<string>();
@@ -18,8 +19,10 @@ namespace AMSAMSAdaptor
         protected List<ITransformer> transformers = new List<ITransformer>();
 
         public abstract string MessageName { get; }
+
         public virtual string HandlerName
         { get { return this.GetType().Name; } }
+
         public abstract string HandlerAction { get; }
         public abstract string HandlerModel { get; }
         public virtual string HandlerDestination { get; } = "BaseDataDistributor";
@@ -41,8 +44,7 @@ namespace AMSAMSAdaptor
 
             foreach (XmlNode node in config.SelectNodes($"./PassFilter"))
             {
-                bool enabled = true;
-                bool.TryParse(node.Attributes["enabled"]?.Value, out enabled);
+                bool.TryParse(node.Attributes["enabled"]?.Value, out bool enabled);
 
                 if (!enabled)
                 {
@@ -52,8 +54,7 @@ namespace AMSAMSAdaptor
             }
             foreach (XmlNode node in config.SelectNodes($"./NoPassFilter"))
             {
-                bool enabled = true;
-                bool.TryParse(node.Attributes["enabled"]?.Value, out enabled);
+                bool.TryParse(node.Attributes["enabled"]?.Value, out bool enabled);
 
                 if (!enabled)
                 {
@@ -65,8 +66,7 @@ namespace AMSAMSAdaptor
             {
                 string className = node.Attributes["class"].Value;
 
-                bool enabled = true;
-                bool.TryParse(node.Attributes["enabled"]?.Value, out enabled);
+                bool.TryParse(node.Attributes["enabled"]?.Value, out bool enabled);
 
                 if (!enabled)
                 {

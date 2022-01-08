@@ -6,7 +6,7 @@ namespace AMSAMSAdaptor
 {
     internal class TransformerFlightAddProperties : ITransformer
     {
-        private List<ReMapper> _remppers = new List<ReMapper>();
+        private readonly List<ReMapper> _remppers = new List<ReMapper>();
 
         public void SetConfig(XmlNode configNode)
         {

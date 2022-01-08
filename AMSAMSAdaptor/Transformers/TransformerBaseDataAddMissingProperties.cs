@@ -15,7 +15,7 @@ namespace AMSAMSAdaptor
             public string value;
         }
 
-        private List<Replacement> _properties = new List<Replacement>();
+        private readonly List<Replacement> _properties = new List<Replacement>();
 
         public void SetConfig(XmlNode configNode)
         {

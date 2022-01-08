@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using System.Xml;
 
 namespace AMSAMSAdaptor
 {
     internal class TransformerFlightOnlyProperties : ITransformer
     {
-        private List<string> _properties = new List<string>();
+        private readonly List<string> _properties = new List<string>();
 
         public void SetConfig(XmlNode configNode)
         {

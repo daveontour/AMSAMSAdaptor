@@ -5,7 +5,7 @@ namespace AMSAMSAdaptor
 {
     internal class TransformerFlightOnlyTable : ITransformer
     {
-        private List<string> _tables = new List<string>();
+        private readonly List<string> _tables = new List<string>();
 
         public void SetConfig(XmlNode configNode)
         {

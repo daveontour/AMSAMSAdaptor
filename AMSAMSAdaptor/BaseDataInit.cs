@@ -1,35 +1,30 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.ServiceModel;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
+using NLog;
 
 namespace AMSAMSAdaptor
 {
     internal class BaseDataInit
     {
-        private XmlNode config;
-        private Supervisor supervisor;
-        private BasicHttpBinding binding;
-        private EndpointAddress address;
-        private bool initACTypes = false;
-        private bool initAC = false;
-        private bool initAirports = false;
-        private bool initAirlines = false;
-        private bool initAreas = false;
-        private bool initCheckIns = false;
-        private bool initStands = false;
-        private bool initGates = false;
-        private bool initRoutes = false;
-        private bool initCustomsTypes = false;
+        private readonly Supervisor supervisor;
+        private readonly BasicHttpBinding binding;
+        private readonly EndpointAddress address;
+        private readonly bool initACTypes = false;
+        private readonly bool initAC = false;
+        private readonly bool initAirports = false;
+        private readonly bool initAirlines = false;
+        private readonly bool initAreas = false;
+        private readonly bool initCheckIns = false;
+        private readonly bool initStands = false;
+        private readonly bool initGates = false;
+        private readonly bool initRoutes = false;
+        private readonly bool initCustomsTypes = false;
 
-        private static readonly NLog.Logger logger = NLog.LogManager.GetLogger("consoleLogger");
+        private readonly Logger logger = LogManager.GetLogger("consoleLogger");
 
         public BaseDataInit(XmlNode config, Supervisor supervisor)
         {
-            this.config = config;
             this.supervisor = supervisor;
 
             bool.TryParse(config.SelectSingleNode(".//InitAircraftTypes")?.InnerText, out initACTypes);
@@ -88,7 +83,7 @@ namespace AMSAMSAdaptor
                 }
                 catch (Exception e)
                 {
-                    logger.Error(e.Message);
+                    logger.Error(e, "Error initialising CustomTypes");
                 }
             }
             logger.Info("Populating Customs Complete");

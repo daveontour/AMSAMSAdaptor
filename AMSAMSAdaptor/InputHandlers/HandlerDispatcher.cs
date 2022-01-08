@@ -1,9 +1,5 @@
 ﻿using NLog;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
 
 namespace AMSAMSAdaptor
@@ -12,7 +8,7 @@ namespace AMSAMSAdaptor
     {
         public event Action<XmlNode> TriggerFire;
 
-        public static readonly Logger sourceLogger = LogManager.GetLogger("sourceLogger");
+        public static readonly Logger logger = LogManager.GetLogger("consoleLogger");
 
         public void Fire(XmlNode args)
         {
@@ -22,7 +18,7 @@ namespace AMSAMSAdaptor
             }
             catch (Exception ex)
             {
-                sourceLogger.Error(ex, "Internal Dispatcher Error");
+                logger.Error(ex, "Internal Dispatcher Error");
                 throw;
             }
         }

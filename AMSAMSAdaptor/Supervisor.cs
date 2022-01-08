@@ -9,20 +9,29 @@ using System.Xml;
 using System.Collections.Concurrent;
 using WorkBridge.Modules.AMS.AMSIntegrationWebAPI.Srv;
 using System.Timers;
+using System.Text;
+using NLog;
 
 namespace AMSAMSAdaptor
 {
+    /*
+     *
+     * Main controlling class for the adaptor.
+     * Reads the config file and instansiates all the different handlers
+     * Initiates start-up  processing and back catalog processing
+     *
+     */
+
     public class Supervisor
     {
         public string queueName;
         private bool fromMSMQ = false;
 
-        private static readonly NLog.Logger logger = NLog.LogManager.GetLogger("consoleLogger");
+        private readonly Logger logger = LogManager.GetLogger("consoleLogger");
 
         private static MessageQueue recvQueue;  // Queue to recieve update notifications on
         private bool startListenLoop = true;    // Flag controlling the execution of the update notificaiton listener
 
-        private static readonly Random random = new Random();
         public bool stopProcessing = false;
         private Thread startThread;
         private Thread receiveThread;           // Thread the notification listener runs in
@@ -36,9 +45,9 @@ namespace AMSAMSAdaptor
 
         public event Action<ModelBase, string> SendBaseDataMessageHandler;
 
-        private List<IInputMessageHandler> InputHandlers = new List<IInputMessageHandler>();
-        private List<IOutputMessageHandler> OutputHandlers = new List<IOutputMessageHandler>();
-        private List<IPostOutputMessageHandler> PostOutputHandlers = new List<IPostOutputMessageHandler>();
+        private readonly List<IInputMessageHandler> InputHandlers = new List<IInputMessageHandler>();
+        private readonly List<IOutputMessageHandler> OutputHandlers = new List<IOutputMessageHandler>();
+        private readonly List<IPostOutputMessageHandler> PostOutputHandlers = new List<IPostOutputMessageHandler>();
 
         public ConcurrentDictionary<string, HandlerDispatcher> Dispatchers = new ConcurrentDictionary<string, HandlerDispatcher>();
         private BasicHttpBinding binding;
@@ -68,9 +77,10 @@ namespace AMSAMSAdaptor
 
         public bool Start()
         {
+            // Read the main configuration file
             configDoc.Load("widget.config.xml");
 
-            // Set the binding and address for use by the web services client
+            // Set the binding and address for use by the web services client (used by the web services interface)
             binding = new BasicHttpBinding
             {
                 MaxReceivedMessageSize = 20000000,
@@ -83,6 +93,10 @@ namespace AMSAMSAdaptor
 
             bool.TryParse(configDoc.SelectSingleNode(".//FromAMSQueue")?.Attributes["enabled"]?.Value, out fromMSMQ);
 
+            // Identify and load all te configured message handlers
+
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine();
             foreach (XmlNode node in configDoc.SelectNodes("//Handlers/Handler"))
             {
                 string handlerClass = node.Attributes["class"].Value;
@@ -103,7 +117,7 @@ namespace AMSAMSAdaptor
                         IInputMessageHandler handler = (IInputMessageHandler)Activator.CreateInstance(t, this, node);
                         InputHandlers.Add(handler);
 
-                        logger.Info($"Loaded Handler: {handlerClass} ({handlerName}) to handle message type: {handlerMessageType}");
+                        sb.AppendLine($"Loaded Handler: {handlerClass} ({handlerName}) to handle message type: {handlerMessageType}");
                     }
                 }
                 catch (Exception ex)
@@ -113,19 +127,24 @@ namespace AMSAMSAdaptor
                 }
             }
 
+            logger.Info(sb.ToString());
+
+            // Reflective discovery of the ouput handlers
             var outtype = typeof(IOutputMessageHandler);
             var outtypes = AppDomain.CurrentDomain.GetAssemblies()
                 .SelectMany(s => s.GetTypes())
                 .Where(p => outtype.IsAssignableFrom(p));
 
             // Set up the trggers to manage the different types
+            sb.Clear();
+            sb.AppendLine();
             foreach (var handler in outtypes)
             {
                 try
                 {
                     IOutputMessageHandler obj = (IOutputMessageHandler)Activator.CreateInstance(handler);
                     obj.SetSupervisor(this, configDoc);
-                    logger.Info($"Implemented Output Handler: {obj.GetDescription()}");
+                    sb.AppendLine($"Implemented Output Handler: {obj.GetDescription()}");
                     OutputHandlers.Add(obj);
                 }
                 catch (Exception)
@@ -133,6 +152,7 @@ namespace AMSAMSAdaptor
                     //logger.Error(ex.Message);
                 }
             }
+            logger.Info(sb.ToString());
 
             // Post out put handlers are for when the CRUD has been completed.
             var postouttype = typeof(IPostOutputMessageHandler);
@@ -156,6 +176,7 @@ namespace AMSAMSAdaptor
                 }
             }
 
+            // Initiate start-up processing
             BaseDataInit baseDataInit = new BaseDataInit(configDoc, this);
             baseDataInit.Sync();
             //"Current" flights
@@ -292,8 +313,7 @@ namespace AMSAMSAdaptor
 
         private void UpdateFlights()
         {
-            bool initFlights = false;
-            bool.TryParse(configDoc.SelectSingleNode(".//InitFlights")?.InnerText, out initFlights);
+            bool.TryParse(configDoc.SelectSingleNode(".//InitFlights")?.InnerText, out bool initFlights);
             if (!initFlights)
             {
                 logger.Info("Flight initialisation is NOT configured");
@@ -342,11 +362,10 @@ namespace AMSAMSAdaptor
 
         private void BackCatalogProcessing()
         {
-            bool backCatalog = false;
-            bool.TryParse(configDoc.SelectSingleNode(".//enableBackCatalog")?.InnerText, out backCatalog);
+            bool.TryParse(configDoc.SelectSingleNode(".//enableBackCatalog")?.InnerText, out bool backCatalog);
             if (!backCatalog)
             {
-                logger.Info("Back Catalog  Flight is NOT configured");
+                logger.Info("Back Catalog Flight processing is NOT configured");
                 return;
             }
 
@@ -382,8 +401,8 @@ namespace AMSAMSAdaptor
                     return;
                 }
 
-                string sts = $"{st.ToString("dd-MM-yyyy")}%20{st.ToString("HH:mm")}";
-                string ets = $"{et.ToString("dd-MM-yyyy")}%20{et.ToString("HH:mm")}";
+                string sts = $"{st:dd-MM-yyyy}%20{st:HH:mm}";
+                string ets = $"{et:dd-MM-yyyy}%20{et:HH:mm}";
                 bcLastUpdate = st;
 
                 logger.Info($"Processing historic flight between {st} and {et}");
