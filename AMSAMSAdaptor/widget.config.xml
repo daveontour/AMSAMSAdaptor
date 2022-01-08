@@ -14,7 +14,7 @@
 
 	<!--	<ToToken>32b8ef7a-0a16-4b4a-9e01-799960c91e0e</ToToken> -->
 	<ToToken>06f7d842-8add-4290-8c9c-298d2dccbfe4</ToToken>
-	<AirportCode>SFO</AirportCode>
+	<AirportCode>AUH</AirportCode>
 
 	<!-- Base Data types to initialize on startup-->
 	<InitAircraftTypes>false</InitAircraftTypes>
@@ -55,28 +55,32 @@
 			<Handler class="HandlerFlightUpdate" messageType="FlightUpdatedNotification" name="Flight Update Handler with filtering" enabled="false">
 				<PassFilters type="and">
 					<PassFilter enabled ="true">.//amsx-datatypes:FlightId/amsx-datatypes:FlightKind[contains(text(), 'Departure')]</PassFilter>
-					<PassFilter enabled ="true">.//amsx-datatypes:RouteViaPoint[@sequenceNumber = '0']/amsx-datatypes:AirportCode[contains(text(), 'DXB')]</PassFilter>
+					<PassFilter enabled ="true">.//amsx-datatypes:RouteViaPoint[@sequenceNumber = '0']/amsx-datatypes:AirportCode[contains(text(), 'AUH')]</PassFilter>
 				</PassFilters>
 				<Transformer class="TransformerFlightPropertyRemapper" enabled="true">
 					<TransformerConfig>
-						<Property propertyName="Nature" type="fixed" value="Arrival" />
-						<Property propertyName="AirportIATA" type="fixed" value="SFO" />
-						<Property propertyName="AirportICAO" type="fixed" value="KSFO" />
+						<Property propertyName="ScheduledDate" type="lookup" lookupPropertyName="AirportIATA" referencePropertyName="ScheduledTime" timeOffset="true" fileName="lookup.csv" indexField="0" valueField="1" timeFormat="yyyy-MM-dd" />
 						<Property propertyName="ScheduledTime" type="lookup" lookupPropertyName="AirportIATA" referencePropertyName="ScheduledTime" timeOffset="true" fileName="lookup.csv" indexField="0" valueField="1" timeFormat="yyyy-MM-ddTHH:mm:ss" />
+						<Property propertyName="Nature" type="fixed" value="Arrival" />
+						<Property propertyName="AirportIATA" type="fixed" value="AUH" />
+						<Property propertyName="AirportICAO" type="fixed" value="OMAA" />
+						<Property propertyName="Route" type="fixed" value="SFO" />
 					</TransformerConfig>
 				</Transformer>
 			</Handler>
 			<Handler class="HandlerFlightCreate" messageType="FlightCreatedNotification" name="Flight Create Handler with filtering" enabled="true">
 				<PassFilters type="and">
 					<PassFilter enabled ="true">.//amsx-datatypes:FlightId/amsx-datatypes:FlightKind[contains(text(), 'Departure')]</PassFilter>
-					<PassFilter enabled ="true">.//amsx-datatypes:RouteViaPoint[@sequenceNumber = '0']/amsx-datatypes:AirportCode[contains(text(), 'DXB')]</PassFilter>
+					<PassFilter enabled ="true">.//amsx-datatypes:RouteViaPoint[@sequenceNumber = '0']/amsx-datatypes:AirportCode[contains(text(), 'AUH')]</PassFilter>
 				</PassFilters>
 				<Transformer class="TransformerFlightPropertyRemapper" enabled="true">
 					<TransformerConfig>
-						<Property propertyName="Nature" type="fixed" value="Arrival" />
-						<Property propertyName="AirportIATA" type="fixed" value="SFO" />
-						<Property propertyName="AirportICAO" type="fixed" value="KSFO" />
+						<Property propertyName="ScheduledDate" type="lookup" lookupPropertyName="AirportIATA" referencePropertyName="ScheduledTime" timeOffset="true" fileName="lookup.csv" indexField="0" valueField="1" timeFormat="yyyy-MM-dd" />
 						<Property propertyName="ScheduledTime" type="lookup" lookupPropertyName="AirportIATA" referencePropertyName="ScheduledTime" timeOffset="true" fileName="lookup.csv" indexField="0" valueField="1" timeFormat="yyyy-MM-ddTHH:mm:ss" />
+						<Property propertyName="Nature" type="fixed" value="Arrival" />
+						<Property propertyName="AirportIATA" type="fixed" value="AUH" />
+						<Property propertyName="AirportICAO" type="fixed" value="OMAA" />
+						<Property propertyName="Route" type="fixed" value="SFO" />
 					</TransformerConfig>
 				</Transformer>
 			</Handler>
@@ -84,14 +88,16 @@
 			<Handler class="HandlerFlight" messageType="Flight" name="Default Flight Update Handler" enabled="true">
 				<PassFilters type="and">
 					<PassFilter enabled ="true">.//amsx-datatypes:FlightId/amsx-datatypes:FlightKind[contains(text(), 'Departure')]</PassFilter>
-					<PassFilter enabled ="true">.//amsx-datatypes:RouteViaPoint[@sequenceNumber = '0']/amsx-datatypes:AirportCode[contains(text(), 'DXB')]</PassFilter>
+					<PassFilter enabled ="true">.//amsx-datatypes:RouteViaPoint[@sequenceNumber = '0']/amsx-datatypes:AirportCode[contains(text(), 'AUH')]</PassFilter>
 				</PassFilters>
 				<Transformer class="TransformerFlightPropertyRemapper" enabled="true">
 					<TransformerConfig>
-						<Property propertyName="Nature" type="fixed" value="Arrival" />
-						<Property propertyName="AirportIATA" type="fixed" value="SFO" />
-						<Property propertyName="AirportICAO" type="fixed" value="KSFO" />
+						<Property propertyName="ScheduledDate" type="lookup" lookupPropertyName="AirportIATA" referencePropertyName="ScheduledTime" timeOffset="true" fileName="lookup.csv" indexField="0" valueField="1" timeFormat="yyyy-MM-dd" />
 						<Property propertyName="ScheduledTime" type="lookup" lookupPropertyName="AirportIATA" referencePropertyName="ScheduledTime" timeOffset="true" fileName="lookup.csv" indexField="0" valueField="1" timeFormat="yyyy-MM-ddTHH:mm:ss" />
+						<Property propertyName="Nature" type="fixed" value="Arrival" />
+						<Property propertyName="AirportIATA" type="fixed" value="AUH" />
+						<Property propertyName="AirportICAO" type="fixed" value="OMAA" />
+						<Property propertyName="Route" type="fixed" value="SFO" />
 					</TransformerConfig>
 				</Transformer>
 			</Handler>
