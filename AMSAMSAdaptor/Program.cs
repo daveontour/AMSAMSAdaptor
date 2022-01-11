@@ -3,6 +3,7 @@ using System.Collections.Specialized;
 using System.Configuration;
 using Topshelf;
 
+// Beta Release 1.0.0 2021-01-11
 namespace AMSAMSAdaptor
 {
     internal class Program
